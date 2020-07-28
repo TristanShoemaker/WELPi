@@ -5,8 +5,8 @@ import time
 from datetime import datetime as dt
 
 WEL_ip = '192.168.68.137'
-# mongo_ip = 'localhost'
-mongo_ip = '192.168.68.114'
+mongo_ip = 'localhost'
+# mongo_ip = '192.168.68.114'
 
 def getData(ip):
     url = "http://" + ip + ":5150/data.xml"
@@ -36,7 +36,7 @@ def run():
     while(True):
         post = getData(WEL_ip)
         post_id = db.insert_one(post).inserted_id
-        print(F"post_id: {post_id}")
-        time.sleep(60)
+        print(F"time: {post['dateandtime']} - post_id: {post_id}")
+        time.sleep(30)
 
 run()
