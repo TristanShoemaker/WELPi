@@ -1,4 +1,4 @@
-from pymongo import MongoClient
+from pymongo import MongoClient, errors.DuplicateKeyError
 import requests
 import xmltodict
 import time
@@ -35,7 +35,10 @@ def run():
     db = connect(mongo_ip)
     while(True):
         post = getData(WEL_ip)
-        post_id = db.insert_one(post).inserted_id
+        try:
+            post_id = db.insert_one(post).inserted_id
+        except DuplicateKeyError:
+            print(F"Time key {post['dateandtime']} already in database.")
         print(F"time: {post['dateandtime']} - post_id: {post_id}")
         time.sleep(30)
 
