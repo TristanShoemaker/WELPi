@@ -1,4 +1,5 @@
-from pymongo import MongoClient, errors.DuplicateKeyError
+from pymongo import MongoClient
+from pymongo.errors import DuplicateKeyError
 import requests
 import xmltodict
 import time
