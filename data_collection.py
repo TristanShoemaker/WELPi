@@ -38,9 +38,10 @@ def run():
         post = getData(WEL_ip)
         try:
             post_id = db.insert_one(post).inserted_id
+            print(F"time: {post['dateandtime']} - post_id: {post_id}")
         except DuplicateKeyError:
             print(F"Time key {post['dateandtime']} already in database.")
-        print(F"time: {post['dateandtime']} - post_id: {post_id}")
+        
         time.sleep(30)
 
 run()
