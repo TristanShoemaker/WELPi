@@ -6,7 +6,7 @@ import time
 from datetime import datetime as dt
 from dateutil import tz
 
-WEL_ip = '192.168.68.137'
+WEL_ip = '192.168.68.100'
 mongo_ip = 'localhost'
 # mongo_ip = '192.168.68.101'
 
@@ -25,7 +25,6 @@ def getData(ip):
     time = dt.strptime(post['Time'], "%H:%M:%S").time()
     post['dateandtime'] = dt.combine(date, time).astimezone(tz.gettz('EST'))
     post['dateandtime'] = post['dateandtime'].astimezone(tz.gettz('UTC'))
-    print(post['dateandtime'])
     del post['Date']; del post['Time']
     return post
 
