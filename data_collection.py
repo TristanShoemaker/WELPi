@@ -1,6 +1,7 @@
 from pymongo import MongoClient, DESCENDING
 from pymongo.errors import DuplicateKeyError
 import requests
+from requests.exceptions import ConnectionError
 import xmltodict
 import time
 from datetime import datetime as dt
@@ -12,7 +13,13 @@ mongo_ip = 'localhost'
 
 def getData(ip):
     url = "http://" + ip + ":5150/data.xml"
-    response = requests.get(url)
+    try:
+        response = requests.get(url)
+    except ConnectionError:
+        print("Error in connecting to WEL, waiting then trying again",
+              flush=True)
+        time.sleep(5)
+        response = requests.get(url)
     # print(response.content)
     response_data = xmltodict.parse(response.content)['Devices']['Device']
     # print(response_data)
@@ -47,7 +54,7 @@ def run():
             print(F"time: {post['dateandtime']} - post_id: {post_id}",
                   flush=True)
         except DuplicateKeyError:
-            print(F"Time key {post['dateandtime']} already in database.",
+            print(F"time key {post['dateandtime']} already in database.",
                   flush=True)
 
         time.sleep(30)
