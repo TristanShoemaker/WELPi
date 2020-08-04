@@ -4,6 +4,7 @@ import requests
 import xmltodict
 import time
 from datetime import datetime as dt
+from dateutil import tz
 
 WEL_ip = '192.168.68.137'
 mongo_ip = 'localhost'
@@ -22,7 +23,7 @@ def getData(ip):
         except ValueError: post[item['@Name']] = item['@Value']
     date = dt.strptime(post['Date'], "%m/%d/%Y")
     time = dt.strptime(post['Time'], "%H:%M:%S").time()
-    post['dateandtime'] = dt.combine(date, time)
+    post['dateandtime'] = dt.combine(date, time).astimezone(tz.gettz('EST'))
     del post['Date']; del post['Time']
     return post
 
@@ -41,7 +42,7 @@ def run():
             print(F"time: {post['dateandtime']} - post_id: {post_id}")
         except DuplicateKeyError:
             print(F"Time key {post['dateandtime']} already in database.")
-        
+
         time.sleep(30)
 
 run()
