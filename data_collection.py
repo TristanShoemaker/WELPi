@@ -35,7 +35,7 @@ def connect(ip):
 
 def run():
     db = connect(mongo_ip)
-    result = db.create_index([('dateandtime', pymongo.ASCENDING)], unique=True)
+    result = db.create_index([('dateandtime')], unique=True)
     print(F"Creating Unique Time Index: {result}")
     while(True):
         post = getData(WEL_ip)
