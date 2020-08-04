@@ -7,8 +7,8 @@ from datetime import datetime as dt
 from dateutil import tz
 
 WEL_ip = '192.168.68.100'
-# mongo_ip = 'localhost'
-mongo_ip = '192.168.68.101'
+mongo_ip = 'localhost'
+# mongo_ip = '192.168.68.101'
 
 def getData(ip):
     url = "http://" + ip + ":5150/data.xml"
