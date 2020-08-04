@@ -7,8 +7,8 @@ from datetime import datetime as dt
 from dateutil import tz
 
 WEL_ip = '192.168.68.100'
-mongo_ip = 'localhost'
-# mongo_ip = '192.168.68.101'
+# mongo_ip = 'localhost'
+mongo_ip = '192.168.68.101'
 
 def getData(ip):
     url = "http://" + ip + ":5150/data.xml"
@@ -35,16 +35,20 @@ def connect(ip):
     return db
 
 def run():
+    print("\n Restarted...")
     db = connect(mongo_ip)
-    result = db.create_index([('dateandtime', DESCENDING)], unique=True)
-    print(F"Creating Unique Time Index: {result}")
+    if "dateandtime_-1" not in list(db.index_information()):
+        result = db.create_index([('dateandtime', DESCENDING)], unique=True)
+        print(F"Creating Unique Time Index: {result}", flush=True)
     while(True):
         post = getData(WEL_ip)
         try:
             post_id = db.insert_one(post).inserted_id
-            print(F"time: {post['dateandtime']} - post_id: {post_id}")
+            print(F"time: {post['dateandtime']} - post_id: {post_id}",
+                  flush=True)
         except DuplicateKeyError:
-            print(F"Time key {post['dateandtime']} already in database.")
+            print(F"Time key {post['dateandtime']} already in database.",
+                  flush=True)
 
         time.sleep(30)
 
