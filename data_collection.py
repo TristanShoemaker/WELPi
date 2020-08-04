@@ -1,4 +1,4 @@
-from pymongo import MongoClient, ASCENDING
+from pymongo import MongoClient, DESCENDING
 from pymongo.errors import DuplicateKeyError
 import requests
 import xmltodict
@@ -24,6 +24,7 @@ def getData(ip):
     date = dt.strptime(post['Date'], "%m/%d/%Y")
     time = dt.strptime(post['Time'], "%H:%M:%S").time()
     post['dateandtime'] = dt.combine(date, time).astimezone(tz.gettz('EST'))
+    print(post['dateandtime'])
     del post['Date']; del post['Time']
     return post
 
@@ -35,7 +36,7 @@ def connect(ip):
 
 def run():
     db = connect(mongo_ip)
-    result = db.create_index([('dateandtime', ASCENDING)], unique=True)
+    result = db.create_index([('dateandtime', DESCENDING)], unique=True)
     print(F"Creating Unique Time Index: {result}")
     while(True):
         post = getData(WEL_ip)
