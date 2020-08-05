@@ -1,7 +1,7 @@
 from pymongo import MongoClient, DESCENDING
 from pymongo.errors import DuplicateKeyError
 import requests
-from requests.exceptions import NewConnectionError
+from requests.exceptions import ConnectionError
 import xmltodict
 import time
 from datetime import datetime as dt
