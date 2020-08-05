@@ -30,7 +30,9 @@ def getData(ip):
         except ValueError: post[item['@Name']] = item['@Value']
     date = dt.strptime(post['Date'], "%m/%d/%Y")
     time = dt.strptime(post['Time'], "%H:%M:%S").time()
-    post['dateandtime'] = dt.combine(date, time).astimezone(tz.gettz('EST'))
+    # print(time)
+    post['dateandtime'] = dt.combine(date, time).replace(tzinfo=tz.gettz('EST'))
+    # print(post['dateandtime'])
     post['dateandtime'] = post['dateandtime'].astimezone(tz.gettz('UTC'))
     del post['Date']; del post['Time']
     return post
@@ -42,7 +44,7 @@ def connect(ip):
     return db
 
 def run():
-    print(F"\n Restarted {dt.now()} ...")
+    print(F"\n Restarted {dt.now()} ...", flush=True)
     db = connect(mongo_ip)
     if "dateandtime_-1" not in list(db.index_information()):
         result = db.create_index([('dateandtime', DESCENDING)], unique=True)
@@ -51,10 +53,10 @@ def run():
         post = getData(WEL_ip)
         try:
             post_id = db.insert_one(post).inserted_id
-            print(F"time: {post['dateandtime']} - post_id: {post_id}",
+            print(F"UTC time: {post['dateandtime']} | post_id: {post_id}",
                   flush=True)
         except DuplicateKeyError:
-            print(F"time key {post['dateandtime']} already in database.",
+            print(F"time key {post['dateandtime']} already in database",
                   flush=True)
 
         time.sleep(30)
