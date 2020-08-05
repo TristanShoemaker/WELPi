@@ -1,13 +1,13 @@
 from pymongo import MongoClient, DESCENDING
 from pymongo.errors import DuplicateKeyError
 import requests
-from requests.exceptions import ConnectionError
+from requests.exceptions import NewConnectionError
 import xmltodict
 import time
 from datetime import datetime as dt
 from dateutil import tz
 
-WEL_ip = '192.168.68.100'
+WEL_ip = '192.168.68.134'
 mongo_ip = 'localhost'
 # mongo_ip = '192.168.68.101'
 
@@ -15,8 +15,8 @@ def getData(ip):
     url = "http://" + ip + ":5150/data.xml"
     try:
         response = requests.get(url)
-    except ConnectionError:
-        print("Error in connecting to WEL, waiting then trying again",
+    except NewConnectionError:
+        print("error in connecting to WEL, waiting 5 sec then trying again",
               flush=True)
         time.sleep(5)
         response = requests.get(url)
@@ -42,7 +42,7 @@ def connect(ip):
     return db
 
 def run():
-    print("\n Restarted...")
+    print(F"\n Restarted {datetime.datetime.now()} ...")
     db = connect(mongo_ip)
     if "dateandtime_-1" not in list(db.index_information()):
         result = db.create_index([('dateandtime', DESCENDING)], unique=True)
