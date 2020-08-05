@@ -3,14 +3,13 @@ import altair as alt
 import numpy as np
 import sys
 sys.path.append('../WELPy/')
-import WELServer
+from WELServer import WELData
 
+@st.cache(hash_funcs={WELData: id})
 def makeWEL():
-    return WELServer.WELData(download=True)
+    return WELData(mongo_local=True)
 
 dat = makeWEL()
-
-timerange = dat.time_from_args(arg_string=[])
 
 st.title('Geothermal Monitoring')
 
@@ -25,8 +24,8 @@ sensors = st.multiselect(
              'trist_T',
              'base_T'])
 
-temp = dat.plotVarAlt(sensors, timerange=timerange).properties(width=600)
-status = dat.plotStatusAlt(timerange=timerange).properties(width=600)
+temp = dat.plotVarAlt(sensors).properties(width=600)
+status = dat.plotStatusAlt().properties(width=600)
 plot = temp & status
 
 st.altair_chart(plot, use_container_width=True)
