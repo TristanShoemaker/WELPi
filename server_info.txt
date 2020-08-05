@@ -11,3 +11,5 @@ WEL_data_collection:
     /var/log/WEL_data_collection.err.log
   stdout_logfile:
     /var/log/WEL_data_collection.out.log
+  restart service:
+    sudo supervisorctl restart WEL_data_collection
