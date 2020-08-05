@@ -42,7 +42,7 @@ def connect(ip):
     return db
 
 def run():
-    print(F"\n Restarted {datetime.datetime.now()} ...")
+    print(F"\n Restarted {dt.now()} ...")
     db = connect(mongo_ip)
     if "dateandtime_-1" not in list(db.index_information()):
         result = db.create_index([('dateandtime', DESCENDING)], unique=True)
