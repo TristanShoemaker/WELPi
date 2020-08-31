@@ -7,7 +7,7 @@ import time
 from datetime import datetime as dt
 from dateutil import tz
 
-WEL_ip = '192.168.68.134'
+WEL_ip = '192.168.68.107'
 mongo_ip = 'localhost'
 # mongo_ip = '192.168.68.101'
 
