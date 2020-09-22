@@ -5,13 +5,13 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 import sys
-sys.path.append('../WELPy/')
+sys.path.append('/home/ubuntu/WEL/WELPy/')
 from WELServer import WELData
 
 
 # @st.cache(hash_funcs={WELData: id})
 def makeWEL():
-    return WELData(mongo_local=False)
+    return WELData(mongo_local=True)
 
 # Load data and melt into format for alt
 dat = makeWEL()
