@@ -82,8 +82,8 @@ def plotMainMonitor_pyplot(vars,
                            timerange=None):
     fig, axes = plt.subplots(4, 1,
                              sharex=True,
-                             figsize=(9,10),
-                             gridspec_kw={'height_ratios': [0.4, 0.4, 0.8, 0.4]})
+                             figsize=(9,9.5),
+                             gridspec_kw={'height_ratios': [0.4, 0.4, 0.6, 0.4]})
 
     dat.plotStatus(axes=axes[0])
     dat.plotVar(vars[0],
@@ -94,7 +94,7 @@ def plotMainMonitor_pyplot(vars,
                 axes=axes[2])
 
     full_range_delta = dat.timerange[1] - dat.timerange[0]
-    rolling_interval = round(np.clip(((full_range_delta.total_seconds() / 3600) / 4), 1, 24))
+    rolling_interval = int(round(np.clip(((full_range_delta.total_seconds() / 3600) / 4), 1, 24)))
     dat.plotVar([F"COP.rolling('{rolling_interval}H').mean()"],
             yunits=F'COP {rolling_interval} Hr Mean',
             axes=axes[3])
@@ -117,8 +117,7 @@ in_sensors = st.multiselect("Inside",
                             list(dat.vars()),
                             ['living_T',
                              'trist_T',
-                             'base_T',
-                             'outside_T'])
+                             'base_T'])
 
 out_sensors = st.multiselect("Loop",
                              list(dat.vars()),
