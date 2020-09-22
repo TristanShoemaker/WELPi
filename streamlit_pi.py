@@ -80,22 +80,24 @@ def plotMainMonitor(vars,
 
 def plotMainMonitor_pyplot(vars,
                            timerange=None):
-    fig, axes = plt.subplots(3, 1,
+    fig, axes = plt.subplots(4, 1,
                              sharex=True,
-                             figsize=(9,9),
-                             gridspec_kw={'height_ratios': [1, 0.4, 0.4]})
+                             figsize=(9,10),
+                             gridspec_kw={'height_ratios': [0.4, 0.4, 0.8, 0.4]})
 
-    dat.plotVar(vars,
+    dat.plotStatus(axes=axes[0])
+    dat.plotVar(vars[0],
                 statusmask='heat_1_b',
-                axes=axes[0])
-
-    dat.plotStatus(axes=axes[1])
+                axes=axes[1])
+    dat.plotVar(vars[1],
+                statusmask='heat_1_b',
+                axes=axes[2])
 
     full_range_delta = dat.timerange[1] - dat.timerange[0]
     rolling_interval = round(np.clip(((full_range_delta.total_seconds() / 3600) / 4), 1, 24))
     dat.plotVar([F"COP.rolling('{rolling_interval}H').mean()"],
             yunits=F'COP {rolling_interval} Hr Mean',
-            axes=axes[2])
+            axes=axes[3])
     axes[2].get_legend().remove()
     plt.subplots_adjust(hspace=0.05)
 
@@ -110,18 +112,39 @@ st.title('Geothermal Monitoring')
 #                         value=dat.time_from_args(),
 #                         step=dt.timedelta(minutes=30))
 
-sensors = st.multiselect(" ",
-                         list(dat.vars()),
-                         ['TAH_in_T',
-                          'TAH_out_T',
-                          'loop_in_T',
-                          'loop_out_T',
-                          'outside_T',
-                          'living_T',
-                          'trist_T',
-                          'base_T'])
+
+in_sensors = st.multiselect("Inside",
+                            list(dat.vars()),
+                            ['living_T',
+                             'trist_T',
+                             'base_T',
+                             'outside_T'])
+
+out_sensors = st.multiselect("Loop",
+                             list(dat.vars()),
+                             ['TAH_in_T',
+                              'TAH_out_T',
+                              'loop_in_T',
+                              'loop_out_T',
+                              'liqu_refrig_T',
+                              'gas_refrig_T',
+                              'outside_T',
+                              ])
+
+# water_sensors = st.multiselect("Water",
+#                                list(dat.vars()),
+#                                ['TAH_in_T',
+#                                 'TAH_out_T',
+#                                 'loop_in_T',
+#                                 'loop_out_T',
+#                                 'outside_T',
+#                                 'living_T',
+#                                 'trist_T',
+#                                 'base_T'])
+
 # temp = plotMainMonitor(sensors)
-temp_pyplot = plotMainMonitor_pyplot(sensors)
+temp_pyplot = plotMainMonitor_pyplot([in_sensors,
+                                      out_sensors])
 
 
 # st.altair_chart(temp, use_container_width=True)
