@@ -98,13 +98,13 @@ def plotMainMonitor_pyplot(vars,
     dat.plotVar([F"COP.rolling('{rolling_interval}H').mean()"],
             yunits=F'COP {rolling_interval} Hr Mean',
             axes=axes[3])
-    axes[2].get_legend().remove()
+    axes[3].get_legend().remove()
     plt.subplots_adjust(hspace=0.05)
 
     return fig
 
 
-st.title('Geothermal Monitoring')
+# st.title('Geothermal Monitoring')
 
 # slider_time = st.select_slider("Time Range",
 #                         min_value=dat.time_from_args(['-t', '72'])[0],
