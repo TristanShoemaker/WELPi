@@ -92,6 +92,10 @@ def plotMainMonitor_pyplot(vars,
     dat.plotVar(vars[1],
                 statusmask='heat_1_b',
                 axes=axes[2])
+    dat.plotVar(['outside_T'], axes=axes[2])
+    outside_T_line = [x for x in axes[2].get_lines()
+                      if x.get_label() == "outside_T"][0]
+    outside_T_line.set(lw=2.5)
 
     full_range_delta = dat.timerange[1] - dat.timerange[0]
     rolling_interval = int(round(np.clip(((full_range_delta.total_seconds() / 3600) / 4), 1, 24)))
@@ -126,9 +130,7 @@ out_sensors = st.multiselect("Loop",
                               'loop_in_T',
                               'loop_out_T',
                               'liqu_refrig_T',
-                              'gas_refrig_T',
-                              'outside_T',
-                              ])
+                              'gas_refrig_T'])
 
 # water_sensors = st.multiselect("Water",
 #                                list(dat.vars()),
