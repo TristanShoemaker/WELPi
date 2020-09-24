@@ -92,7 +92,7 @@ def plotMainMonitor_pyplot(vars,
     dat.plotVar(vars[1],
                 statusmask='heat_1_b',
                 axes=axes[2])
-    dat.plotVar(['outside_T'], axes=axes[2])
+    dat.plotVar(['outside_T'], axes=axes[2], nighttime=False)
     outside_T_line = [x for x in axes[2].get_lines()
                       if x.get_label() == "outside_T"][0]
     outside_T_line.set(lw=2.5)
