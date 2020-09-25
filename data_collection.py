@@ -1,15 +1,16 @@
 from pymongo import MongoClient, DESCENDING
 from pymongo.errors import DuplicateKeyError
 import requests
-from requests.exceptions import ConnectionError
+from requests.exceptions import NewConnectionError
 import xmltodict
-import time
+from time import sleep
 from datetime import datetime as dt
 from dateutil import tz
 
 WEL_ip = '192.168.68.107'
 mongo_ip = 'localhost'
 # mongo_ip = '192.168.68.101'
+
 
 def getData(ip):
     url = "http://" + ip + ":5150/data.xml"
@@ -18,7 +19,7 @@ def getData(ip):
     except NewConnectionError:
         print("error in connecting to WEL, waiting 5 sec then trying again",
               flush=True)
-        time.sleep(5)
+        sleep(5)
         response = requests.get(url)
     # print(response.content)
     response_data = xmltodict.parse(response.content)['Devices']['Device']
@@ -27,21 +28,26 @@ def getData(ip):
     for item in response_data:
         try:
             post[item['@Name']] = float(item['@Value'])
-        except ValueError: post[item['@Name']] = item['@Value']
+        except ValueError:
+            post[item['@Name']] = item['@Value']
     date = dt.strptime(post['Date'], "%m/%d/%Y")
     time = dt.strptime(post['Time'], "%H:%M:%S").time()
     # print(time)
-    post['dateandtime'] = dt.combine(date, time).replace(tzinfo=tz.gettz('EST'))
+    post['dateandtime'] = (dt.combine(date, time)
+                           .replace(tzinfo=tz.gettz('EST')))
     # print(post['dateandtime'])
     post['dateandtime'] = post['dateandtime'].astimezone(tz.gettz('UTC'))
-    del post['Date']; del post['Time']
+    del post['Date']
+    del post['Time']
     return post
+
 
 def connect(ip):
     address = "mongodb://" + ip + ":27017"
     client = MongoClient(address)
     db = client.WEL.data
     return db
+
 
 def run():
     print(F"\n Restarted {dt.now()} ...", flush=True)
@@ -59,6 +65,7 @@ def run():
             print(F"time key {post['dateandtime']} already in database",
                   flush=True)
 
-        time.sleep(30)
+        sleep(30)
+
 
 run()
