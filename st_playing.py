@@ -7,9 +7,27 @@ from WELServer import WELData
 
 @st.cache(hash_funcs={WELData: id})
 def makeWEL():
-    return WELData(mongo_local=True)
+    return WELData(mongo_local=False)
 
 dat = makeWEL()
+
+def plotMainMonitor(vars):
+    if type(vars) is not list: vars = [vars]
+
+    # lines = pd.DataFrame({label:plotDatum * smask
+    #          for label, plotDatum in zip(y, ploty)})
+    # lines.reset_index(inplace=True)
+
+    lines = dat.data.melt(id_vars='dateandtime',
+                          value_vars=vars,
+                          var_name='label')
+
+    plot = alt.Chart(lines).mark_line().encode(
+           x=alt.X('dateandtime:T', axis=alt.Axis(title=None, labels=False)),
+           y=alt.Y('value', axis=alt.Axis(format='Q', title=yunits)),
+           color='label')
+
+    return plot
 
 st.title('Geothermal Monitoring')
 
@@ -24,8 +42,8 @@ sensors = st.multiselect(
              'trist_T',
              'base_T'])
 
-temp = dat.plotVarAlt(sensors).properties(width=600)
-status = dat.plotStatusAlt().properties(width=600)
+temp = dat.plotVarAlt(sensors)
+status = dat.plotStatusAlt()
 plot = temp & status
 
 st.altair_chart(plot, use_container_width=True)
