@@ -1,17 +1,19 @@
 import streamlit as st
 import altair as alt
 import matplotlib.pyplot as plt
-import datetime as dt
+# import datetime as dt
 import numpy as np
-import pandas as pd
+# import pandas as pd
 import sys
-sys.path.append('/home/ubuntu/WEL/WELPy/')
+# sys.path.append('/home/ubuntu/WEL/WELPy/')
+sys.path.append('../WELPy/')
 from WELServer import WELData
 
 
 # @st.cache(hash_funcs={WELData: id})
 def makeWEL():
-    return WELData(mongo_local=True)
+    return WELData(mongo_local=False)
+
 
 # Load data and melt into format for alt
 dat = makeWEL()
@@ -21,18 +23,19 @@ dat = makeWEL()
 nearestTime = alt.selection(type='single', nearest=True, on='mouseover',
                             fields=['dateandtime'], empty='none')
 
+
 def plotMainMonitor(vars,
                     status_plot=False):
-    status_list=['aux_heat_b', 'heat_1_b', 'heat_2_b', 'rev_valve_b',
-                 'TAH_fan_b', 'zone_1_b', 'zone_2_b', 'humid_b']
+    status_list = ['aux_heat_b', 'heat_1_b', 'heat_2_b', 'rev_valve_b',
+                   'TAH_fan_b', 'zone_1_b', 'zone_2_b', 'humid_b']
     temp_source = dat.data.reset_index()
     temp_source = temp_source.melt(id_vars='dateandtime',
-                           value_vars=vars,
-                           var_name='label')
+                                   value_vars=vars,
+                                   var_name='label')
     lines = alt.Chart(temp_source).mark_line(interpolate='basis').encode(
         x=alt.X('dateandtime:T', axis=alt.Axis(title=None, labels=True)),
         y=alt.Y('value:Q', axis=alt.Axis(format='Q',
-                                       title="Temperature / °C")),
+                                         title="Temperature / °C")),
         color='label'
     )
 
@@ -60,12 +63,15 @@ def plotMainMonitor(vars,
 
     plot = alt.layer(
         lines, selectors, points, text, rules
+    ).properties(
+        width=600,
+        height=200
     )
 
     if status_plot:
         stat_source = dat.data.melt(id_vars='dateandtime',
-                                       value_vars=status_list,
-                                       var_name='label')
+                                    value_vars=status_list,
+                                    var_name='label')
         stat_source.value = stat_source.value % 2
         status_plot = alt.Chart(stat_source).mark_bar(width=7).encode(
             alt.X('dateandtime:T'),
@@ -82,8 +88,9 @@ def plotMainMonitor_pyplot(vars,
                            timerange=None):
     fig, axes = plt.subplots(4, 1,
                              sharex=True,
-                             figsize=(9,9.5),
-                             gridspec_kw={'height_ratios': [0.3, 0.4, 0.6, 0.2]})
+                             figsize=(9, 9.5),
+                             gridspec_kw={'height_ratios': [0.3, 0.4,
+                                                            0.6, 0.2]})
 
     dat.plotStatus(axes=axes[0])
     dat.plotVar(vars[0],
@@ -98,10 +105,11 @@ def plotMainMonitor_pyplot(vars,
     outside_T_line.set(lw=2.5)
 
     full_range_delta = dat.timerange[1] - dat.timerange[0]
-    rolling_interval = int(round(np.clip(((full_range_delta.total_seconds() / 3600) / 4), 1, 24)))
+    rolling_interval = int(round(np.clip(((full_range_delta.total_seconds()
+                                 / 3600) / 4), 1, 24)))
     dat.plotVar([F"COP.rolling('{rolling_interval}H').mean()"],
-            yunits=F'COP {rolling_interval} Hr Mean',
-            axes=axes[3])
+                yunits=F'COP {rolling_interval} Hr Mean',
+                axes=axes[3])
     axes[3].get_legend().remove()
     plt.subplots_adjust(hspace=0.05)
 
@@ -143,10 +151,16 @@ out_sensors = st.multiselect("Loop",
 #                                 'trist_T',
 #                                 'base_T'])
 
-# temp = plotMainMonitor(sensors)
-temp_pyplot = plotMainMonitor_pyplot([in_sensors,
-                                      out_sensors])
+temp = alt.vconcat(
+    plotMainMonitor(in_sensors),
+    plotMainMonitor(out_sensors)
+).resolve_legend(
+    color='independent'
+).resolve_axes
+# temp_pyplot = plotMainMonitor_pyplot([in_sensors,
+#                                       out_sensors])
 
 
-# st.altair_chart(temp, use_container_width=True)
-st.pyplot(temp_pyplot)
+st.altair_chart(temp, use_container_width=True)
+# st.altair_chart(temp2)
+# st.pyplot(temp_pyplot)
