@@ -1,10 +1,10 @@
 import streamlit as st
 import altair as alt
 import matplotlib.pyplot as plt
-# import datetime as dt
 import numpy as np
-# import pandas as pd
 import sys
+import re
+import time
 # sys.path.append('/home/ubuntu/WEL/WELPy/')
 sys.path.append('../WELPy/')
 from WELServer import WELData
@@ -24,19 +24,28 @@ nearestTime = alt.selection(type='single', nearest=True, on='mouseover',
                             fields=['dateandtime'], empty='none')
 
 
-def plotMainMonitor(vars,
-                    status_plot=False):
-    status_list = ['aux_heat_b', 'heat_1_b', 'heat_2_b', 'rev_valve_b',
-                   'TAH_fan_b', 'zone_1_b', 'zone_2_b', 'humid_b']
+def plotMainMonitor(vars):
     temp_source = dat.data.reset_index()
     temp_source = temp_source.melt(id_vars='dateandtime',
                                    value_vars=vars,
                                    var_name='label')
+
     lines = alt.Chart(temp_source).mark_line(interpolate='basis').encode(
-        x=alt.X('dateandtime:T', axis=alt.Axis(title=None, labels=True)),
-        y=alt.Y('value:Q', axis=alt.Axis(format='Q',
-                                         title="Temperature / °C")),
-        color='label'
+        x=alt.X('dateandtime:T',
+                axis=alt.Axis(title=None,
+                              labels=True)),
+        y=alt.Y('value:Q',
+                scale=alt.Scale(zero=False),
+                axis=alt.Axis(format='Q',
+                              title="Temperature / °C",
+                              orient='right')),
+        color='label',
+        strokeWidth=alt.condition(alt.datum.label == 'outside_T',
+                                  alt.value(4),
+                                  alt.value(2)),
+        # opacity=alt.condition(alt.datum.)
+    ).transform_filter(
+        alt.datum.label
     )
 
     selectors = alt.Chart(temp_source).mark_point().encode(
@@ -51,7 +60,9 @@ def plotMainMonitor(vars,
     )
 
     text = lines.mark_text(align='left', dx=5, dy=-5).encode(
-        text=alt.condition(nearestTime, 'value:Q', alt.value(' '),
+        text=alt.condition(nearestTime,
+                           'value:Q',
+                           alt.value(' '),
                            format='.1f')
     )
 
@@ -63,23 +74,31 @@ def plotMainMonitor(vars,
 
     plot = alt.layer(
         lines, selectors, points, text, rules
-    ).properties(
-        width=600,
-        height=200
     )
 
-    if status_plot:
-        stat_source = dat.data.melt(id_vars='dateandtime',
-                                    value_vars=status_list,
-                                    var_name='label')
-        stat_source.value = stat_source.value % 2
-        status_plot = alt.Chart(stat_source).mark_bar(width=7).encode(
-            alt.X('dateandtime:T'),
-            alt.Y('label'),
-            alt.FillOpacity('value:Q', legend=None),
-            alt.Opacity('value:Q', legend=None)
-        )
-        plot = plot & status_plot
+    return plot
+
+
+def plotStatusPlot():
+    status_list = ['aux_heat_b', 'heat_1_b', 'heat_2_b', 'rev_valve_b',
+                   'TAH_fan_b', 'zone_1_b', 'zone_2_b', 'humid_b']
+    stat_source = dat.data.reset_index()
+    stat_source = stat_source.melt(id_vars='dateandtime',
+                                   value_vars=status_list,
+                                   var_name='label')
+    stat_source.value = stat_source.value % 2
+
+    plot = alt.Chart(stat_source).mark_bar(width=1).encode(
+        x=alt.X('dateandtime:T',
+                axis=alt.Axis(title=None,
+                              labels=False)),
+        y=alt.Y('label',
+                title=None,
+                axis=alt.Axis(orient='right')),
+        opacity=alt.condition(alt.datum.value > 0,
+                              alt.value(100),
+                              alt.value(0))
+    )
 
     return plot
 
@@ -138,7 +157,8 @@ out_sensors = st.multiselect("Loop",
                               'loop_in_T',
                               'loop_out_T',
                               'liqu_refrig_T',
-                              'gas_refrig_T'])
+                              'gas_refrig_T',
+                              'outside_T'])
 
 # water_sensors = st.multiselect("Water",
 #                                list(dat.vars()),
@@ -151,16 +171,52 @@ out_sensors = st.multiselect("Loop",
 #                                 'trist_T',
 #                                 'base_T'])
 
+def_width = 580
+def_height = 200
+
+tic = time.time()
 temp = alt.vconcat(
-    plotMainMonitor(in_sensors),
-    plotMainMonitor(out_sensors)
-).resolve_legend(
+    plotStatusPlot().properties(
+        width=def_width,
+        height=def_height * 0.5
+    ),
+    plotMainMonitor(in_sensors).properties(
+        width=def_width,
+        height=def_height
+    ),
+    plotMainMonitor(out_sensors).properties(
+        width=def_width,
+        height=def_height
+    ),
+    plotMainMonitor(["COP"]).properties(
+        width=def_width,
+        height=def_height
+    ).transform_window(
+        rolling_mean='mean(COP)',
+        frame=[-3*3600, 3*3600]
+    ).encode(
+        x='dateandtime:T',
+        y='rolling_mean:Q'
+    ),
+    spacing=0
+).resolve_scale(
+    y='independent',
     color='independent'
-).resolve_axes
+)
+
+# print(F"Altair plot generation: {time.time() - tic} s")
+# tic = time.time()
+st.altair_chart(temp, use_container_width=True)
+# print(F"Altair plot display: {time.time() - tic} s")
+
+# tic = time.time()
 # temp_pyplot = plotMainMonitor_pyplot([in_sensors,
 #                                       out_sensors])
+# print(F"Time for pyplot plot generation: {time.time() - tic}")
+# tic = time.time()
+# st.pyplot(temp_pyplot)
+# print(F"Time for pyplot plot display: {time.time() - tic}")
 
-
-st.altair_chart(temp, use_container_width=True)
-# st.altair_chart(temp2)
+# st.altair_chart(plotMainMonitor(in_sensors), use_container_width=True)
+# st.altair_chart(plotMainMonitor(out_sensors), use_container_width=True)
 # st.pyplot(temp_pyplot)
