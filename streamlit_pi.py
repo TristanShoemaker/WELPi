@@ -10,7 +10,7 @@ from WELServer import WELData
 
 # @st.cache(hash_funcs={WELData: id})
 def makeWEL():
-    return WELData(mongo_local=False)
+    return WELData(mongo_local=True)
 
 
 # Load data and melt into format for alt
