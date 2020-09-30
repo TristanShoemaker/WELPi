@@ -3,7 +3,6 @@ import altair as alt
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
-import re
 import time
 # sys.path.append('/home/ubuntu/WEL/WELPy/')
 sys.path.append('../WELPy/')
@@ -24,11 +23,16 @@ nearestTime = alt.selection(type='single', nearest=True, on='mouseover',
                             fields=['dateandtime'], empty='none')
 
 
+def getDataSubset(vars):
+    source = dat.data.reset_index()
+    source = source.melt(id_vars='dateandtime',
+                         value_vars=vars,
+                         var_name='label')
+    return source
+
+
 def plotMainMonitor(vars):
-    temp_source = dat.data.reset_index()
-    temp_source = temp_source.melt(id_vars='dateandtime',
-                                   value_vars=vars,
-                                   var_name='label')
+    temp_source = getDataSubset(vars)
 
     lines = alt.Chart(temp_source).mark_line(interpolate='basis').encode(
         x=alt.X('dateandtime:T',
@@ -38,23 +42,19 @@ def plotMainMonitor(vars):
                 scale=alt.Scale(zero=False),
                 axis=alt.Axis(format='Q',
                               title="Temperature / °C",
-                              orient='right')),
+                              orient='right',
+                              grid=False)),
         color='label',
         strokeWidth=alt.condition(alt.datum.label == 'outside_T',
-                                  alt.value(4),
-                                  alt.value(2)),
-        # opacity=alt.condition(alt.datum.)
-    ).transform_filter(
-        alt.datum.label
+                                  alt.value(3.5),
+                                  alt.value(1.5)),
     )
-
     selectors = alt.Chart(temp_source).mark_point().encode(
         x='dateandtime:T',
         opacity=alt.value(0),
     ).add_selection(
         nearestTime
     )
-
     points = lines.mark_point().encode(
         opacity=alt.condition(nearestTime, alt.value(1), alt.value(0))
     )
@@ -65,13 +65,11 @@ def plotMainMonitor(vars):
                            alt.value(' '),
                            format='.1f')
     )
-
     rules = alt.Chart(temp_source).mark_rule(color='gray').encode(
         x='dateandtime:T'
     ).transform_filter(
         nearestTime
     )
-
     plot = alt.layer(
         lines, selectors, points, text, rules
     )
@@ -80,24 +78,53 @@ def plotMainMonitor(vars):
 
 
 def plotStatusPlot():
-    status_list = ['aux_heat_b', 'heat_1_b', 'heat_2_b', 'rev_valve_b',
-                   'TAH_fan_b', 'zone_1_b', 'zone_2_b', 'humid_b']
-    stat_source = dat.data.reset_index()
-    stat_source = stat_source.melt(id_vars='dateandtime',
-                                   value_vars=status_list,
-                                   var_name='label')
+    status_list = ['TAH_fan_b', 'heat_1_b', 'heat_2_b', 'zone_1_b',
+                   'zone_2_b', 'humid_b', 'rev_valve_b', 'aux_heat_b']
+    stat_source = getDataSubset(status_list)
     stat_source.value = stat_source.value % 2
 
-    plot = alt.Chart(stat_source).mark_bar(width=1).encode(
+    chunks = alt.Chart(stat_source).mark_bar(width=1).encode(
         x=alt.X('dateandtime:T',
                 axis=alt.Axis(title=None,
                               labels=False)),
         y=alt.Y('label',
                 title=None,
-                axis=alt.Axis(orient='right')),
+                axis=alt.Axis(orient='right'),
+                sort=status_list),
         opacity=alt.condition(alt.datum.value > 0,
                               alt.value(100),
-                              alt.value(0))
+                              alt.value(0)),
+        color=alt.Color('label', legend=None)
+    )
+    selectors = alt.Chart(stat_source).mark_point().encode(
+        x='dateandtime:T',
+        opacity=alt.value(0),
+    ).add_selection(
+        nearestTime
+    )
+    rules = alt.Chart(stat_source).mark_rule(color='gray').encode(
+        x='dateandtime:T'
+    ).transform_filter(
+        nearestTime
+    )
+
+    plot = alt.layer(
+        chunks, rules, selectors
+    )
+
+    return plot
+
+
+def plotCOPPlot():
+    plot = alt.Chart(getDataSubset(['COP'])).transform_window(
+        rollmean='mean(value)',
+        frame=[-3 * 3600, 0]
+    ).mark_line(
+        color='red'
+    ).encode(
+        x=alt.X('dateandtime:T'),
+        y=alt.Y('rollmean:Q',
+                axis=alt.Axis(orient='right'))
     )
 
     return plot
@@ -148,7 +175,8 @@ in_sensors = st.multiselect("Inside",
                             list(dat.vars()),
                             ['living_T',
                              'trist_T',
-                             'base_T'])
+                             'base_T',
+                             'wood_fire_T'])
 
 out_sensors = st.multiselect("Loop",
                              list(dat.vars()),
@@ -156,8 +184,6 @@ out_sensors = st.multiselect("Loop",
                               'TAH_out_T',
                               'loop_in_T',
                               'loop_out_T',
-                              'liqu_refrig_T',
-                              'gas_refrig_T',
                               'outside_T'])
 
 # water_sensors = st.multiselect("Water",
@@ -171,14 +197,25 @@ out_sensors = st.multiselect("Loop",
 #                                 'trist_T',
 #                                 'base_T'])
 
-def_width = 580
+def_width = 600
 def_height = 200
 
-tic = time.time()
+# tic = time.time()
+cop_roll = alt.Chart(getDataSubset(['COP'])).transform_window(
+    rollmean='mean(value)',
+    frame=[-3 * 3600, 0]
+).mark_line(
+    color='red'
+).encode(
+    x=alt.X('dateandtime:T'),
+    y=alt.Y('rollmean:Q',
+            axis=alt.Axis(orient='right'))
+)
+
 temp = alt.vconcat(
     plotStatusPlot().properties(
         width=def_width,
-        height=def_height * 0.5
+        height=def_height * 0.6
     ),
     plotMainMonitor(in_sensors).properties(
         width=def_width,
@@ -186,18 +223,13 @@ temp = alt.vconcat(
     ),
     plotMainMonitor(out_sensors).properties(
         width=def_width,
-        height=def_height
+        height=def_height * 1.2
     ),
-    plotMainMonitor(["COP"]).properties(
+    plotCOPPlot().properties(
         width=def_width,
-        height=def_height
-    ).transform_window(
-        rolling_mean='mean(COP)',
-        frame=[-3*3600, 3*3600]
-    ).encode(
-        x='dateandtime:T',
-        y='rolling_mean:Q'
+        height=def_height * .6
     ),
+    # alt.Chart(plotMainMonitor([''])[1])
     spacing=0
 ).resolve_scale(
     y='independent',
@@ -206,7 +238,7 @@ temp = alt.vconcat(
 
 # print(F"Altair plot generation: {time.time() - tic} s")
 # tic = time.time()
-st.altair_chart(temp, use_container_width=True)
+st.altair_chart(temp)
 # print(F"Altair plot display: {time.time() - tic} s")
 
 # tic = time.time()
