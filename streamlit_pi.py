@@ -31,29 +31,38 @@ def getDataSubset(vars):
     return source
 
 
-def plotMainMonitor(vars):
-    temp_source = getDataSubset(vars)
+def createRules(source):
+    selectors = alt.Chart(source).mark_point().encode(
+        x='dateandtime:T',
+        opacity=alt.value(0),
+    ).add_selection(
+        nearestTime
+    )
+    rules = alt.Chart(source).mark_rule(color='gray').encode(
+        x='dateandtime:T'
+    ).transform_filter(
+        nearestTime
+    )
 
-    lines = alt.Chart(temp_source).mark_line(interpolate='basis').encode(
+    return [selectors, rules]
+
+
+def plotMainMonitor(vars):
+    source = getDataSubset(vars)
+
+    lines = alt.Chart(source).mark_line(interpolate='basis').encode(
         x=alt.X('dateandtime:T',
                 axis=alt.Axis(title=None,
                               labels=True)),
         y=alt.Y('value:Q',
                 scale=alt.Scale(zero=False),
-                axis=alt.Axis(format='Q',
-                              title="Temperature / °C",
+                axis=alt.Axis(title="Temperature / °C",
                               orient='right',
                               grid=False)),
         color='label',
         strokeWidth=alt.condition(alt.datum.label == 'outside_T',
                                   alt.value(3.5),
                                   alt.value(1.5)),
-    )
-    selectors = alt.Chart(temp_source).mark_point().encode(
-        x='dateandtime:T',
-        opacity=alt.value(0),
-    ).add_selection(
-        nearestTime
     )
     points = lines.mark_point().encode(
         opacity=alt.condition(nearestTime, alt.value(1), alt.value(0))
@@ -65,13 +74,9 @@ def plotMainMonitor(vars):
                            alt.value(' '),
                            format='.1f')
     )
-    rules = alt.Chart(temp_source).mark_rule(color='gray').encode(
-        x='dateandtime:T'
-    ).transform_filter(
-        nearestTime
-    )
+
     plot = alt.layer(
-        lines, selectors, points, text, rules
+        lines, points, text, *createRules(source)
     )
 
     return plot
@@ -80,10 +85,10 @@ def plotMainMonitor(vars):
 def plotStatusPlot():
     status_list = ['TAH_fan_b', 'heat_1_b', 'heat_2_b', 'zone_1_b',
                    'zone_2_b', 'humid_b', 'rev_valve_b', 'aux_heat_b']
-    stat_source = getDataSubset(status_list)
-    stat_source.value = stat_source.value % 2
+    source = getDataSubset(status_list)
+    source.value = source.value % 2
 
-    chunks = alt.Chart(stat_source).mark_bar(width=1).encode(
+    chunks = alt.Chart(source).mark_bar(width=1).encode(
         x=alt.X('dateandtime:T',
                 axis=alt.Axis(title=None,
                               labels=False)),
@@ -96,35 +101,43 @@ def plotStatusPlot():
                               alt.value(0)),
         color=alt.Color('label', legend=None)
     )
-    selectors = alt.Chart(stat_source).mark_point().encode(
-        x='dateandtime:T',
-        opacity=alt.value(0),
-    ).add_selection(
-        nearestTime
-    )
-    rules = alt.Chart(stat_source).mark_rule(color='gray').encode(
-        x='dateandtime:T'
-    ).transform_filter(
-        nearestTime
-    )
 
     plot = alt.layer(
-        chunks, rules, selectors
+        chunks, *createRules(source)
     )
 
     return plot
 
 
 def plotCOPPlot():
-    plot = alt.Chart(getDataSubset(['COP'])).transform_window(
+    source = getDataSubset(['COP'])
+    lines = alt.Chart(source).transform_window(
         rollmean='mean(value)',
         frame=[-3 * 3600, 0]
     ).mark_line(
-        color='red'
+        strokeWidth=1.5
     ).encode(
-        x=alt.X('dateandtime:T'),
+        x=alt.X('dateandtime:T',
+                title=None),
         y=alt.Y('rollmean:Q',
-                axis=alt.Axis(orient='right'))
+                scale=alt.Scale(zero=False),
+                axis=alt.Axis(orient='right',
+                              grid=False),
+                title='COP 3Hr Rolling Mean'))
+
+    points = lines.mark_point().encode(
+        opacity=alt.condition(nearestTime, alt.value(1), alt.value(0))
+    )
+
+    text = lines.mark_text(align='left', dx=5, dy=-5).encode(
+        text=alt.condition(nearestTime,
+                           'rollmean:Q',
+                           alt.value(' '),
+                           format='.1f')
+    )
+
+    plot = alt.layer(
+        lines, points, text, *createRules(source)
     )
 
     return plot
@@ -200,18 +213,7 @@ out_sensors = st.multiselect("Loop",
 def_width = 600
 def_height = 200
 
-# tic = time.time()
-cop_roll = alt.Chart(getDataSubset(['COP'])).transform_window(
-    rollmean='mean(value)',
-    frame=[-3 * 3600, 0]
-).mark_line(
-    color='red'
-).encode(
-    x=alt.X('dateandtime:T'),
-    y=alt.Y('rollmean:Q',
-            axis=alt.Axis(orient='right'))
-)
-
+tic = time.time()
 temp = alt.vconcat(
     plotStatusPlot().properties(
         width=def_width,
@@ -229,14 +231,13 @@ temp = alt.vconcat(
         width=def_width,
         height=def_height * .6
     ),
-    # alt.Chart(plotMainMonitor([''])[1])
     spacing=0
 ).resolve_scale(
     y='independent',
     color='independent'
 )
 
-# print(F"Altair plot generation: {time.time() - tic} s")
+print(F"Altair plot generation: {time.time() - tic} s")
 # tic = time.time()
 st.altair_chart(temp)
 # print(F"Altair plot display: {time.time() - tic} s")
