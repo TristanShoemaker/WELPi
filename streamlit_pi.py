@@ -3,9 +3,8 @@ import altair as alt
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
-import time
-# sys.path.append('/home/ubuntu/WEL/WELPy/')
-sys.path.append('../WELPy/')
+sys.path.append('/home/ubuntu/WEL/WELPy/')
+# sys.path.append('../WELPy/')
 from WELServer import WELData
 
 
@@ -213,7 +212,7 @@ out_sensors = st.multiselect("Loop",
 def_width = 600
 def_height = 200
 
-tic = time.time()
+# tic = time.time()
 temp = alt.vconcat(
     plotStatusPlot().properties(
         width=def_width,
@@ -237,7 +236,7 @@ temp = alt.vconcat(
     color='independent'
 )
 
-print(F"Altair plot generation: {time.time() - tic} s")
+# print(F"Altair plot generation: {time.time() - tic} s")
 # tic = time.time()
 st.altair_chart(temp)
 # print(F"Altair plot display: {time.time() - tic} s")
