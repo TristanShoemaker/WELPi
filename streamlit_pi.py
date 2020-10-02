@@ -2,21 +2,18 @@ import streamlit as st
 import altair as alt
 import matplotlib.pyplot as plt
 import numpy as np
+import datetime as dt
 import sys
-sys.path.append('/home/ubuntu/WEL/WELPy/')
-# sys.path.append('../WELPy/')
+# sys.path.append('/home/ubuntu/WEL/WELPy/')
+sys.path.append('../WELPy/')
 from WELServer import WELData
 
 
 # @st.cache(hash_funcs={WELData: id})
-def makeWEL():
-    return WELData(mongo_local=True)
+def makeWEL(date_range):
+    return WELData(mongo_local=False,
+                   timerange=date_range)
 
-
-# Load data and melt into format for alt
-dat = makeWEL()
-# dat.data = dat.data.reset_index()
-# dat.data
 
 nearestTime = alt.selection(type='single', nearest=True, on='mouseover',
                             fields=['dateandtime'], empty='none')
@@ -182,21 +179,30 @@ def plotMainMonitor_pyplot(vars,
 #                         value=dat.time_from_args(),
 #                         step=dt.timedelta(minutes=30))
 
+date_range = st.sidebar.date_input(label='Date Range',
+                                   value=[(dt.datetime.now()
+                                           - dt.timedelta(days=1)),
+                                          dt.datetime.now()],
+                                   min_value=dt.datetime(2020, 7, 1))
+date_range = [dt.datetime.combine(x, dt.datetime.min.time())
+              for x in date_range]
+dat = makeWEL(date_range)
 
-in_sensors = st.multiselect("Inside",
-                            list(dat.vars()),
-                            ['living_T',
-                             'trist_T',
-                             'base_T',
-                             'wood_fire_T'])
+in_sensors = st.sidebar.multiselect("Inside",
+                                    list(dat.vars()),
+                                    ['living_T',
+                                     'trist_T',
+                                     'base_T',
+                                     'wood_fire_T'])
 
-out_sensors = st.multiselect("Loop",
-                             list(dat.vars()),
-                             ['TAH_in_T',
-                              'TAH_out_T',
-                              'loop_in_T',
-                              'loop_out_T',
-                              'outside_T'])
+out_sensors = st.sidebar.multiselect("Loop",
+                                     list(dat.vars()),
+                                     ['TAH_in_T',
+                                      'TAH_out_T',
+                                      'loop_in_T',
+                                      'loop_out_T',
+                                      'outside_T'])
+
 
 # water_sensors = st.multiselect("Water",
 #                                list(dat.vars()),
