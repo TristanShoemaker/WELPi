@@ -5,26 +5,33 @@ import numpy as np
 import datetime as dt
 import sys
 import time
-sys.path.append('/home/ubuntu/WEL/WELPy/')
-# sys.path.append('../WELPy/')
+# sys.path.append('/home/ubuntu/WEL/WELPy/')
+sys.path.append('../WELPy/')
 from WELServer import WELData
 
 
 # @st.cache(hash_funcs={WELData: id})
 def makeWEL(date_range):
-    return WELData(mongo_local=True,
-                   timerange=date_range)
+    dat = WELData(mongo_local=False,
+                  timerange=date_range)
+    return dat
 
 
 nearestTime = alt.selection(type='single', nearest=True, on='mouseover',
                             fields=['dateandtime'], empty='none')
 
 
-def getDataSubset(vars):
-    source = dat.data.reset_index()
+def getDataSubset(vars,
+                  resample_P=500):
+    source = dat.data
+    if resample_P is not None:
+        resample_T = (dat.timerange[1] - dat.timerange[0]) / resample_P
+        source = source.resample(resample_T).mean()
+    source = source.reset_index()
     source = source.melt(id_vars='dateandtime',
                          value_vars=vars,
                          var_name='label')
+    # source = source.dropna()
     return source
 
 
@@ -85,15 +92,17 @@ def plotStatusPlot():
                    'zone_2_b', 'humid_b', 'rev_valve_b', 'aux_heat_b']
     source = getDataSubset(status_list)
     source.value = source.value % 2
+    # source = source.loc[source.value != 0]
 
-    chunks = alt.Chart(source).mark_bar(width=1).encode(
+    chunks = alt.Chart(source).mark_bar(width=1.6).encode(
         x=alt.X('dateandtime:T',
                 axis=alt.Axis(title=None,
                               labels=False,
                               grid=False)),
         y=alt.Y('label',
                 title=None,
-                axis=alt.Axis(orient='right'),
+                axis=alt.Axis(orient='right',
+                              grid=False),
                 sort=status_list),
         opacity=alt.condition(alt.datum.value > 0,
                               alt.value(100),
@@ -112,7 +121,7 @@ def plotCOPPlot():
     source = getDataSubset(['COP'])
     lines = alt.Chart(source).transform_window(
         rollmean='mean(value)',
-        frame=[-3 * 3600, 0]
+        frame=[-3 * 120, 0]
     ).mark_line(
         strokeWidth=1.5
     ).encode(
@@ -123,7 +132,7 @@ def plotCOPPlot():
                 scale=alt.Scale(zero=False),
                 axis=alt.Axis(orient='right',
                               grid=True),
-                title='COP 3Hr Rolling Mean'))
+                title='COP Rolling Mean'))
 
     points = lines.mark_point().encode(
         opacity=alt.condition(nearestTime, alt.value(1), alt.value(0))
@@ -198,8 +207,13 @@ def date_select():
     return date_range
 
 
-date_range = date_select()
+@st.cache()
+def serverStartup():
+    print(F"{time.strftime('%Y-%m-%d %H:%M')} : Server Started", flush=True)
 
+
+serverStartup()
+date_range = date_select()
 
 dat = makeWEL(date_range)
 
@@ -222,7 +236,7 @@ st.title('Geothermal Monitoring')
 plot_placeholder = st.empty()
 
 def_width = 640
-def_height = 230
+def_height = 250
 
 tic = time.time()
 with st.spinner('Generating Plots'):
@@ -237,11 +251,11 @@ with st.spinner('Generating Plots'):
         ),
         plotMainMonitor(out_sensors).properties(
             width=def_width,
-            height=def_height * 1.2
+            height=def_height
         ),
         plotCOPPlot().properties(
             width=def_width,
-            height=def_height * .6
+            height=def_height * 0.6
         ),
         spacing=0
     ).resolve_scale(
@@ -249,13 +263,14 @@ with st.spinner('Generating Plots'):
         color='independent'
     )
 
-print(F"{time.strftime('%Y-%m-%d %H:%M')}: "
-      F"Altair plot gen: {time.time() - tic:.2f} s")
+print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
+      F"Altair plot gen: {time.time() - tic:.2f} s", flush=True)
 
 
-# tic = time.time()
+tic = time.time()
 plot_placeholder.altair_chart(temp)
-# print(F"Altair plot display: {time.time() - tic} s")
+print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
+      F"Altair plot display: {time.time() - tic:.2f} s", flush=True)
 
 # tic = time.time()
 # temp_pyplot = plotMainMonitor_pyplot([in_sensors,
