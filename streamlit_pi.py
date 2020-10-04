@@ -4,14 +4,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import datetime as dt
 import sys
-# sys.path.append('/home/ubuntu/WEL/WELPy/')
-sys.path.append('../WELPy/')
+import time
+sys.path.append('/home/ubuntu/WEL/WELPy/')
+# sys.path.append('../WELPy/')
 from WELServer import WELData
 
 
 # @st.cache(hash_funcs={WELData: id})
 def makeWEL(date_range):
-    return WELData(mongo_local=False,
+    return WELData(mongo_local=True,
                    timerange=date_range)
 
 
@@ -57,7 +58,7 @@ def plotMainMonitor(vars):
                               grid=False)),
         color='label',
         strokeWidth=alt.condition(alt.datum.label == 'outside_T',
-                                  alt.value(3.5),
+                                  alt.value(2.5),
                                   alt.value(1.5)),
     )
     points = lines.mark_point().encode(
@@ -171,21 +172,34 @@ def plotMainMonitor_pyplot(vars,
     return fig
 
 
+def date_select():
+    date_range = st.sidebar.date_input(label='Date Range',
+                                       value=[(dt.datetime.now()
+                                               - dt.timedelta(days=1)),
+                                              dt.datetime.now()],
+                                       min_value=dt.datetime(2020, 7, 1),
+                                       max_value=dt.datetime.now())
+    date_range = list(date_range)
+    if len(date_range) < 2:
+        st.warning('Please select a start and end date.')
+    if date_range[1] == dt.datetime.now().date():
+        date_range[1] = dt.datetime.now()
+    else:
+        date_range[1] = dt.datetime.combine(date_range[1],
+                                            dt.datetime.max.time())
+    if (date_range[0] - date_range[0]) < dt.timedelta(hours=6):
+        date_range[0] = dt.datetime.now() - dt.timedelta(hours=12)
+    else:
+        date_range[0] = dt.datetime.combine(date_range[0],
+                                            dt.datetime.max.time())
+    print(date_range)
+    return date_range
+
+
 # st.title('Geothermal Monitoring')
 
-# slider_time = st.select_slider("Time Range",
-#                         min_value=dat.time_from_args(['-t', '72'])[0],
-#                         max_value=dat.time_from_args()[1],
-#                         value=dat.time_from_args(),
-#                         step=dt.timedelta(minutes=30))
+date_range = date_select()
 
-date_range = st.sidebar.date_input(label='Date Range',
-                                   value=[(dt.datetime.now()
-                                           - dt.timedelta(days=1)),
-                                          dt.datetime.now()],
-                                   min_value=dt.datetime(2020, 7, 1))
-date_range = [dt.datetime.combine(x, dt.datetime.min.time())
-              for x in date_range]
 dat = makeWEL(date_range)
 
 in_sensors = st.sidebar.multiselect("Inside",
@@ -203,48 +217,42 @@ out_sensors = st.sidebar.multiselect("Loop",
                                       'loop_out_T',
                                       'outside_T'])
 
-
-# water_sensors = st.multiselect("Water",
-#                                list(dat.vars()),
-#                                ['TAH_in_T',
-#                                 'TAH_out_T',
-#                                 'loop_in_T',
-#                                 'loop_out_T',
-#                                 'outside_T',
-#                                 'living_T',
-#                                 'trist_T',
-#                                 'base_T'])
+st.title('Geothermal Monitoring')
+plot_placeholder = st.empty()
 
 def_width = 600
 def_height = 200
 
-# tic = time.time()
-temp = alt.vconcat(
-    plotStatusPlot().properties(
-        width=def_width,
-        height=def_height * 0.6
-    ),
-    plotMainMonitor(in_sensors).properties(
-        width=def_width,
-        height=def_height
-    ),
-    plotMainMonitor(out_sensors).properties(
-        width=def_width,
-        height=def_height * 1.2
-    ),
-    plotCOPPlot().properties(
-        width=def_width,
-        height=def_height * .6
-    ),
-    spacing=0
-).resolve_scale(
-    y='independent',
-    color='independent'
-)
+tic = time.time()
+with st.spinner('Generating Plots'):
+    temp = alt.vconcat(
+        plotStatusPlot().properties(
+            width=def_width,
+            height=def_height * 0.6
+        ),
+        plotMainMonitor(in_sensors).properties(
+            width=def_width,
+            height=def_height
+        ),
+        plotMainMonitor(out_sensors).properties(
+            width=def_width,
+            height=def_height * 1.2
+        ),
+        plotCOPPlot().properties(
+            width=def_width,
+            height=def_height * .6
+        ),
+        spacing=0
+    ).resolve_scale(
+        y='independent',
+        color='independent'
+    ).configure_view(strokeOpacity=0)
 
-# print(F"Altair plot generation: {time.time() - tic} s")
+print(F"Altair plot generation: {time.time() - tic} s")
+
+
 # tic = time.time()
-st.altair_chart(temp)
+plot_placeholder.altair_chart(temp)
 # print(F"Altair plot display: {time.time() - tic} s")
 
 # tic = time.time()
