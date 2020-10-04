@@ -10,7 +10,7 @@ sys.path.append('../WELPy/')
 from WELServer import WELData
 
 
-# @st.cache(hash_funcs={WELData: id})
+@st.cache(hash_funcs={WELData: id})
 def makeWEL(date_range):
     dat = WELData(mongo_local=False,
                   timerange=date_range)
@@ -215,7 +215,10 @@ def serverStartup():
 serverStartup()
 date_range = date_select()
 
+tic = time.time()
 dat = makeWEL(date_range)
+print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
+      F"MakeWEL: {time.time() - tic:.2f} s", flush=True)
 
 in_sensors = st.sidebar.multiselect("Inside",
                                     list(dat.vars()),
