@@ -5,14 +5,14 @@ import numpy as np
 import datetime as dt
 import sys
 import time
-sys.path.append('/home/ubuntu/WEL/WELPy/')
-# sys.path.append('../WELPy/')
+# sys.path.append('/home/ubuntu/WEL/WELPy/')
+sys.path.append('../WELPy/')
 from WELServer import WELData
 
 
 # @st.cache(hash_funcs={WELData: id})
 def makeWEL(date_range):
-    return WELData(mongo_local=True,
+    return WELData(mongo_local=False,
                    timerange=date_range)
 
 
@@ -50,12 +50,13 @@ def plotMainMonitor(vars):
     lines = alt.Chart(source).mark_line(interpolate='basis').encode(
         x=alt.X('dateandtime:T',
                 axis=alt.Axis(title=None,
-                              labels=True)),
+                              labels=False,
+                              grid=False)),
         y=alt.Y('value:Q',
                 scale=alt.Scale(zero=False),
                 axis=alt.Axis(title="Temperature / °C",
                               orient='right',
-                              grid=False)),
+                              grid=True)),
         color='label',
         strokeWidth=alt.condition(alt.datum.label == 'outside_T',
                                   alt.value(2.5),
@@ -88,7 +89,8 @@ def plotStatusPlot():
     chunks = alt.Chart(source).mark_bar(width=1).encode(
         x=alt.X('dateandtime:T',
                 axis=alt.Axis(title=None,
-                              labels=False)),
+                              labels=False,
+                              grid=False)),
         y=alt.Y('label',
                 title=None,
                 axis=alt.Axis(orient='right'),
@@ -115,11 +117,12 @@ def plotCOPPlot():
         strokeWidth=1.5
     ).encode(
         x=alt.X('dateandtime:T',
+                axis=alt.Axis(grid=False),
                 title=None),
         y=alt.Y('rollmean:Q',
                 scale=alt.Scale(zero=False),
                 axis=alt.Axis(orient='right',
-                              grid=False),
+                              grid=True),
                 title='COP 3Hr Rolling Mean'))
 
     points = lines.mark_point().encode(
@@ -182,23 +185,21 @@ def date_select():
     date_range = list(date_range)
     if len(date_range) < 2:
         st.warning('Please select a start and end date.')
-    if date_range[1] == dt.datetime.now().date():
+    selected_today = date_range[1] == dt.datetime.now().date()
+    if selected_today:
         date_range[1] = dt.datetime.now()
     else:
         date_range[1] = dt.datetime.combine(date_range[1],
                                             dt.datetime.max.time())
-    if (date_range[0] - date_range[0]) < dt.timedelta(hours=6):
-        date_range[0] = dt.datetime.now() - dt.timedelta(hours=12)
-    else:
-        date_range[0] = dt.datetime.combine(date_range[0],
-                                            dt.datetime.max.time())
-    print(date_range)
+    date_range[0] = dt.datetime.combine(date_range[0], dt.datetime.max.time())
+    if date_range[1] - date_range[0] < dt.timedelta(hours=24):
+        date_range[0] = date_range[1] - dt.timedelta(hours=12)
+
     return date_range
 
 
-# st.title('Geothermal Monitoring')
-
 date_range = date_select()
+
 
 dat = makeWEL(date_range)
 
@@ -220,8 +221,8 @@ out_sensors = st.sidebar.multiselect("Loop",
 st.title('Geothermal Monitoring')
 plot_placeholder = st.empty()
 
-def_width = 600
-def_height = 200
+def_width = 640
+def_height = 230
 
 tic = time.time()
 with st.spinner('Generating Plots'):
@@ -246,9 +247,10 @@ with st.spinner('Generating Plots'):
     ).resolve_scale(
         y='independent',
         color='independent'
-    ).configure_view(strokeOpacity=0)
+    )
 
-print(F"Altair plot generation: {time.time() - tic} s")
+print(F"{time.strftime('%Y-%m-%d %H:%M')}: "
+      F"Altair plot gen: {time.time() - tic:.2f} s")
 
 
 # tic = time.time()
