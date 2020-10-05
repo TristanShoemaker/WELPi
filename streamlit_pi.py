@@ -5,14 +5,14 @@ import numpy as np
 import datetime as dt
 import sys
 import time
-sys.path.append('/home/ubuntu/WEL/WELPy/')
-# sys.path.append('../WELPy/')
+# sys.path.append('/home/ubuntu/WEL/WELPy/')
+sys.path.append('../WELPy/')
 from WELServer import WELData
 
 
 @st.cache(hash_funcs={WELData: id})
 def makeWEL(date_range):
-    dat = WELData(mongo_local=True,
+    dat = WELData(mongo_local=False,
                   timerange=date_range)
     return dat
 
@@ -121,7 +121,7 @@ def plotCOPPlot():
     source = getDataSubset(['COP'])
     lines = alt.Chart(source).transform_window(
         rollmean='mean(value)',
-        frame=[-3 * 120, 0]
+        frame=[-4 * 40, 0]
     ).mark_line(
         strokeWidth=1.5
     ).encode(
@@ -145,8 +145,17 @@ def plotCOPPlot():
                            format='.1f')
     )
 
+    selectors, rules = createRules(source)
+
+    time_text = rules.mark_text(align='center', dx=0, dy=100).encode(
+        text=alt.condition(nearestTime,
+                           'dateandtime:T',
+                           alt.value(' '),
+                           format='%b %e %H:%M')
+    )
+
     plot = alt.layer(
-        lines, points, text, *createRules(source)
+        lines, points, text, time_text, selectors, rules
     )
 
     return plot
@@ -199,11 +208,11 @@ def date_select():
         date_range[1] = dt.datetime.now()
     else:
         date_range[1] = dt.datetime.combine(date_range[1],
-                                            dt.datetime.max.time())
-    date_range[0] = dt.datetime.combine(date_range[0], dt.datetime.max.time())
-    if date_range[1] - date_range[0] < dt.timedelta(hours=24):
+                                            dt.datetime.min.time())
+    date_range[0] = dt.datetime.combine(date_range[0], dt.datetime.min.time())
+    if selected_today and date_range[1].day - date_range[0].day == 1:
         date_range[0] = date_range[1] - dt.timedelta(hours=12)
-
+    print(date_range)
     return date_range
 
 
