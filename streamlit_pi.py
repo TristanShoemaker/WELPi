@@ -5,14 +5,14 @@ import numpy as np
 import datetime as dt
 import sys
 import time
-# sys.path.append('/home/ubuntu/WEL/WELPy/')
-sys.path.append('../WELPy/')
+sys.path.append('/home/ubuntu/WEL/WELPy/')
+# sys.path.append('../WELPy/')
 from WELServer import WELData
 
 
 @st.cache(hash_funcs={WELData: id})
 def makeWEL(date_range):
-    dat = WELData(mongo_local=False,
+    dat = WELData(mongo_local=True,
                   timerange=date_range)
     return dat
 
@@ -126,7 +126,9 @@ def plotCOPPlot():
         strokeWidth=1.5
     ).encode(
         x=alt.X('dateandtime:T',
-                axis=alt.Axis(grid=False),
+                axis=alt.Axis(grid=False,
+                              format='%H',
+                              labelAngle=25),
                 title=None),
         y=alt.Y('rollmean:Q',
                 scale=alt.Scale(zero=False),
@@ -147,11 +149,12 @@ def plotCOPPlot():
 
     selectors, rules = createRules(source)
 
-    time_text = rules.mark_text(align='center', dx=0, dy=100).encode(
+    time_text_dy = def_height * 0.6 / 2 + 30
+    time_text = rules.mark_text(align='center', dx=0, dy=time_text_dy).encode(
         text=alt.condition(nearestTime,
                            'dateandtime:T',
                            alt.value(' '),
-                           format='%b %e %H:%M')
+                           format='%b %-d, %H:%M')
     )
 
     plot = alt.layer(
@@ -198,7 +201,7 @@ def date_select():
                                        value=[(dt.datetime.now()
                                                - dt.timedelta(days=1)),
                                               dt.datetime.now()],
-                                       min_value=dt.datetime(2020, 7, 1),
+                                       min_value=dt.datetime(2020, 8, 3),
                                        max_value=dt.datetime.now())
     date_range = list(date_range)
     if len(date_range) < 2:
@@ -212,7 +215,7 @@ def date_select():
     date_range[0] = dt.datetime.combine(date_range[0], dt.datetime.min.time())
     if selected_today and date_range[1].day - date_range[0].day == 1:
         date_range[0] = date_range[1] - dt.timedelta(hours=12)
-    print(date_range)
+
     return date_range
 
 
@@ -222,6 +225,22 @@ def serverStartup():
 
 
 serverStartup()
+
+st.markdown(
+        f"""
+<style>
+    .reportview-container .main .block-container{{
+        max-width: {800}px;
+        padding-top: {1}rem;
+        padding-right: {0.5}rem;
+        padding-left: {0}rem;
+        padding-bottom: {1}rem;
+    }}
+</style>
+""",
+        unsafe_allow_html=True,
+    )
+
 date_range = date_select()
 
 tic = time.time()
@@ -247,8 +266,9 @@ out_sensors = st.sidebar.multiselect("Loop",
 st.title('Geothermal Monitoring')
 plot_placeholder = st.empty()
 
-def_width = 640
-def_height = 250
+def_width = 710
+# def_width = 'container'
+def_height = 270
 
 tic = time.time()
 with st.spinner('Generating Plots'):
@@ -280,9 +300,10 @@ print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
 
 
 tic = time.time()
-plot_placeholder.altair_chart(temp)
+plot_placeholder.altair_chart(temp, use_container_width=True)
 print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
       F"Altair plot display: {time.time() - tic:.2f} s", flush=True)
+
 
 # tic = time.time()
 # temp_pyplot = plotMainMonitor_pyplot([in_sensors,
