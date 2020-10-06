@@ -5,15 +5,18 @@ import numpy as np
 import datetime as dt
 import sys
 import time
-# sys.path.append('/home/ubuntu/WEL/WELPy/')
-sys.path.append('../WELPy/')
+sys.path.append('/home/ubuntu/WEL/WELPy/')
+# sys.path.append('../WELPy/')
 from WELServer import WELData
 
 
 @st.cache(hash_funcs={WELData: id})
 def makeWEL(date_range):
-    dat = WELData(mongo_local=False,
+    tic = time.time()
+    dat = WELData(mongo_local=True,
                   timerange=date_range)
+    print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
+          F"MakeWEL:             {time.time() - tic:.2f} s", flush=True)
     return dat
 
 
@@ -56,15 +59,18 @@ def createRules(source):
     return [selectors, rules]
 
 
-def plotNighttimeAltair(dat,
-                        source):
-    timeList = dat.plotNighttime(plot=False)
-    print(timeList)
-    area = alt.Chart(timeList).mark_rule(
-        color='grey'
+def plotNightAlt(height_mod=1):
+    source = getDataSubset('daylight')
+    area = alt.Chart(source).mark_bar(
+        fill='black',
+        width=10,
+        clip=True,
+        height=def_height * height_mod
     ).encode(
-        x='sunrise:T',
-        x2='sunset:T'
+        x='dateandtime:T',
+        opacity=alt.condition(alt.datum.value < 1,
+                              alt.value(0.01),
+                              alt.value(0))
     )
 
     return area
@@ -92,7 +98,9 @@ def plotMainMonitor(vars):
                                   alt.value(1.5)),
     )
     points = lines.mark_point().encode(
-        opacity=alt.condition(nearestTime, alt.value(1), alt.value(0))
+        opacity=alt.condition(nearestTime,
+                              alt.value(1),
+                              alt.value(0))
     )
 
     text = lines.mark_text(align='left', dx=5, dy=-5).encode(
@@ -102,10 +110,8 @@ def plotMainMonitor(vars):
                            format='.1f')
     )
 
-    nightTime = plotNighttimeAltair(dat, source)
-
     plot = alt.layer(
-        lines, points, text, *createRules(source)
+        plotNightAlt(), lines, points, text, *createRules(source)
     )
 
     return plot
@@ -131,13 +137,13 @@ def plotStatusPlot():
                               grid=False),
                 sort=status_list),
         opacity=alt.condition(alt.datum.value > 0,
-                              alt.value(100),
+                              alt.value(1),
                               alt.value(0)),
         color=alt.Color('label', legend=None)
     )
 
     plot = alt.layer(
-        chunks, *createRules(source)
+        plotNightAlt(stat_height_mod), chunks, *createRules(source)
     )
 
     return plot
@@ -188,7 +194,8 @@ def plotCOPPlot():
     )
 
     plot = alt.layer(
-        lines, points, text, time_text, selectors, rules
+        plotNightAlt(cop_height_mod), lines, points, text, time_text,
+        selectors, rules
     )
 
     return plot
@@ -220,6 +227,38 @@ def date_select():
 @st.cache()
 def serverStartup():
     print(F"{time.strftime('%Y-%m-%d %H:%M')} : Server Started", flush=True)
+
+
+def plotAssembly():
+    tic = time.time()
+    with st.spinner('Generating Plots'):
+        plot = alt.vconcat(
+            plotStatusPlot().properties(
+                width=def_width,
+                height=def_height * 0.5
+            ),
+            plotMainMonitor(in_sensors).properties(
+                width=def_width,
+                height=def_height
+            ),
+            plotMainMonitor(out_sensors).properties(
+                width=def_width,
+                height=def_height
+            ),
+            plotCOPPlot().properties(
+                width=def_width,
+                height=def_height * 0.6
+            ),
+            spacing=0
+        ).resolve_scale(
+            y='independent',
+            color='independent'
+        )
+
+    print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
+          F"Altair plot gen:     {time.time() - tic:.2f} s", flush=True)
+
+    return plot
 
 
 def plotMainMonitor_pyplot(vars,
@@ -274,12 +313,7 @@ st.markdown(
 
 date_range = date_select()
 
-tic = time.time()
 dat = makeWEL(date_range)
-print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
-      F"MakeWEL:             {time.time() - tic:.2f} s", flush=True)
-
-# plotNighttimeAltair(dat, getDataSubset('trist_T'))
 
 in_sensors = st.sidebar.multiselect("Inside",
                                     list(dat.vars()),
@@ -299,40 +333,15 @@ out_sensors = st.sidebar.multiselect("Loop",
 st.title('Geothermal Monitoring')
 plot_placeholder = st.empty()
 
+# ------ Plot Size Controls ------
 def_width = 700
-# def_width = 'container'
 def_height = 270
+stat_height_mod = 0.5
+cop_height_mod = 0.6
+
+plots = plotAssembly()
 
 tic = time.time()
-with st.spinner('Generating Plots'):
-    temp = alt.vconcat(
-        plotStatusPlot().properties(
-            width=def_width,
-            height=def_height * 0.5
-        ),
-        plotMainMonitor(in_sensors).properties(
-            width=def_width,
-            height=def_height
-        ),
-        plotMainMonitor(out_sensors).properties(
-            width=def_width,
-            height=def_height
-        ),
-        plotCOPPlot().properties(
-            width=def_width,
-            height=def_height * 0.6
-        ),
-        spacing=0
-    ).resolve_scale(
-        y='independent',
-        color='independent'
-    )
-
-print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
-      F"Altair plot gen:     {time.time() - tic:.2f} s", flush=True)
-
-
-tic = time.time()
-plot_placeholder.altair_chart(temp, use_container_width=True)
+plot_placeholder.altair_chart(plots, use_container_width=True)
 print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
       F"Altair plot display: {time.time() - tic:.2f} s", flush=True)
