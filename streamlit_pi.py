@@ -5,24 +5,29 @@ import numpy as np
 import datetime as dt
 import sys
 import time
-sys.path.append('/home/ubuntu/WEL/WELPy/')
-# sys.path.append('../WELPy/')
+# sys.path.append('/home/ubuntu/WEL/WELPy/')
+sys.path.append('../WELPy/')
 from WELServer import WELData
 
 
 @st.cache(hash_funcs={WELData: id})
 def makeWEL(date_range):
-    dat = WELData(mongo_local=True,
+    dat = WELData(mongo_local=False,
                   timerange=date_range)
     return dat
 
 
-nearestTime = alt.selection(type='single', nearest=True, on='mouseover',
-                            fields=['dateandtime'], empty='none')
+nearestTime = alt.selection(type='single',
+                            nearest=True,
+                            on='mouseover',
+                            fields=['dateandtime'],
+                            empty='none')
+
+resize = alt.selection_interval(encodings=['x'])
 
 
 def getDataSubset(vars,
-                  resample_P=500):
+                  resample_P=400):
     source = dat.data
     if resample_P is not None:
         resample_T = (dat.timerange[1] - dat.timerange[0]) / resample_P
@@ -51,14 +56,31 @@ def createRules(source):
     return [selectors, rules]
 
 
+def plotNighttimeAltair(dat,
+                        source):
+    timeList = dat.plotNighttime(plot=False)
+    print(timeList)
+    area = alt.Chart(timeList).mark_rule(
+        color='grey'
+    ).encode(
+        x='sunrise:T',
+        x2='sunset:T'
+    )
+
+    return area
+
+
 def plotMainMonitor(vars):
     source = getDataSubset(vars)
 
     lines = alt.Chart(source).mark_line(interpolate='basis').encode(
         x=alt.X('dateandtime:T',
+                scale=alt.Scale(domain=resize),
                 axis=alt.Axis(title=None,
                               labels=False,
-                              grid=False)),
+                              grid=False,
+                              ticks=False,
+                              domainWidth=0)),
         y=alt.Y('value:Q',
                 scale=alt.Scale(zero=False),
                 axis=alt.Axis(title="Temperature / °C",
@@ -80,6 +102,8 @@ def plotMainMonitor(vars):
                            format='.1f')
     )
 
+    nightTime = plotNighttimeAltair(dat, source)
+
     plot = alt.layer(
         lines, points, text, *createRules(source)
     )
@@ -94,11 +118,13 @@ def plotStatusPlot():
     source.value = source.value % 2
     # source = source.loc[source.value != 0]
 
-    chunks = alt.Chart(source).mark_bar(width=1.6).encode(
+    chunks = alt.Chart(source).mark_bar(width=2).encode(
         x=alt.X('dateandtime:T',
                 axis=alt.Axis(title=None,
                               labels=False,
-                              grid=False)),
+                              grid=False,
+                              ticks=False,
+                              domainWidth=0)),
         y=alt.Y('label',
                 title=None,
                 axis=alt.Axis(orient='right',
@@ -121,17 +147,21 @@ def plotCOPPlot():
     source = getDataSubset(['COP'])
     lines = alt.Chart(source).transform_window(
         rollmean='mean(value)',
-        frame=[-4 * 40, 0]
+        frame=[-6 * 40, 0]
     ).mark_line(
+        interpolate='basis',
         strokeWidth=1.5
     ).encode(
         x=alt.X('dateandtime:T',
+                scale=alt.Scale(domain=resize),
                 axis=alt.Axis(grid=False,
-                              format='%H',
-                              labelAngle=25),
+                              # format='%H',
+                              # labelAngle=25,
+                              labels=False,
+                              ticks=False),
                 title=None),
         y=alt.Y('rollmean:Q',
-                scale=alt.Scale(zero=False),
+                scale=alt.Scale(zero=True),
                 axis=alt.Axis(orient='right',
                               grid=True),
                 title='COP Rolling Mean'))
@@ -149,7 +179,7 @@ def plotCOPPlot():
 
     selectors, rules = createRules(source)
 
-    time_text_dy = def_height * 0.6 / 2 + 30
+    time_text_dy = def_height * 0.6 / 2 + 10
     time_text = rules.mark_text(align='center', dx=0, dy=time_text_dy).encode(
         text=alt.condition(nearestTime,
                            'dateandtime:T',
@@ -162,6 +192,34 @@ def plotCOPPlot():
     )
 
     return plot
+
+
+def date_select():
+    date_range = st.sidebar.date_input(label='Date Range',
+                                       value=[(dt.datetime.now()
+                                               - dt.timedelta(days=1)),
+                                              dt.datetime.now()],
+                                       min_value=dt.datetime(2020, 8, 3),
+                                       max_value=dt.datetime.now())
+    date_range = list(date_range)
+    if len(date_range) < 2:
+        st.warning('Please select a start and end date.')
+    selected_today = date_range[1] == dt.datetime.now().date()
+    if selected_today:
+        date_range[1] = dt.datetime.now()
+    else:
+        date_range[1] = dt.datetime.combine(date_range[1],
+                                            dt.datetime.min.time())
+    date_range[0] = dt.datetime.combine(date_range[0], dt.datetime.min.time())
+    if selected_today and date_range[1].day - date_range[0].day == 1:
+        date_range[0] = date_range[1] - dt.timedelta(hours=12)
+
+    return date_range
+
+
+@st.cache()
+def serverStartup():
+    print(F"{time.strftime('%Y-%m-%d %H:%M')} : Server Started", flush=True)
 
 
 def plotMainMonitor_pyplot(vars,
@@ -196,57 +254,32 @@ def plotMainMonitor_pyplot(vars,
     return fig
 
 
-def date_select():
-    date_range = st.sidebar.date_input(label='Date Range',
-                                       value=[(dt.datetime.now()
-                                               - dt.timedelta(days=1)),
-                                              dt.datetime.now()],
-                                       min_value=dt.datetime(2020, 8, 3),
-                                       max_value=dt.datetime.now())
-    date_range = list(date_range)
-    if len(date_range) < 2:
-        st.warning('Please select a start and end date.')
-    selected_today = date_range[1] == dt.datetime.now().date()
-    if selected_today:
-        date_range[1] = dt.datetime.now()
-    else:
-        date_range[1] = dt.datetime.combine(date_range[1],
-                                            dt.datetime.min.time())
-    date_range[0] = dt.datetime.combine(date_range[0], dt.datetime.min.time())
-    if selected_today and date_range[1].day - date_range[0].day == 1:
-        date_range[0] = date_range[1] - dt.timedelta(hours=12)
-
-    return date_range
-
-
-@st.cache()
-def serverStartup():
-    print(F"{time.strftime('%Y-%m-%d %H:%M')} : Server Started", flush=True)
-
+# ---------------------------- Start of Page Code ----------------------------
 
 serverStartup()
 
 st.markdown(
-        f"""
-<style>
-    .reportview-container .main .block-container{{
-        max-width: {800}px;
-        padding-top: {1}rem;
-        padding-right: {0.5}rem;
-        padding-left: {0}rem;
-        padding-bottom: {1}rem;
-    }}
-</style>
-""",
-        unsafe_allow_html=True,
-    )
+    f"""
+    <style>
+        .reportview-container .main .block-container{{
+            max-width: {800}px;
+            padding-top: {1}rem;
+            padding-right: {0.5}rem;
+            padding-left: {0}rem;
+            padding-bottom: {1}rem;
+        }}
+    </style>
+    """,
+    unsafe_allow_html=True)
 
 date_range = date_select()
 
 tic = time.time()
 dat = makeWEL(date_range)
 print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
-      F"MakeWEL: {time.time() - tic:.2f} s", flush=True)
+      F"MakeWEL:             {time.time() - tic:.2f} s", flush=True)
+
+# plotNighttimeAltair(dat, getDataSubset('trist_T'))
 
 in_sensors = st.sidebar.multiselect("Inside",
                                     list(dat.vars()),
@@ -266,7 +299,7 @@ out_sensors = st.sidebar.multiselect("Loop",
 st.title('Geothermal Monitoring')
 plot_placeholder = st.empty()
 
-def_width = 710
+def_width = 700
 # def_width = 'container'
 def_height = 270
 
@@ -275,7 +308,7 @@ with st.spinner('Generating Plots'):
     temp = alt.vconcat(
         plotStatusPlot().properties(
             width=def_width,
-            height=def_height * 0.6
+            height=def_height * 0.5
         ),
         plotMainMonitor(in_sensors).properties(
             width=def_width,
@@ -296,23 +329,10 @@ with st.spinner('Generating Plots'):
     )
 
 print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
-      F"Altair plot gen: {time.time() - tic:.2f} s", flush=True)
+      F"Altair plot gen:     {time.time() - tic:.2f} s", flush=True)
 
 
 tic = time.time()
 plot_placeholder.altair_chart(temp, use_container_width=True)
 print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
       F"Altair plot display: {time.time() - tic:.2f} s", flush=True)
-
-
-# tic = time.time()
-# temp_pyplot = plotMainMonitor_pyplot([in_sensors,
-#                                       out_sensors])
-# print(F"Time for pyplot plot generation: {time.time() - tic}")
-# tic = time.time()
-# st.pyplot(temp_pyplot)
-# print(F"Time for pyplot plot display: {time.time() - tic}")
-
-# st.altair_chart(plotMainMonitor(in_sensors), use_container_width=True)
-# st.altair_chart(plotMainMonitor(out_sensors), use_container_width=True)
-# st.pyplot(temp_pyplot)
