@@ -49,7 +49,7 @@ def getData(ip):
     sunset = sun.sunset(loc.observer, date=post['dateandtime'].date(),
                         tzinfo=to_tzone).astimezone(db_tzone)
     post['daylight'] = ((post['dateandtime'] > sunrise)
-                        and (post['datetime'] < sunset)) * 1
+                        and (post['dateandtime'] < sunset)) * 1
 
     return post
 
