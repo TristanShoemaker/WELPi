@@ -11,7 +11,7 @@ from astral import sun, LocationInfo
 
 WEL_ip = '192.168.68.107'
 mongo_ip = 'localhost'
-mongo_ip = '192.168.68.101'
+# mongo_ip = '192.168.68.101'
 loc = LocationInfo('Home', 'MA', 'America/New_York', 42.485557, -71.433445)
 to_tzone = tz.gettz('America/New_York')
 db_tzone = tz.gettz('UTC')
@@ -50,7 +50,7 @@ def getData(ip):
                         tzinfo=to_tzone).astimezone(db_tzone)
     post['daylight'] = ((post['dateandtime'] > sunrise)
                         and (post['datetime'] < sunset)) * 1
-    print(post['daylight'])
+
     return post
 
 
