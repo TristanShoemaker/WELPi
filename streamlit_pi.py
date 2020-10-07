@@ -59,7 +59,7 @@ def createRules(source):
 def plotNighttimeAltair(dat,
                         source):
     timeList = dat.plotNighttime(plot=False)
-    print(timeList)
+    # print(timeList)
     area = alt.Chart(timeList).mark_rule(
         color='grey'
     ).encode(
