@@ -6,11 +6,15 @@ import xmltodict
 from time import sleep
 from datetime import datetime as dt
 from dateutil import tz
+from astral import sun, LocationInfo
+
 
 WEL_ip = '192.168.68.107'
 mongo_ip = 'localhost'
-# mongo_ip = '192.168.68.101'
-
+mongo_ip = '192.168.68.101'
+loc = LocationInfo('Home', 'MA', 'America/New_York', 42.485557, -71.433445)
+to_tzone = tz.gettz('America/New_York')
+db_tzone = tz.gettz('UTC')
 
 def getData(ip):
     url = "http://" + ip + ":5150/data.xml"
@@ -36,9 +40,17 @@ def getData(ip):
     post['dateandtime'] = (dt.combine(date, time)
                            .replace(tzinfo=tz.gettz('EST')))
     # print(post['dateandtime'])
-    post['dateandtime'] = post['dateandtime'].astimezone(tz.gettz('UTC'))
+    post['dateandtime'] = post['dateandtime'].astimezone(db_tzone)
     del post['Date']
     del post['Time']
+
+    sunrise = sun.sunrise(loc.observer, date=post['dateandtime'].date(),
+                          tzinfo=to_tzone).astimezone(db_tzone)
+    sunset = sun.sunset(loc.observer, date=post['dateandtime'].date(),
+                        tzinfo=to_tzone).astimezone(db_tzone)
+    post['daylight'] = ((post['dateandtime'] > sunrise)
+                        and (post['datetime'] < sunset)) * 1
+    print(post['daylight'])
     return post
 
 
