@@ -5,14 +5,14 @@ import numpy as np
 import datetime as dt
 import sys
 import time
-# sys.path.append('/home/ubuntu/WEL/WELPy/')
-sys.path.append('../WELPy/')
+sys.path.append('/home/ubuntu/WEL/WELPy/')
+# sys.path.append('../WELPy/')
 from WELServer import WELData
 
 
 @st.cache(hash_funcs={WELData: id})
 def makeWEL(date_range):
-    dat = WELData(mongo_local=False,
+    dat = WELData(mongo_local=True,
                   timerange=date_range)
     return dat
 
