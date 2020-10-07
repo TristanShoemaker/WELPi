@@ -5,16 +5,19 @@ import numpy as np
 import datetime as dt
 import sys
 import time
-sys.path.append('/home/ubuntu/WEL/WELPy/')
-# sys.path.append('../WELPy/')
+if sys.platform == 'linux':
+    sys.path.append('/home/ubuntu/WEL/WELPy/')
+elif sys.platform == 'darwin':
+    sys.path.append('../WELPy/')
+else:
+    raise('Platform not recognized.')
 from WELServer import WELData
 
 
 @st.cache(hash_funcs={WELData: id})
 def makeWEL(date_range):
     tic = time.time()
-    dat = WELData(mongo_local=True,
-                  timerange=date_range)
+    dat = WELData(timerange=date_range)
     print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
           F"MakeWEL:             {time.time() - tic:.2f} s", flush=True)
     return dat
@@ -110,10 +113,8 @@ def plotMainMonitor(vars):
                            format='.1f')
     )
 
-    # nightTime = plotNighttimeAltair(dat, source)
-
     plot = alt.layer(
-        lines, points, text, *createRules(source)
+        plotNightAlt(), lines, points, text, *createRules(source)
     )
 
     return plot
@@ -145,7 +146,7 @@ def plotStatusPlot():
     )
 
     plot = alt.layer(
-        chunks, *createRules(source)
+        plotNightAlt(), chunks, *createRules(source)
     )
 
     return plot
@@ -196,7 +197,7 @@ def plotCOPPlot():
     )
 
     plot = alt.layer(
-        lines, points, text, time_text, selectors, rules
+        plotNightAlt(), lines, points, text, time_text, selectors, rules
     )
 
     return plot
