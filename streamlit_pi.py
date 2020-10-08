@@ -2,6 +2,7 @@ import streamlit as st
 import altair as alt
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import datetime as dt
 import sys
 import time
@@ -11,15 +12,15 @@ elif sys.platform == 'darwin':
     sys.path.append('../WELPy/')
 else:
     raise('Platform not recognized.')
-from WELServer import WELData
+from WELServer import WELData, mongoConnect
 
 
-# TODO: seperate out mongo connection to be cached
-@st.cache(hash_funcs={WELData: id})
+@st.cache(hash_funcs={"builtins.dict": id})
 def makeWEL(date_range,
-            resample_P=400):
+            resample_P=350):
     tic = time.time()
-    dat = WELData(timerange=date_range)
+    dat = WELData(timerange=date_range,
+                  mongo_connection=mongo_connection)
     if resample_P is not None:
         resample_T = (dat.timerange[1] - dat.timerange[0]) / resample_P
         dat.data = dat.data.resample(resample_T).mean()
@@ -40,11 +41,14 @@ resize = alt.selection_interval(encodings=['x'])
 def getDataSubset(vars):
     source = dat.data
     source = source.reset_index()
-    source = source.melt(id_vars='dateandtime',
-                         value_vars=vars,
-                         var_name='label')
-
-    # source = source.dropna()
+    try:
+        source = source.melt(id_vars='dateandtime',
+                             value_vars=vars,
+                             var_name='label')
+    except KeyError:
+        print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
+              F"Key(s) \"{vars}\" not found in database.")
+        source = pd.DataFrame()
     return source
 
 
@@ -76,9 +80,9 @@ def plotNightAlt(height_mod=1):
         height=def_height * height_mod
     ).encode(
         x='dateandtime:T',
-        opacity=alt.condition(alt.datum.value > 0,
-                              alt.value(0),
-                              alt.value(0.009))
+        opacity=alt.condition(alt.datum.value < 1,
+                              alt.value(0.006),
+                              alt.value(0))
     )
 
     return area
@@ -106,6 +110,7 @@ def plotMainMonitor(vars):
                                   alt.value(2.5),
                                   alt.value(1.5)),
     )
+
     points = lines.mark_point().encode(
         opacity=alt.condition(nearestTime,
                               alt.value(1),
@@ -237,10 +242,11 @@ def date_select():
     return date_range
 
 
-@st.cache()
+@st.cache(hash_funcs={"pymongo.database.Database": id})
 def serverStartup():
     print(F"{time.strftime('%Y-%m-%d %H:%M')} : Server Started", flush=True)
-
+    mongo_connection = mongoConnect()
+    return mongo_connection
 
 def plotAssembly():
     tic = time.time()
@@ -249,7 +255,7 @@ def plotAssembly():
             plotStatusPlot().properties(
                 width=def_width,
                 height=def_height * 0.5
-            ),
+            ).add_selection(resize),
             plotMainMonitor(in_sensors).properties(
                 width=def_width,
                 height=def_height
@@ -308,7 +314,7 @@ def plotMainMonitor_pyplot(vars,
 
 # ---------------------------- Start of Page Code ----------------------------
 
-serverStartup()
+mongo_connection = serverStartup()
 
 st.markdown(
     f"""
