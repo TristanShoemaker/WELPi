@@ -14,10 +14,15 @@ else:
 from WELServer import WELData
 
 
+# TODO: seperate out mongo connection to be cached
 @st.cache(hash_funcs={WELData: id})
-def makeWEL(date_range):
+def makeWEL(date_range,
+            resample_P=400):
     tic = time.time()
     dat = WELData(timerange=date_range)
+    if resample_P is not None:
+        resample_T = (dat.timerange[1] - dat.timerange[0]) / resample_P
+        dat.data = dat.data.resample(resample_T).mean()
     print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
           F"MakeWEL:             {time.time() - tic:.2f} s", flush=True)
     return dat
@@ -32,16 +37,13 @@ nearestTime = alt.selection(type='single',
 resize = alt.selection_interval(encodings=['x'])
 
 
-def getDataSubset(vars,
-                  resample_P=400):
+def getDataSubset(vars):
     source = dat.data
-    if resample_P is not None:
-        resample_T = (dat.timerange[1] - dat.timerange[0]) / resample_P
-        source = source.resample(resample_T).mean()
     source = source.reset_index()
     source = source.melt(id_vars='dateandtime',
                          value_vars=vars,
                          var_name='label')
+
     # source = source.dropna()
     return source
 
@@ -53,8 +55,11 @@ def createRules(source):
     ).add_selection(
         nearestTime
     )
-    rules = alt.Chart(source).mark_rule(color='gray').encode(
-        x='dateandtime:T'
+    rules = alt.Chart(source).mark_rule().encode(
+        x='dateandtime:T',
+        color=alt.condition('isValid(datum.value)',
+                            alt.ColorValue('gray'),
+                            alt.ColorValue('red'))
     ).transform_filter(
         nearestTime
     )
@@ -71,9 +76,9 @@ def plotNightAlt(height_mod=1):
         height=def_height * height_mod
     ).encode(
         x='dateandtime:T',
-        opacity=alt.condition(alt.datum.value < 1,
-                              alt.value(0.01),
-                              alt.value(0))
+        opacity=alt.condition(alt.datum.value > 0,
+                              alt.value(0),
+                              alt.value(0.009))
     )
 
     return area
@@ -95,7 +100,8 @@ def plotMainMonitor(vars):
                 axis=alt.Axis(title="Temperature / °C",
                               orient='right',
                               grid=True)),
-        color='label',
+        color=alt.Color('label',
+                        legend=alt.Legend(title='Sensors')),
         strokeWidth=alt.condition(alt.datum.label == 'outside_T',
                                   alt.value(2.5),
                                   alt.value(1.5)),
@@ -127,7 +133,10 @@ def plotStatusPlot():
     source.value = source.value % 2
     # source = source.loc[source.value != 0]
 
-    chunks = alt.Chart(source).mark_bar(width=2).encode(
+    chunks = alt.Chart(source).mark_bar(
+        width=2,
+        clip=True
+    ).encode(
         x=alt.X('dateandtime:T',
                 axis=alt.Axis(title=None,
                               labels=False,
@@ -173,7 +182,8 @@ def plotCOPPlot():
                 scale=alt.Scale(zero=True),
                 axis=alt.Axis(orient='right',
                               grid=True),
-                title='COP Rolling Mean'))
+                title='COP Rolling Mean')
+    )
 
     points = lines.mark_point().encode(
         opacity=alt.condition(nearestTime, alt.value(1), alt.value(0))
@@ -193,7 +203,8 @@ def plotCOPPlot():
         text=alt.condition(nearestTime,
                            'dateandtime:T',
                            alt.value(' '),
-                           format='%b %-d, %H:%M')
+                           format='%b %-d, %H:%M'),
+        color=alt.ColorValue('black')
     )
 
     plot = alt.layer(
@@ -305,8 +316,8 @@ st.markdown(
         .reportview-container .main .block-container{{
             max-width: {800}px;
             padding-top: {1}rem;
-            padding-right: {0.5}rem;
-            padding-left: {0}rem;
+            padding-right: {0}rem;
+            padding-left: {0.5}rem;
             padding-bottom: {1}rem;
         }}
     </style>
@@ -316,8 +327,6 @@ st.markdown(
 date_range = date_select()
 
 dat = makeWEL(date_range)
-
-# plotNighttimeAltair(dat, getDataSubset('trist_T'))
 
 in_sensors = st.sidebar.multiselect("Inside",
                                     list(dat.vars()),
