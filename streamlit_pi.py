@@ -227,8 +227,9 @@ def date_select():
                                        min_value=dt.datetime(2020, 8, 3),
                                        max_value=dt.datetime.now())
     date_range = list(date_range)
-    if len(date_range) < 2:
+    while len(date_range) < 2:
         st.warning('Please select a start and end date.')
+        st.stop()
     selected_today = date_range[1] == dt.datetime.now().date()
     if selected_today:
         date_range[1] = dt.datetime.now()
