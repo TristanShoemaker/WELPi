@@ -59,7 +59,6 @@ def date_select():
                                         dt.datetime.min.time())
     date_mode = 'custom'
     if selected_today and date_range[1].day - date_range[0].day == 1:
-        date_range[0] = date_range[1] - dt.timedelta(hours=12)
         date_mode = 'default'
 
     return [date_range, date_mode]
