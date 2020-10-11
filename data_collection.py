@@ -67,7 +67,7 @@ def run():
     if "dateandtime_-1" not in list(db.index_information()):
         result = db.create_index([('dateandtime', DESCENDING)], unique=True)
         print(F"Creating Unique Time Index: {result}", flush=True)
-    while(True):
+    while True:
         post = getData(WEL_ip)
         try:
             post_id = db.insert_one(post).inserted_id
