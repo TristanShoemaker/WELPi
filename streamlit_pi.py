@@ -70,6 +70,14 @@ class streamPlot():
     def_height = 270
     stat_height_mod = 0.5
     cop_height_mod = 0.6
+    sensor_list = ['TAH_W', 'HP_W',  'TAH_fpm', 'liqu_refrig_T',
+                   'gas_refrig_T', 'loop_in_T', 'loop_out_T', 'outside_T',
+                   'power_tot', 'living_T', 'desup_T', 'house_hot_T',
+                   'TAH_in_T', 'aux_heat_b', 'heat_1_b', 'heat_2_b',
+                   'rev_valve_b', 'TAH_fan_b', 'humid_b', 'zone_1_b',
+                   'zone_2_b', 'TAH_out_T', 'desup_return_T', 'buderus_h2o_T',
+                   'wood_fire_T', 'tank_h2o_T', 'trist_T', 'base_T',
+                   'daylight', 'T_diff', 'COP', 'well_W', 'well_COP']
     in_default = ['living_T',
                   'trist_T',
                   'base_T',
@@ -82,9 +90,12 @@ class streamPlot():
     dat = None
     nearestTime = None
 
-    def __init__(self,
-                 date_range,
-                 resample_P=350):
+    def __init__(self):
+        self.nearestTime = nearestTimeGen()
+
+    def makeWEL(self,
+                date_range,
+                resample_P=350):
         tic = time.time()
         dat = WELData(timerange=date_range,
                       mongo_connection=cachedMongoConnect())
@@ -94,7 +105,6 @@ class streamPlot():
         print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
               F"WELData init:        {time.time() - tic:.2f} s", flush=True)
         self.dat = dat
-        self.nearestTime = nearestTimeGen()
 
     def getDataSubset(self,
                       vars):
@@ -341,14 +351,14 @@ def main():
 
     date_range, date_mode = date_select()
 
-    stp = streamPlot(date_range)
+    stp = streamPlot()
 
     in_sensors = st.sidebar.multiselect("Inside Sensors",
-                                        list(stp.dat.vars()),
+                                        stp.sensor_list,
                                         stp.in_default)
-
+    dir(in_sensors)
     out_sensors = st.sidebar.multiselect("Loop Sensors",
-                                         list(stp.dat.vars()),
+                                         stp.sensor_list,
                                          stp.out_default)
 
     st.title('Geothermal Monitoring')
@@ -362,6 +372,7 @@ def main():
         print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
               F"MemCache hit:        {time.time() - tic:.2f} s", flush=True)
     else:
+        stp.makeWEL(date_range)
         plots = stp.plotAssembly(in_sensors, out_sensors)
 
     tic = time.time()
