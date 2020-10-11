@@ -59,6 +59,7 @@ def date_select():
                                         dt.datetime.min.time())
     date_mode = 'custom'
     if selected_today and date_range[1].day - date_range[0].day == 1:
+        date_range[0] = date_range[1] - dt.timedelta(hours=12)
         date_mode = 'default'
 
     return [date_range, date_mode]
@@ -364,7 +365,7 @@ def main():
     plot_placeholder = st.empty()
 
     if (date_mode == 'default' and in_sensors == stp.in_default
-            and out_sensors == stp.out_default):
+            and out_sensors == stp.out_default and sys.platform == 'linux'):
         tic = time.time()
         mc = libmc.Client(['localhost'])
         plots = mc.get('plotKey')
