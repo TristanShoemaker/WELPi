@@ -374,7 +374,7 @@ def main():
 
     sb_stat_containers = st.sidebar.beta_columns(2)
     with sb_stat_containers[0]:
-        st.markdown("WEL Server Status:")
+        st.text("WEL Server Status:")
     with sb_stat_containers[1]:
         st.markdown(F"{ping('wel')}")
     st.header('Geothermal Monitoring')
