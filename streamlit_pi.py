@@ -31,6 +31,12 @@ def serverStartup():
     print(F"{time.strftime('%Y-%m-%d %H:%M')} : Server Started", flush=True)
 
 
+@st.cache(hash_funcs={"pymongo.database.Database": id})
+def cachedMongoConnect():
+    print(F"{time.strftime('%Y-%m-%d %H:%M')} : Mongo Connected", flush=True)
+    return mongoConnect()
+
+
 def date_select():
     date_range = st.sidebar.date_input(label='Date Range',
                                        value=[(dt.datetime.now()
@@ -78,12 +84,12 @@ class streamPlot():
                  resample_P=350):
         tic = time.time()
         dat = WELData(timerange=date_range,
-                      mongo_connection=mongoConnect())
+                      mongo_connection=cachedMongoConnect())
         if resample_P is not None:
             resample_T = (dat.timerange[1] - dat.timerange[0]) / resample_P
             dat.data = dat.data.resample(resample_T).mean()
         print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
-              F"MakeWEL:             {time.time() - tic:.2f} s", flush=True)
+              F"WELData init:        {time.time() - tic:.2f} s", flush=True)
         self.dat = dat
         self.nearestTime = nearestTimeGen()
 
@@ -272,7 +278,14 @@ class streamPlot():
 
         return plot
 
-    def plotAssembly(self):
+    def plotAssembly(self,
+                     in_sensors=None,
+                     out_sensors=None):
+        if in_sensors is None:
+            in_sensors = self.in_default
+        if out_sensors is None:
+            out_sensors = self.out_default
+
         tic = time.time()
         with st.spinner('Generating Plots'):
             plot = alt.vconcat(
@@ -306,40 +319,45 @@ class streamPlot():
 
 # ---------------------------- Start of Page Code ----------------------------
 
-serverStartup()
+def main():
+    serverStartup()
 
-st.markdown(
-    f"""
-    <style>
-        .reportview-container .main .block-container{{
-            max-width: {800}px;
-            padding-top: {1}rem;
-            padding-right: {0}rem;
-            padding-left: {0.5}rem;
-            padding-bottom: {1}rem;
-        }}
-    </style>
-    """,
-    unsafe_allow_html=True)
+    st.markdown(
+        f"""
+        <style>
+            .reportview-container .main .block-container{{
+                max-width: {800}px;
+                padding-top: {1}rem;
+                padding-right: {0}rem;
+                padding-left: {0.5}rem;
+                padding-bottom: {1}rem;
+            }}
+        </style>
+        """,
+        unsafe_allow_html=True)
 
-date_range = date_select()
+    date_range = date_select()
 
-stp = streamPlot(date_range)
+    stp = streamPlot(date_range)
 
-in_sensors = st.sidebar.multiselect("Inside Sensors",
-                                    list(stp.dat.vars()),
-                                    stp.in_default)
+    in_sensors = st.sidebar.multiselect("Inside Sensors",
+                                        list(stp.dat.vars()),
+                                        stp.in_default)
 
-out_sensors = st.sidebar.multiselect("Loop Sensors",
-                                     list(stp.dat.vars()),
-                                     stp.out_default)
+    out_sensors = st.sidebar.multiselect("Loop Sensors",
+                                         list(stp.dat.vars()),
+                                         stp.out_default)
 
-st.title('Geothermal Monitoring')
-plot_placeholder = st.empty()
+    st.title('Geothermal Monitoring')
+    plot_placeholder = st.empty()
 
-plots = stp.plotAssembly()
+    plots = stp.plotAssembly(in_sensors, out_sensors)
 
-tic = time.time()
-plot_placeholder.altair_chart(plots, use_container_width=True)
-print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
-      F"Altair plot display: {time.time() - tic:.2f} s", flush=True)
+    tic = time.time()
+    plot_placeholder.altair_chart(plots, use_container_width=True)
+    print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
+          F"Altair plot display: {time.time() - tic:.2f} s", flush=True)
+
+
+if __name__ == "__main__":
+    main()
