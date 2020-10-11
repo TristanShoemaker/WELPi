@@ -4,6 +4,7 @@ import pandas as pd
 import datetime as dt
 import sys
 import time
+import libmc
 if sys.platform == 'linux':
     sys.path.append('/home/ubuntu/WEL/WELPy/')
 elif sys.platform == 'darwin':
@@ -56,10 +57,12 @@ def date_select():
                                             dt.datetime.min.time())
     date_range[0] = dt.datetime.combine(date_range[0],
                                         dt.datetime.min.time())
+    date_mode = 'custom'
     if selected_today and date_range[1].day - date_range[0].day == 1:
         date_range[0] = date_range[1] - dt.timedelta(hours=12)
+        date_mode = 'default'
 
-    return date_range
+    return [date_range, date_mode]
 
 
 class streamPlot():
@@ -336,7 +339,7 @@ def main():
         """,
         unsafe_allow_html=True)
 
-    date_range = date_select()
+    date_range, date_mode = date_select()
 
     stp = streamPlot(date_range)
 
@@ -351,7 +354,15 @@ def main():
     st.title('Geothermal Monitoring')
     plot_placeholder = st.empty()
 
-    plots = stp.plotAssembly(in_sensors, out_sensors)
+    if (date_mode == 'default' and in_sensors == stp.in_default
+            and out_sensors == stp.out_default):
+        tic = time.time()
+        mc = libmc.Client(['localhost'])
+        plots = mc.get('plotKey')
+        print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
+              F"MemCache hit:        {time.time() - tic:.2f} s", flush=True)
+    else:
+        plots = stp.plotAssembly(in_sensors, out_sensors)
 
     tic = time.time()
     plot_placeholder.altair_chart(plots, use_container_width=True)
