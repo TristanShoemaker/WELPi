@@ -16,6 +16,7 @@ loc = LocationInfo('Home', 'MA', 'America/New_York', 42.485557, -71.433445)
 to_tzone = tz.gettz('America/New_York')
 db_tzone = tz.gettz('UTC')
 
+
 def getData(ip):
     url = "http://" + ip + ":5150/data.xml"
     try:
