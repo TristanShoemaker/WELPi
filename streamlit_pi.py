@@ -5,6 +5,7 @@ import datetime as dt
 import sys
 import time
 import libmc
+import subprocess
 if sys.platform == 'linux':
     sys.path.append('/home/ubuntu/WEL/WELPy/')
 elif sys.platform == 'darwin':
@@ -63,6 +64,15 @@ def date_select():
         date_mode = 'default'
 
     return [date_range, date_mode]
+
+
+def ping(host):
+    if host == 'wel':
+        command = ['ping', '-c', '1', '192.168.68.107']
+    if subprocess.call(command, stdout=subprocess.DEVNULL) == 0:
+        return ":white_check_mark:"
+    else:
+        return ":negative_squared_cross_mark:"
 
 
 class streamPlot():
@@ -349,6 +359,8 @@ def main():
         """,
         unsafe_allow_html=True)
 
+    st.sidebar.subheader("Plotting Options:")
+
     date_range, date_mode = date_select()
 
     stp = streamPlot()
@@ -356,12 +368,16 @@ def main():
     in_sensors = st.sidebar.multiselect("Inside Sensors",
                                         stp.sensor_list,
                                         stp.in_default)
-    dir(in_sensors)
     out_sensors = st.sidebar.multiselect("Loop Sensors",
                                          stp.sensor_list,
                                          stp.out_default)
 
-    st.title('Geothermal Monitoring')
+    sb_stat_containers = st.sidebar.beta_columns(2)
+    with sb_stat_containers[0]:
+        st.markdown("WEL Server Status:")
+    with sb_stat_containers[1]:
+        st.markdown(F"{ping('wel')}")
+    st.header('Geothermal Monitoring')
     plot_placeholder = st.empty()
 
     if (date_mode == 'default' and in_sensors == stp.in_default
