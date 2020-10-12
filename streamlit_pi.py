@@ -16,7 +16,7 @@ from WELServer import WELData, mongoConnect
 
 
 st.beta_set_page_config(page_title="Geo Monitor",
-                        page_icon="🌬️")
+                        page_icon="🌀")
 
 
 def message(message_text,
@@ -99,7 +99,7 @@ def resize():
 
 
 class streamPlot():
-    def_width = 900
+    def_width = 700
     def_height = 280
     def_spacing = 2
     stat_height_mod = 0.5
@@ -377,10 +377,10 @@ def main():
         f"""
         <style>
             .reportview-container .main .block-container{{
-                max-width: {1000}px;
+                max-width: {800}px;
                 padding-top: {1}rem;
-                padding-right: {0}rem;
-                padding-left: {0.5}rem;
+                padding-right: {0.5}rem;
+                padding-left: {0}rem;
                 padding-bottom: {1}rem;
             }}
         </style>
