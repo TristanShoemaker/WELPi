@@ -338,37 +338,38 @@ class streamPlot():
         return plot
 
     def plotAssembly(self,
-                     in_sensors=None,
-                     out_sensors=None):
-        if in_sensors is None:
-            in_sensors = self.in_default
-        if out_sensors is None:
-            out_sensors = self.out_default
-
+                     sensor_groups=None,
+                     which='temp'):
         tic = time.time()
-        with st.spinner('Generating Plots'):
-            plot = alt.vconcat(
-                self.plotStatusPlot().properties(
-                    width=self.def_width,
-                    height=self.def_height * self.stat_height_mod
-                ),
-                self.plotMainMonitor(in_sensors).properties(
-                    width=self.def_width,
-                    height=self.def_height
-                ),
-                self.plotMainMonitor(out_sensors).properties(
-                    width=self.def_width,
-                    height=self.def_height
-                ),
-                self.plotCOPPlot().properties(
-                    width=self.def_width,
-                    height=self.def_height * self.cop_height_mod
-                ),
-                spacing=self.def_spacing
-            ).resolve_scale(
-                y='independent',
-                color='independent'
-            )
+
+        if which == 'temp':
+            if sensor_groups[0] is None:
+                sensor_groups[0] = self.in_default
+            if sensor_groups[1] is None:
+                sensor_groups[1] = self.out_default
+            with st.spinner('Generating Plots'):
+                plot = alt.vconcat(
+                    self.plotStatusPlot().properties(
+                        width=self.def_width,
+                        height=self.def_height * self.stat_height_mod
+                    ),
+                    self.plotMainMonitor(sensor_groups[0]).properties(
+                        width=self.def_width,
+                        height=self.def_height
+                    ),
+                    self.plotMainMonitor(sensor_groups[1]).properties(
+                        width=self.def_width,
+                        height=self.def_height
+                    ),
+                    self.plotCOPPlot().properties(
+                        width=self.def_width,
+                        height=self.def_height * self.cop_height_mod
+                    ),
+                    spacing=self.def_spacing
+                ).resolve_scale(
+                    y='independent',
+                    color='independent'
+                )
 
         message([F"{'Altair plot gen:': <20}", F"{time.time() - tic:.2f} s"],
                 tbl=self.mssg_tbl)
@@ -376,11 +377,43 @@ class streamPlot():
         return plot
 
 
+def cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which='temp'):
+    if which == 'temp':
+        if (date_mode == 'default' and sensor_groups[0] == stp.in_default
+                and sensor_groups[1] == stp.out_default
+                and sys.platform == 'linux'):
+            tic = time.time()
+            plots = mc.get('plotKey')
+            message([F"{'MemCache hit:': <20}", F"{time.time() - tic:.2f} s"],
+                    tbl=stp.mssg_tbl)
+        else:
+            stp.makeWEL(date_range)
+            plots = stp.plotAssembly(sensor_groups, which)
+            
+    return plots
+
+
+def page_select(mc, stp, date_mode, date_range, sensor_container, which):
+    sensor_groups = []
+    if which == 'temp':
+        in_sensors = sensor_container.multiselect("Inside Sensors",
+                                                  stp.sensor_list,
+                                                  stp.in_default)
+        out_sensors = sensor_container.multiselect("Loop Sensors",
+                                                   stp.sensor_list,
+                                                   stp.out_default)
+        sensor_groups = [in_sensors, out_sensors]
+        plots = cacheCheck(mc, stp, date_mode, date_range, sensor_groups,
+                           which=which)
+
+    return plots
+
+
 # ---------------------------- Start of Page Code ----------------------------
 
 def main():
     serverStartup()
-
+    mc = cachedMemCache()
     st.markdown(
         f"""
         <style>
@@ -395,18 +428,16 @@ def main():
         """,
         unsafe_allow_html=True)
 
+    which = st.sidebar.selectbox("Plot Page",
+                                 ['temp'])
+
     st.sidebar.subheader("Plot Options:")
 
     date_range, date_mode = date_select()
 
     stp = streamPlot()
 
-    in_sensors = st.sidebar.multiselect("Inside Sensors",
-                                        stp.sensor_list,
-                                        stp.in_default)
-    out_sensors = st.sidebar.multiselect("Loop Sensors",
-                                         stp.sensor_list,
-                                         stp.out_default)
+    sensor_container = st.sidebar.beta_container()
 
     stp.makeTbl()
 
@@ -414,16 +445,8 @@ def main():
 
     plot_placeholder = st.empty()
 
-    if (date_mode == 'default' and in_sensors == stp.in_default
-            and out_sensors == stp.out_default and sys.platform == 'linux'):
-        tic = time.time()
-        mc = cachedMemCache()
-        plots = mc.get('plotKey')
-        message([F"{'MemCache hit:': <20}", F"{time.time() - tic:.2f} s"],
-                tbl=stp.mssg_tbl)
-    else:
-        stp.makeWEL(date_range)
-        plots = stp.plotAssembly(in_sensors, out_sensors)
+    plots = page_select(mc, stp, date_mode, date_range, sensor_container,
+                        which)
 
     tic = time.time()
     plot_placeholder.altair_chart(plots, use_container_width=True)
