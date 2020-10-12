@@ -6,6 +6,7 @@ import sys
 import time
 import libmc
 import subprocess
+import json
 if sys.platform == 'linux':
     sys.path.append('/home/ubuntu/WEL/WELPy/')
 elif sys.platform == 'darwin':
@@ -80,10 +81,16 @@ def date_select():
 def ping(host):
     if host == 'wel':
         command = ['ping', '-c', '1', '192.168.68.107']
-    if subprocess.call(command, stdout=subprocess.DEVNULL) == 0:
-        return "✅"
-    else:
-        return "❎"
+        if subprocess.call(command, stdout=subprocess.DEVNULL) == 0:
+            return "✅"
+        else:
+            return "❎"
+    if host == 'pi_temp':
+        command = ['sensors', '-j']
+        temp = json.loads(subprocess.run(command,
+                          stdout=subprocess.PIPE).stdout.decode('utf-8'))
+        temp = temp["cpu_thermal-virtual-0"]["temp1"]["temp1_input"]
+        return F"{temp:.1f} °C"
 
 
 def nearestTimeGen():
@@ -388,7 +395,7 @@ def main():
         """,
         unsafe_allow_html=True)
 
-    st.sidebar.subheader("Plotting Options:")
+    st.sidebar.subheader("Plot Options:")
 
     date_range, date_mode = date_select()
 
@@ -424,6 +431,8 @@ def main():
             tbl=stp.mssg_tbl)
 
     message([F"{'WEL Status:': <20}", F"{ping('wel')}"], tbl=stp.mssg_tbl)
+
+    message([F"{'Pi Temp:': <20}", F"{ping('pi_temp')}"], tbl=stp.mssg_tbl)
 
 
 if __name__ == "__main__":
