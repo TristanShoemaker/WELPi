@@ -15,6 +15,10 @@ else:
 from WELServer import WELData, mongoConnect
 
 
+st.beta_set_page_config(page_title="Geo Monitoring",
+                        page_icon="🔩")
+
+
 def message(message_text,
             tbl=None):
     timestamp = F"{time.strftime('%Y-%m-%d %H:%M')}"
@@ -240,7 +244,7 @@ class streamPlot():
         # source = source.loc[source.value != 0]
 
         chunks = alt.Chart(source).mark_bar(
-            width=2,
+            width=self.def_width/350,
             clip=True
         ).encode(
             x=alt.X('dateandtime:T',
@@ -413,7 +417,7 @@ def main():
         plots = stp.plotAssembly(in_sensors, out_sensors)
 
     tic = time.time()
-    plot_placeholder.altair_chart(plots, use_container_width=True)
+    plot_placeholder.altair_chart(plots)
     message([F"{'Altair plot disp:': <20}", F"{time.time() - tic:.2f} s"],
             tbl=stp.mssg_tbl)
 
