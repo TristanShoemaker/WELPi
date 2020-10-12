@@ -41,6 +41,7 @@ def cachedMongoConnect():
 
 @st.cache()
 def cachedMemCache():
+    message("MemCache Connected")
     return libmc.Client(['localhost'])
 
 
@@ -75,9 +76,9 @@ def ping(host):
     if host == 'wel':
         command = ['ping', '-c', '1', '192.168.68.107']
     if subprocess.call(command, stdout=subprocess.DEVNULL) == 0:
-        return ":white_check_mark:"
+        return "✅"
     else:
-        return ":negative_squared_cross_mark:"
+        return "❎"
 
 
 def nearestTimeGen():
@@ -415,6 +416,8 @@ def main():
     plot_placeholder.altair_chart(plots, use_container_width=True)
     message([F"{'Altair plot disp:': <20}", F"{time.time() - tic:.2f} s"],
             tbl=stp.mssg_tbl)
+
+    message([F"{'WEL Status:': <20}", F"{ping('wel')}"], tbl=stp.mssg_tbl)
 
 
 if __name__ == "__main__":
