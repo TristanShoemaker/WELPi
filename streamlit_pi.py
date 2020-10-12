@@ -99,8 +99,9 @@ def resize():
 
 
 class streamPlot():
-    def_width = 700
-    def_height = 300
+    def_width = 900
+    def_height = 280
+    def_spacing = 2
     stat_height_mod = 0.5
     cop_height_mod = 0.6
     sensor_list = ['TAH_W', 'HP_W',  'TAH_fpm', 'liqu_refrig_T',
@@ -355,7 +356,7 @@ class streamPlot():
                     width=self.def_width,
                     height=self.def_height * self.cop_height_mod
                 ),
-                spacing=0
+                spacing=self.def_spacing
             ).resolve_scale(
                 y='independent',
                 color='independent'
@@ -376,7 +377,7 @@ def main():
         f"""
         <style>
             .reportview-container .main .block-container{{
-                max-width: {850}px;
+                max-width: {1000}px;
                 padding-top: {1}rem;
                 padding-right: {0}rem;
                 padding-left: {0.5}rem;
