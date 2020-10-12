@@ -15,28 +15,33 @@ else:
 from WELServer import WELData, mongoConnect
 
 
-def nearestTimeGen():
-    return alt.selection(type='single',
-                         nearest=True,
-                         on='mouseover',
-                         fields=['dateandtime'],
-                         empty='none')
-
-
-def resize():
-    return alt.selection(type='interval',
-                         encodings=['x'])
+def message(message_text,
+            tbl=None):
+    timestamp = F"{time.strftime('%Y-%m-%d %H:%M')}"
+    if tbl is not None:
+        print(F"{timestamp} : {message_text[0]} {message_text[1]}", flush=True)
+        message = pd.DataFrame([{"Message": message_text[0],
+                                 "Value": message_text[1]}])
+        message.set_index("Message", inplace=True)
+        tbl.add_rows(message)
+    else:
+        print(F"{timestamp} : {message_text}", flush=True)
 
 
 @st.cache()
 def serverStartup():
-    print(F"{time.strftime('%Y-%m-%d %H:%M')} : Server Started", flush=True)
+    message("Server Started")
 
 
 @st.cache(hash_funcs={"pymongo.database.Database": id})
 def cachedMongoConnect():
-    print(F"{time.strftime('%Y-%m-%d %H:%M')} : Mongo Connected", flush=True)
+    message("Mongo Connected")
     return mongoConnect()
+
+
+@st.cache()
+def cachedMemCache():
+    return libmc.Client(['localhost'])
 
 
 def date_select():
@@ -75,6 +80,19 @@ def ping(host):
         return ":negative_squared_cross_mark:"
 
 
+def nearestTimeGen():
+    return alt.selection(type='single',
+                         nearest=True,
+                         on='mouseover',
+                         fields=['dateandtime'],
+                         empty='none')
+
+
+def resize():
+    return alt.selection(type='interval',
+                         encodings=['x'])
+
+
 class streamPlot():
     def_width = 700
     def_height = 270
@@ -99,9 +117,13 @@ class streamPlot():
                    'outside_T']
     dat = None
     nearestTime = None
+    mssg_tbl = None
 
     def __init__(self):
         self.nearestTime = nearestTimeGen()
+
+    def makeTbl(self):
+        self.mssg_tbl = st.sidebar.table()
 
     def makeWEL(self,
                 date_range,
@@ -112,8 +134,8 @@ class streamPlot():
         if resample_P is not None:
             resample_T = (dat.timerange[1] - dat.timerange[0]) / resample_P
             dat.data = dat.data.resample(resample_T).mean()
-        print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
-              F"WELData init:        {time.time() - tic:.2f} s", flush=True)
+        message([F"{'WEL Data init:': <20}", F"{time.time() - tic:.2f} s"],
+                tbl=self.mssg_tbl)
         self.dat = dat
 
     def getDataSubset(self,
@@ -125,8 +147,8 @@ class streamPlot():
                                  value_vars=vars,
                                  var_name='label')
         except KeyError:
-            print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
-                  F"Key(s) \"{vars}\" not found in database.")
+            message(["Key(s) not found in db:", F"{vars}"],
+                    tbl=self.mssg_tbl)
             source = pd.DataFrame()
         return source
 
@@ -334,8 +356,8 @@ class streamPlot():
                 color='independent'
             )
 
-        print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
-              F"Altair plot gen:     {time.time() - tic:.2f} s", flush=True)
+        message([F"{'Altair plot gen:': <20}", F"{time.time() - tic:.2f} s"],
+                tbl=self.mssg_tbl)
 
         return plot
 
@@ -372,29 +394,27 @@ def main():
                                          stp.sensor_list,
                                          stp.out_default)
 
-    sb_stat_containers = st.sidebar.beta_columns(2)
-    with sb_stat_containers[0]:
-        st.text("WEL Server Status:")
-    with sb_stat_containers[1]:
-        st.markdown(F"{ping('wel')}")
+    stp.makeTbl()
+
     st.header('Geothermal Monitoring')
+
     plot_placeholder = st.empty()
 
     if (date_mode == 'default' and in_sensors == stp.in_default
             and out_sensors == stp.out_default and sys.platform == 'linux'):
         tic = time.time()
-        mc = libmc.Client(['localhost'])
+        mc = cachedMemCache()
         plots = mc.get('plotKey')
-        print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
-              F"MemCache hit:        {time.time() - tic:.2f} s", flush=True)
+        message([F"{'MemCache hit:': <20}", F"{time.time() - tic:.2f} s"],
+                tbl=stp.mssg_tbl)
     else:
         stp.makeWEL(date_range)
         plots = stp.plotAssembly(in_sensors, out_sensors)
 
     tic = time.time()
     plot_placeholder.altair_chart(plots, use_container_width=True)
-    print(F"{time.strftime('%Y-%m-%d %H:%M')} : "
-          F"Altair plot display: {time.time() - tic:.2f} s", flush=True)
+    message([F"{'Altair plot disp:': <20}", F"{time.time() - tic:.2f} s"],
+            tbl=stp.mssg_tbl)
 
 
 if __name__ == "__main__":
