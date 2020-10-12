@@ -97,8 +97,7 @@ def main():
                     F"post_id: {post_id}")
             post_success = True
         except DuplicateKeyError:
-            print(F"time key {post['dateandtime']} already in database",
-                  flush=True)
+            message(F"UTC time: {utc_time} post already in database")
 
         if post_success:
             asyncPlot(mc)
