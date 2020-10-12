@@ -15,7 +15,7 @@ else:
 from WELServer import WELData, mongoConnect
 
 
-st.beta_set_page_config(page_title="Geo Monitoring",
+st.beta_set_page_config(page_title="Geo Monitor",
                         page_icon="🔩")
 
 
@@ -100,7 +100,7 @@ def resize():
 
 class streamPlot():
     def_width = 700
-    def_height = 270
+    def_height = 300
     stat_height_mod = 0.5
     cop_height_mod = 0.6
     sensor_list = ['TAH_W', 'HP_W',  'TAH_fpm', 'liqu_refrig_T',
@@ -376,7 +376,7 @@ def main():
         f"""
         <style>
             .reportview-container .main .block-container{{
-                max-width: {800}px;
+                max-width: {850}px;
                 padding-top: {1}rem;
                 padding-right: {0}rem;
                 padding-left: {0.5}rem;
@@ -417,7 +417,7 @@ def main():
         plots = stp.plotAssembly(in_sensors, out_sensors)
 
     tic = time.time()
-    plot_placeholder.altair_chart(plots)
+    plot_placeholder.altair_chart(plots, use_container_width=True)
     message([F"{'Altair plot disp:': <20}", F"{time.time() - tic:.2f} s"],
             tbl=stp.mssg_tbl)
 
