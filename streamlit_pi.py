@@ -16,7 +16,7 @@ from WELServer import WELData, mongoConnect
 
 
 st.beta_set_page_config(page_title="Geo Monitor",
-                        page_icon="🔩")
+                        page_icon="🌬️")
 
 
 def message(message_text,
