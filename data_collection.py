@@ -92,8 +92,9 @@ def main():
         post_success = False
         try:
             post_id = db.insert_one(post).inserted_id
-            message((F"UTC time: {post['dateandtime']} | "
-                     F"post_id: {post_id}"))
+            utc_time = post['dateandtime'].strftime('%Y-%m-%d %H:%M')
+            message(F"UTC time: {utc_time} | "
+                    F"post_id: {post_id}")
             post_success = True
         except DuplicateKeyError:
             print(F"time key {post['dateandtime']} already in database",
