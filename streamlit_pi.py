@@ -154,11 +154,16 @@ class streamPlot():
 
     def makeWEL(self,
                 date_range,
-                resample_P=None):
+                resample_P=None,
+                force_refresh=False):
         if resample_P is None:
             resample_P = self.resample_P
         tic = time.time()
-        dat = cachedWELData(date_range)
+        if not force_refresh:
+            dat = cachedWELData(date_range)
+        else:
+            dat = WELData(timerange=date_range,
+                          mongo_connection=cachedMongoConnect())
         resample_T = (dat.timerange[1] - dat.timerange[0]) / resample_P
         dat.data = dat.data.resample(resample_T).mean()
         message([F"{'WEL Data init:': <20}", F"{time.time() - tic:.2f} s"],
@@ -475,9 +480,12 @@ def page_select(mc, stp, date_mode, date_range, sensor_container, which):
 
     if cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which=which):
         tic = time.time()
-        plots = mc.get(F"{which}PlotKey")
+        memCache = mc.get(F"{which}PlotKey")
+        plots = memCache['plots']
         if plots is not None:
-            message([F"{'MemCache hit:': <20}",
+            cache_hit_mssg = ("MemCache hit | "
+                              F"{memCache['timeKey'].strftime('%H:%M')}:")
+            message([F"{cache_hit_mssg: <20}",
                      F"{time.time() - tic:.2f} s"],
                     tbl=stp.mssg_tbl)
             return plots
