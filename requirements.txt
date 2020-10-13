@@ -3,3 +3,4 @@ matplotlib
 wget
 astral
 pymongo
+libmc
