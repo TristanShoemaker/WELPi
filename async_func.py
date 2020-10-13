@@ -56,14 +56,15 @@ def getData(ip):
     return post
 
 
-def asyncPlot(mc):
+def asyncPlot(mc, timeKey):
     stp = streamPlot()
-    stp.makeWEL(['-t', '12'])
+    stp.makeWEL(['-t', '12'], force_refresh=True)
     plot_options = ['temp', 'pandw']
     for which in plot_options:
         message(F"Async plot {which}")
         plots = stp.plotAssembly(which=which)
-        mc_result = mc.set(F"{which}PlotKey", plots)
+        mc_result = mc.set(F"{which}PlotKey", {'plots': plots,
+                                               'timeKey': timeKey})
         if not mc_result:
             message(F"{which} plot failed to cache")
             quit()
@@ -103,7 +104,7 @@ def main():
             message(F"UTC time: {utc_time} post already in database")
 
         if post_success:
-            asyncPlot(mc)
+            asyncPlot(mc, post['dateandtime'].astimezone(to_tzone))
 
         time.sleep(30)
 
