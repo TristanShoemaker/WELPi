@@ -59,11 +59,14 @@ def getData(ip):
 def asyncPlot(mc):
     stp = streamPlot()
     stp.makeWEL(['-t', '12'])
-    plots = stp.plotAssembly()
-    mc_result = mc.set('plotKey', plots)
-    if not mc_result:
-        message("Plot failed to cache")
-        quit()
+    plot_options = ['temp', 'pandw']
+    for which in plot_options:
+        message(F"Async plot {which}")
+        plots = stp.plotAssembly(which=which)
+        mc_result = mc.set(F"{which}PlotKey", plots)
+        if not mc_result:
+            message(F"{which} plot failed to cache")
+            quit()
 
 
 def connectMongo(ip):
@@ -90,9 +93,9 @@ def main():
     while True:
         post = getData(WEL_ip)
         post_success = False
+        utc_time = post['dateandtime'].strftime('%Y-%m-%d %H:%M')
         try:
             post_id = db.insert_one(post).inserted_id
-            utc_time = post['dateandtime'].strftime('%Y-%m-%d %H:%M')
             message(F"UTC time: {utc_time} | "
                     F"post_id: {post_id}")
             post_success = True
