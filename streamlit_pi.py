@@ -93,6 +93,13 @@ def ping(host):
         return F"{temp:.1f} °C"
 
 
+def whichFormatFunc(option):
+    if option == 'temp':
+        return "Temperature"
+    if option == 'pandw':
+        return "Power and Water"
+
+
 def nearestTimeGen():
     return alt.selection(type='single',
                          nearest=True,
@@ -112,6 +119,8 @@ class streamPlot():
     def_spacing = 2
     stat_height_mod = 0.5
     cop_height_mod = 0.6
+    pwr_height_mod = 0.6
+    water_height_mod = 0.6
     sensor_list = ['TAH_W', 'HP_W',  'TAH_fpm', 'liqu_refrig_T',
                    'gas_refrig_T', 'loop_in_T', 'loop_out_T', 'outside_T',
                    'power_tot', 'living_T', 'desup_T', 'house_hot_T',
@@ -120,15 +129,13 @@ class streamPlot():
                    'zone_2_b', 'TAH_out_T', 'desup_return_T', 'buderus_h2o_T',
                    'wood_fire_T', 'tank_h2o_T', 'trist_T', 'base_T',
                    'daylight', 'T_diff', 'COP', 'well_W', 'well_COP']
-    in_default = ['living_T',
-                  'trist_T',
-                  'base_T',
-                  'wood_fire_T']
-    out_default = ['TAH_in_T',
-                   'TAH_out_T',
-                   'loop_in_T',
-                   'loop_out_T',
+    in_default = ['living_T', 'trist_T', 'base_T', 'wood_fire_T']
+    out_default = ['TAH_in_T', 'TAH_out_T', 'loop_in_T', 'loop_out_T',
                    'outside_T']
+    water_default = ['desup_T', 'desup_return_T', 'house_hot_T', 'tank_h2o_T',
+                     'buderus_h2o_T']
+    pwr_default = ['TAH_W', 'HP_W', 'power_tot']
+    wind_default = ['TAH_fpm']
     dat = None
     nearestTime = None
     mssg_tbl = None
@@ -185,6 +192,22 @@ class streamPlot():
 
         return [selectors, rules]
 
+    def createTimeText(self,
+                       rules):
+        time_text_dy = self.def_height * 0.6 / 2 + 10
+        time_text = rules.mark_text(align='center',
+                                    dx=0,
+                                    dy=time_text_dy
+                                    ).encode(
+            text=alt.condition(self.nearestTime,
+                               'dateandtime:T',
+                               alt.value(' '),
+                               format='%b %-d, %H:%M'),
+            color=alt.ColorValue('black')
+        )
+
+        return time_text
+
     def plotNightAlt(self,
                      height_mod=1):
         source = self.getDataSubset('daylight')
@@ -203,7 +226,9 @@ class streamPlot():
         return area
 
     def plotMainMonitor(self,
-                        vars):
+                        vars,
+                        axis_label="Temperature / °C",
+                        bottomPlot=False):
         source = self.getDataSubset(vars)
 
         lines = alt.Chart(source).mark_line(interpolate='basis').encode(
@@ -216,7 +241,7 @@ class streamPlot():
                                   domainWidth=0)),
             y=alt.Y('value:Q',
                     scale=alt.Scale(zero=False),
-                    axis=alt.Axis(title="Temperature / °C",
+                    axis=alt.Axis(title=axis_label,
                                   orient='right',
                                   grid=True)),
             color=alt.Color('label',
@@ -239,9 +264,15 @@ class streamPlot():
                                format='.1f')
         )
 
+        selectors, rules = self.createRules(source)
+
         plot = alt.layer(
-            self.plotNightAlt(), lines, points, text, *self.createRules(source)
+            self.plotNightAlt(), lines, points, text, selectors, rules
         )
+
+        if bottomPlot:
+            time_text = self.createTimeText(rules)
+            plot = alt.layer(plot, time_text)
 
         return plot
 
@@ -279,8 +310,9 @@ class streamPlot():
 
         return plot
 
-    def plotCOPPlot(self):
-        source = self.getDataSubset(['COP'])
+    def plotCOPPlot(self,
+                    bottomPlot=False):
+        source = self.getDataSubset(['COP', 'well_COP'])
         lines = alt.Chart(source).transform_window(
             rollmean='mean(value)',
             frame=[-6 * 40, 0]
@@ -291,8 +323,6 @@ class streamPlot():
             x=alt.X('dateandtime:T',
                     # scale=alt.Scale(domain=self.resize()),
                     axis=alt.Axis(grid=False,
-                                  # format='%H',
-                                  # labelAngle=25,
                                   labels=False,
                                   ticks=False),
                     title=None),
@@ -300,7 +330,8 @@ class streamPlot():
                     scale=alt.Scale(zero=True),
                     axis=alt.Axis(orient='right',
                                   grid=True),
-                    title='COP Rolling Mean')
+                    title='COP Rolling Mean'),
+            color='label'
         )
 
         points = lines.mark_point().encode(
@@ -318,22 +349,14 @@ class streamPlot():
 
         selectors, rules = self.createRules(source)
 
-        time_text_dy = self.def_height * 0.6 / 2 + 10
-        time_text = rules.mark_text(align='center',
-                                    dx=0,
-                                    dy=time_text_dy
-                                    ).encode(
-            text=alt.condition(self.nearestTime,
-                               'dateandtime:T',
-                               alt.value(' '),
-                               format='%b %-d, %H:%M'),
-            color=alt.ColorValue('black')
-        )
-
         plot = alt.layer(
-            self.plotNightAlt(), lines, points, text, time_text, selectors,
+            self.plotNightAlt(), lines, points, text, selectors,
             rules
         )
+
+        if bottomPlot:
+            time_text = self.createTimeText(rules)
+            plot = alt.layer(plot, time_text)
 
         return plot
 
@@ -361,9 +384,43 @@ class streamPlot():
                         width=self.def_width,
                         height=self.def_height
                     ),
-                    self.plotCOPPlot().properties(
+                    self.plotCOPPlot(bottomPlot=True).properties(
                         width=self.def_width,
                         height=self.def_height * self.cop_height_mod
+                    ),
+                    spacing=self.def_spacing
+                ).resolve_scale(
+                    y='independent',
+                    color='independent'
+                )
+
+        if which == 'pandw':
+            if sensor_groups[0] is None:
+                sensor_groups[0] = self.water_default
+            if sensor_groups[1] is None:
+                sensor_groups[1] = self.pwr_default
+            if sensor_groups[2] is None:
+                sensor_groups[2] = self.water_default
+            with st.spinner('Generating Plots'):
+                plot = alt.vconcat(
+                    self.plotStatusPlot().properties(
+                        width=self.def_width,
+                        height=self.def_height * self.stat_height_mod
+                    ),
+                    self.plotMainMonitor(sensor_groups[0]).properties(
+                        width=self.def_width,
+                        height=self.def_height
+                    ),
+                    self.plotMainMonitor(sensor_groups[1],
+                                         axis_label="Power / W").properties(
+                        width=self.def_width,
+                        height=self.def_height * self.pwr_height_mod
+                    ),
+                    self.plotMainMonitor(sensor_groups[2],
+                                         axis_label="Speed/ m/s",
+                                         bottomPlot=True).properties(
+                        width=self.def_width,
+                        height=self.def_height * self.water_height_mod
                     ),
                     spacing=self.def_spacing
                 ).resolve_scale(
@@ -389,7 +446,10 @@ def cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which='temp'):
         else:
             stp.makeWEL(date_range)
             plots = stp.plotAssembly(sensor_groups, which)
-            
+    if which == 'pandw':
+        stp.makeWEL(date_range)
+        plots = stp.plotAssembly(sensor_groups, which)
+
     return plots
 
 
@@ -403,8 +463,21 @@ def page_select(mc, stp, date_mode, date_range, sensor_container, which):
                                                    stp.sensor_list,
                                                    stp.out_default)
         sensor_groups = [in_sensors, out_sensors]
-        plots = cacheCheck(mc, stp, date_mode, date_range, sensor_groups,
-                           which=which)
+
+    if which == 'pandw':
+        water_sensors = sensor_container.multiselect("Water Sensors",
+                                                     stp.sensor_list,
+                                                     stp.water_default)
+        pwr_sensors = sensor_container.multiselect("Power Sensors",
+                                                   stp.sensor_list,
+                                                   stp.pwr_default)
+        wind_sensors = sensor_container.multiselect("Wind Sensors",
+                                                    stp.sensor_list,
+                                                    stp.wind_default)
+        sensor_groups = [water_sensors, pwr_sensors, wind_sensors]
+
+    plots = cacheCheck(mc, stp, date_mode, date_range, sensor_groups,
+                       which=which)
 
     return plots
 
@@ -429,7 +502,8 @@ def main():
         unsafe_allow_html=True)
 
     which = st.sidebar.selectbox("Plot Page",
-                                 ['temp'])
+                                 ['temp', 'pandw'],
+                                 format_func=whichFormatFunc)
 
     st.sidebar.subheader("Plot Options:")
 
@@ -441,7 +515,7 @@ def main():
 
     stp.makeTbl()
 
-    st.header('Geothermal Monitoring')
+    st.header(F"{whichFormatFunc(which)} Monitor")
 
     plot_placeholder = st.empty()
 
