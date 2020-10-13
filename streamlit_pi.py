@@ -366,10 +366,8 @@ class streamPlot():
         tic = time.time()
 
         if which == 'temp':
-            if sensor_groups[0] is None:
-                sensor_groups[0] = self.in_default
-            if sensor_groups[1] is None:
-                sensor_groups[1] = self.out_default
+            if sensor_groups is None:
+                sensor_groups = [self.in_default, self.out_default]
             with st.spinner('Generating Plots'):
                 plot = alt.vconcat(
                     self.plotStatusPlot().properties(
@@ -395,12 +393,9 @@ class streamPlot():
                 )
 
         if which == 'pandw':
-            if sensor_groups[0] is None:
-                sensor_groups[0] = self.water_default
-            if sensor_groups[1] is None:
-                sensor_groups[1] = self.pwr_default
-            if sensor_groups[2] is None:
-                sensor_groups[2] = self.water_default
+            if sensor_groups is None:
+                sensor_groups = [self.water_default, self.pwr_default,
+                                 self.wind_default]
             with st.spinner('Generating Plots'):
                 plot = alt.vconcat(
                     self.plotStatusPlot().properties(
@@ -439,18 +434,14 @@ def cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which='temp'):
         if (date_mode == 'default' and sensor_groups[0] == stp.in_default
                 and sensor_groups[1] == stp.out_default
                 and sys.platform == 'linux'):
-            tic = time.time()
-            plots = mc.get('plotKey')
-            message([F"{'MemCache hit:': <20}", F"{time.time() - tic:.2f} s"],
-                    tbl=stp.mssg_tbl)
-        else:
-            stp.makeWEL(date_range)
-            plots = stp.plotAssembly(sensor_groups, which)
-    if which == 'pandw':
-        stp.makeWEL(date_range)
-        plots = stp.plotAssembly(sensor_groups, which)
-
-    return plots
+            return True
+    elif which == 'pandw':
+        if (date_mode == 'default' and sensor_groups[0] == stp.water_default
+                and sensor_groups[1] == stp.pwr_default
+                and sensor_groups[2] == stp.wind_default
+                and sys.platform == 'linux'):
+            return True
+    return False
 
 
 def page_select(mc, stp, date_mode, date_range, sensor_container, which):
@@ -476,8 +467,21 @@ def page_select(mc, stp, date_mode, date_range, sensor_container, which):
                                                     stp.wind_default)
         sensor_groups = [water_sensors, pwr_sensors, wind_sensors]
 
-    plots = cacheCheck(mc, stp, date_mode, date_range, sensor_groups,
-                       which=which)
+    if cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which=which):
+        tic = time.time()
+        plots = mc.get(F"{which}PlotKey")
+        if plots is not None:
+            message([F"{'MemCache hit:': <20}",
+                     F"{time.time() - tic:.2f} s"],
+                    tbl=stp.mssg_tbl)
+            return plots
+        else:
+            message([F"{'❗MemCache MISS❗:': <20}",
+                     F"{time.time() - tic:.2f} s"],
+                    tbl=stp.mssg_tbl)
+
+    stp.makeWEL(date_range)
+    plots = stp.plotAssembly(sensor_groups, which)
 
     return plots
 
