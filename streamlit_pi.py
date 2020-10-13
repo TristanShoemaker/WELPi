@@ -114,6 +114,7 @@ def resize():
 
 
 class streamPlot():
+    resample_P = 350
     def_width = 700
     def_height = 280
     def_spacing = 2
@@ -148,13 +149,14 @@ class streamPlot():
 
     def makeWEL(self,
                 date_range,
-                resample_P=350):
+                resample_P=None):
+        if resample_P is None:
+            resample_P = self.resample_P
         tic = time.time()
         dat = WELData(timerange=date_range,
                       mongo_connection=cachedMongoConnect())
-        if resample_P is not None:
-            resample_T = (dat.timerange[1] - dat.timerange[0]) / resample_P
-            dat.data = dat.data.resample(resample_T).mean()
+        resample_T = (dat.timerange[1] - dat.timerange[0]) / resample_P
+        dat.data = dat.data.resample(resample_T).mean()
         message([F"{'WEL Data init:': <20}", F"{time.time() - tic:.2f} s"],
                 tbl=self.mssg_tbl)
         self.dat = dat
@@ -194,7 +196,7 @@ class streamPlot():
 
     def createTimeText(self,
                        rules):
-        time_text_dy = self.def_height * 0.6 / 2 + 10
+        time_text_dy = self.def_height * self.cop_height_mod / 2 + 10
         time_text = rules.mark_text(align='center',
                                     dx=0,
                                     dy=time_text_dy
@@ -284,7 +286,7 @@ class streamPlot():
         # source = source.loc[source.value != 0]
 
         chunks = alt.Chart(source).mark_bar(
-            width=self.def_width/350,
+            width=self.def_width / self.resample_P,
             clip=True
         ).encode(
             x=alt.X('dateandtime:T',
