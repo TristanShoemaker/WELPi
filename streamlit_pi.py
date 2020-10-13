@@ -51,6 +51,12 @@ def cachedMemCache():
     return libmc.Client(['localhost'])
 
 
+@st.cache(allow_output_mutation=True)
+def cachedWELData(date_range):
+    return WELData(timerange=date_range,
+                   mongo_connection=cachedMongoConnect())
+
+
 def date_select():
     date_range = st.sidebar.date_input(label='Date Range',
                                        value=[(dt.datetime.now()
@@ -120,8 +126,7 @@ class streamPlot():
     def_spacing = 2
     stat_height_mod = 0.5
     cop_height_mod = 0.6
-    pwr_height_mod = 0.6
-    water_height_mod = 0.6
+    pwr_height_mod = 0.7
     sensor_list = ['TAH_W', 'HP_W',  'TAH_fpm', 'liqu_refrig_T',
                    'gas_refrig_T', 'loop_in_T', 'loop_out_T', 'outside_T',
                    'power_tot', 'living_T', 'desup_T', 'house_hot_T',
@@ -153,8 +158,7 @@ class streamPlot():
         if resample_P is None:
             resample_P = self.resample_P
         tic = time.time()
-        dat = WELData(timerange=date_range,
-                      mongo_connection=cachedMongoConnect())
+        dat = cachedWELData(date_range)
         resample_T = (dat.timerange[1] - dat.timerange[0]) / resample_P
         dat.data = dat.data.resample(resample_T).mean()
         message([F"{'WEL Data init:': <20}", F"{time.time() - tic:.2f} s"],
@@ -414,10 +418,10 @@ class streamPlot():
                         height=self.def_height * self.pwr_height_mod
                     ),
                     self.plotMainMonitor(sensor_groups[2],
-                                         axis_label="Speed/ m/s",
+                                         axis_label="Wind Speed / m/s",
                                          bottomPlot=True).properties(
                         width=self.def_width,
-                        height=self.def_height * self.water_height_mod
+                        height=self.def_height * self.pwr_height_mod
                     ),
                     spacing=self.def_spacing
                 ).resolve_scale(
@@ -493,6 +497,7 @@ def page_select(mc, stp, date_mode, date_range, sensor_container, which):
 def main():
     serverStartup()
     mc = cachedMemCache()
+
     st.markdown(
         f"""
         <style>
@@ -507,24 +512,22 @@ def main():
         """,
         unsafe_allow_html=True)
 
-    which = st.sidebar.selectbox("Plot Page",
+    # -- sidebar --
+    which = st.sidebar.selectbox("Page",
                                  ['temp', 'pandw'],
                                  format_func=whichFormatFunc)
 
     st.sidebar.subheader("Plot Options:")
-
     date_range, date_mode = date_select()
-
     stp = streamPlot()
-
     sensor_container = st.sidebar.beta_container()
 
+    st.sidebar.subheader("Log:")
     stp.makeTbl()
 
+    # -- main area --
     st.header(F"{whichFormatFunc(which)} Monitor")
-
     plot_placeholder = st.empty()
-
     plots = page_select(mc, stp, date_mode, date_range, sensor_container,
                         which)
 
