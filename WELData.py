@@ -12,7 +12,11 @@ from shutil import move
 from astral import sun, LocationInfo
 from pymongo import MongoClient
 from dateutil import tz
-from streamlit_pi import message
+
+
+def message(message_text):
+    timestamp = F"{time.strftime('%Y-%m-%d %H:%M')}"
+    print(F"{timestamp} : {message_text}", flush=True)
 
 
 def mongoConnect():
