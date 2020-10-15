@@ -52,8 +52,11 @@ def cachedMemCache():
 
 
 @st.cache(allow_output_mutation=True)
-def cachedWELData(date_range):
+def cachedWELData(date_range,
+                  data_source='Pi'):
     return WELData(timerange=date_range,
+                   data_source=data_source,
+                   dl_db_path="/home/ubuntu/WEL/log_db/",
                    mongo_connection=cachedMongoConnect())
 
 
@@ -62,7 +65,7 @@ def date_select():
                                        value=[(dt.datetime.now()
                                                - dt.timedelta(days=1)),
                                               dt.datetime.now()],
-                                       min_value=dt.datetime(2020, 8, 3),
+                                       min_value=dt.datetime(2020, 3, 21),
                                        max_value=dt.datetime.now())
     date_range = list(date_range)
     while len(date_range) < 2:
@@ -160,7 +163,10 @@ class streamPlot():
             resample_P = self.resample_P
         tic = time.time()
         if not force_refresh:
-            dat = cachedWELData(date_range)
+            if date_range[0] < dt.datetime(2020, 8, 3):
+                dat = cachedWELData(date_range, data_source='WEL')
+            else:
+                dat = cachedWELData(date_range)
         else:
             dat = WELData(timerange=date_range,
                           mongo_connection=cachedMongoConnect())
