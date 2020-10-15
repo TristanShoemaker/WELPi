@@ -13,6 +13,8 @@ from WELData import WELData, mongoConnect
 st.beta_set_page_config(page_title="Geo Monitor",
                         page_icon="🌀")
 
+platform = sys.platform
+
 
 def message(message_text,
             tbl=None):
@@ -88,12 +90,14 @@ def ping(host):
             return "✅"
         else:
             return "❎"
-    if host == 'pi_temp':
+    if host == 'pi_temp' and platform == 'linux':
         command = ['sensors', '-j']
         temp = json.loads(subprocess.run(command,
                           stdout=subprocess.PIPE).stdout.decode('utf-8'))
         temp = temp["cpu_thermal-virtual-0"]["temp1"]["temp1_input"]
         return F"{temp:.1f} °C"
+    else:
+        return "Not Pi 😞"
 
 
 def whichFormatFunc(option):
@@ -117,8 +121,8 @@ def resize():
 
 
 class streamPlot():
-    resample_P = 350
-    def_width = 700
+    resample_P = 300
+    def_width = 'container'
     def_height = 280
     def_spacing = 2
     stat_height_mod = 0.5
@@ -295,7 +299,7 @@ class streamPlot():
         # source = source.loc[source.value != 0]
 
         chunks = alt.Chart(source).mark_bar(
-            width=self.def_width / self.resample_P,
+            width=3,
             clip=True
         ).encode(
             x=alt.X('dateandtime:T',
@@ -342,12 +346,14 @@ class streamPlot():
                     axis=alt.Axis(orient='right',
                                   grid=True),
                     title='COP Rolling Mean'),
-            color='label'
+            color=alt.Color('label', legend=alt.Legend(title='Efficiencies'))
         )
 
         raw_lines = alt.Chart(source).mark_line(
             interpolate='basis',
-            strokeWidth=1.5
+            strokeWidth=1.5,
+            strokeDash=[1, 2],
+            opacity=0.7
         ).encode(
             x=alt.X('dateandtime:T'),
             y=alt.Y('value:Q'),
@@ -453,13 +459,13 @@ def cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which='temp'):
     if which == 'temp':
         if (date_mode == 'default' and sensor_groups[0] == stp.in_default
                 and sensor_groups[1] == stp.out_default
-                and sys.platform == 'linux'):
+                and platform == 'linux'):
             return True
     elif which == 'pandw':
         if (date_mode == 'default' and sensor_groups[0] == stp.water_default
                 and sensor_groups[1] == stp.pwr_default
                 and sensor_groups[2] == stp.wind_default
-                and sys.platform == 'linux'):
+                and platform == 'linux'):
             return True
     return False
 
@@ -518,18 +524,22 @@ def main():
     st.markdown(
         f"""
         <style>
+            .stVegaLiteChart{{
+                width: {90}%;
+            }}
             .reportview-container .main .block-container{{
-                max-width: {800}px;
-                padding-top: {1}rem;
-                padding-right: {0.5}rem;
-                padding-left: {0}rem;
-                padding-bottom: {1}rem;
+                max-width: {1300}px;
+                padding-top: {2}%;
+                padding-right: {5}%;
+                padding-left: {5}%;
+                padding-bottom: {0}%;
             }}
         </style>
         """,
         unsafe_allow_html=True)
 
     # -- sidebar --
+    st.sidebar.subheader("Monitor:")
     which = st.sidebar.selectbox("Page",
                                  ['temp', 'pandw'],
                                  format_func=whichFormatFunc)
@@ -549,7 +559,7 @@ def main():
                         which)
 
     tic = time.time()
-    plot_placeholder.altair_chart(plots, use_container_width=True)
+    plot_placeholder.altair_chart(plots)
     message([F"{'Altair plot disp:': <20}", F"{time.time() - tic:.2f} s"],
             tbl=stp.mssg_tbl)
 
