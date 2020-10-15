@@ -287,7 +287,7 @@ class streamPlot():
 
         return plot
 
-    def plotStatusPlot(self):
+    def plotStatus(self):
         status_list = ['TAH_fan_b', 'heat_1_b', 'heat_2_b', 'zone_1_b',
                        'zone_2_b', 'humid_b', 'rev_valve_b', 'aux_heat_b']
         source = self.getDataSubset(status_list)
@@ -321,8 +321,8 @@ class streamPlot():
 
         return plot
 
-    def plotCOPPlot(self,
-                    bottomPlot=False):
+    def plotCOP(self,
+                bottomPlot=False):
         source = self.getDataSubset(['COP', 'well_COP'])
         lines = alt.Chart(source).transform_window(
             rollmean='mean(value)',
@@ -345,6 +345,15 @@ class streamPlot():
             color='label'
         )
 
+        raw_lines = alt.Chart(source).mark_line(
+            interpolate='basis',
+            strokeWidth=1.5
+        ).encode(
+            x=alt.X('dateandtime:T'),
+            y=alt.Y('value:Q'),
+            color='label'
+        )
+
         points = lines.mark_point().encode(
             opacity=alt.condition(self.nearestTime,
                                   alt.value(1),
@@ -361,7 +370,7 @@ class streamPlot():
         selectors, rules = self.createRules(source)
 
         plot = alt.layer(
-            self.plotNightAlt(), lines, points, text, selectors,
+            self.plotNightAlt(), lines, raw_lines, points, text, selectors,
             rules
         )
 
@@ -381,7 +390,7 @@ class streamPlot():
                 sensor_groups = [self.in_default, self.out_default]
             with st.spinner('Generating Plots'):
                 plot = alt.vconcat(
-                    self.plotStatusPlot().properties(
+                    self.plotStatus().properties(
                         width=self.def_width,
                         height=self.def_height * self.stat_height_mod
                     ),
@@ -393,7 +402,7 @@ class streamPlot():
                         width=self.def_width,
                         height=self.def_height
                     ),
-                    self.plotCOPPlot(bottomPlot=True).properties(
+                    self.plotCOP(bottomPlot=True).properties(
                         width=self.def_width,
                         height=self.def_height * self.cop_height_mod
                     ),
@@ -409,7 +418,7 @@ class streamPlot():
                                  self.wind_default]
             with st.spinner('Generating Plots'):
                 plot = alt.vconcat(
-                    self.plotStatusPlot().properties(
+                    self.plotStatus().properties(
                         width=self.def_width,
                         height=self.def_height * self.stat_height_mod
                     ),
