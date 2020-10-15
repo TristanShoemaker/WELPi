@@ -7,13 +7,7 @@ import time
 import libmc
 import subprocess
 import json
-if sys.platform == 'linux':
-    sys.path.append('/home/ubuntu/WEL/WELPy/')
-elif sys.platform == 'darwin':
-    sys.path.append('../WELPy/')
-else:
-    raise('Platform not recognized.')
-from WELServer import WELData, mongoConnect
+from WELData import WELData, mongoConnect
 
 
 st.beta_set_page_config(page_title="Geo Monitor",
