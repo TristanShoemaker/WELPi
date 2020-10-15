@@ -12,6 +12,7 @@ from shutil import move
 from astral import sun, LocationInfo
 from pymongo import MongoClient
 from dateutil import tz
+from streamlit_pi import message
 
 
 def mongoConnect():
@@ -72,7 +73,6 @@ class WELData:
                                 + F"WEL_log_{self._now.year}"
                                 + F"_{self._now.month:02d}.xls")
                 downfile = download(dat_url, downfilepath)
-                print()
                 if os.path.exists(downfilepath):
                     move(downfile, downfilepath)
 
@@ -84,7 +84,7 @@ class WELData:
                 self._mongo_db = mongo_connection
             self._stitch()
         else:
-            print("Valid data sources are 'Pi' or 'WEL'")
+            message("Valid data sources are 'Pi' or 'WEL'")
             quit()
 
     def time_from_args(self,
@@ -158,16 +158,23 @@ class WELData:
 
         # Additional calculated columns
         out_frame['T_diff'] = frame.living_T - frame.outside_T
-        cops = (((1.15 * 0.37 * frame.TAH_fpm)
+
+        cop_heat_mask = frame.heat_1_b % 2
+        cop_heat_mask[cop_heat_mask == 0] = np.nan
+
+        COP = (((1.15 * 0.37 * frame.TAH_fpm)
                 * (np.abs(frame.TAH_out_T - frame.TAH_in_T)))
-                / (frame.HP_W / 1000))
-        cops[cops > 20] = np.nan
-        out_frame['COP'] = cops
+               / (frame.HP_W / 1000))
+        COP[COP > 20] = np.nan
+        COP = COP * cop_heat_mask
+        out_frame['COP'] = COP
+
         well_gpm = 13.6
         out_frame['well_W'] = ((well_gpm * 0.0630902) * 4.186
                                * (np.abs(frame.loop_out_T - frame.loop_in_T)))
         well_COP = out_frame.well_W / (frame.HP_W / 1000)
         well_COP[well_COP > 20] = np.nan
+        well_COP = well_COP * cop_heat_mask
         out_frame['well_COP'] = well_COP
 
         return out_frame
@@ -195,15 +202,12 @@ class WELData:
             prev_db_path_zip = (self._dl_db_path + F'WEL_log_{month.year}'
                                                    F'_{month.month:02d}.zip')
             try:
-                # print(prev_db_path_zip)
-                print(F'{month.year}-{month.month}:')
+                message(F"Downloading {month.year}-{month.month}:\n")
                 download(prev_url, prev_db_path_zip)
-                print()
                 os.system(F'unzip {prev_db_path_zip} -d {self._dl_db_path}'
                           F';rm {prev_db_path_zip}')
-                print()
             except Exception:
-                print('Not available for download')
+                message('Not available for download')
 
     """
     Redownload all months since 2020-3-1 to db.
@@ -237,7 +241,7 @@ class WELData:
                              for x in range(num_months + 1)]
                 loadedstring = [F'{month.year}-{month.month}'
                                 for month in monthlist]
-                print(F'loaded: {loadedstring}')
+                message(F'Loaded: {loadedstring}')
                 datalist = [self.read_log(self._dl_db_path
                                           + F'WEL_log_{month.year}'
                                           + F'_{month.month:02d}.xls')
