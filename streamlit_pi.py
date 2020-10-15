@@ -1,6 +1,7 @@
 import streamlit as st
 import altair as alt
 import pandas as pd
+import numpy as np
 import datetime as dt
 import sys
 import time
@@ -121,7 +122,7 @@ def resize():
 
 
 class streamPlot():
-    resample_P = 300
+    resample_N = 300
     def_width = 'container'
     def_height = 280
     def_spacing = 2
@@ -155,10 +156,10 @@ class streamPlot():
 
     def makeWEL(self,
                 date_range,
-                resample_P=None,
+                resample_N=None,
                 force_refresh=False):
-        if resample_P is None:
-            resample_P = self.resample_P
+        if resample_N is None:
+            resample_N = self.resample_N
         tic = time.time()
         if not force_refresh:
             if date_range[0] < dt.datetime(2020, 8, 3):
@@ -168,7 +169,7 @@ class streamPlot():
         else:
             dat = WELData(timerange=date_range,
                           mongo_connection=cachedMongoConnect())
-        resample_T = (dat.timerange[1] - dat.timerange[0]) / resample_P
+        resample_T = (dat.timerange[1] - dat.timerange[0]) / resample_N
         dat.data = dat.data.resample(resample_T).mean()
         message([F"{'WEL Data init:': <20}", F"{time.time() - tic:.2f} s"],
                 tbl=self.mssg_tbl)
@@ -190,9 +191,8 @@ class streamPlot():
 
     def createRules(self,
                     source):
-        selectors = alt.Chart(source).mark_point().encode(
+        selectors = alt.Chart(source).mark_point(opacity=0).encode(
             x='dateandtime:T',
-            opacity=alt.value(0),
         ).add_selection(
             self.nearestTime
         )
@@ -314,7 +314,7 @@ class streamPlot():
                                   grid=False),
                     sort=status_list),
             opacity=alt.condition(alt.datum.value > 0,
-                                  alt.value(100),
+                                  alt.value(1),
                                   alt.value(0)),
             color=alt.Color('label', legend=None)
         )
@@ -328,9 +328,14 @@ class streamPlot():
     def plotCOP(self,
                 bottomPlot=False):
         source = self.getDataSubset(['COP', 'well_COP'])
+
+        rolling_frame = (3 * self.resample_N / ((self.dat.timerange[1]
+                         - self.dat.timerange[0]).total_seconds() / 3600))
+        rolling_frame = int(np.clip(rolling_frame, self.resample_N / 15,
+                                    self.resample_N / 2))
         lines = alt.Chart(source).transform_window(
             rollmean='mean(value)',
-            frame=[-6 * 40, 0]
+            frame=[-rolling_frame, 0]
         ).mark_line(
             interpolate='basis',
             strokeWidth=1.5
@@ -353,7 +358,7 @@ class streamPlot():
             interpolate='basis',
             strokeWidth=1.5,
             strokeDash=[1, 2],
-            opacity=0.7
+            opacity=0.8
         ).encode(
             x=alt.X('dateandtime:T'),
             y=alt.Y('value:Q'),
