@@ -133,6 +133,8 @@ class streamPlot():
     stat_height_mod = 0.5
     cop_height_mod = 0.6
     pwr_height_mod = 0.7
+    labelFontSize = 12
+    titleFontSize = 11
     sensor_list = ['TAH_W', 'HP_W',  'TAH_fpm', 'liqu_refrig_T',
                    'gas_refrig_T', 'loop_in_T', 'loop_out_T', 'outside_T',
                    'power_tot', 'living_T', 'desup_T', 'house_hot_T',
@@ -286,7 +288,7 @@ class streamPlot():
 
         latest_text = lines.mark_text(
             align='left',
-            dx=6,
+            dx=7,
             fontSize=13
         ).transform_window(
             rank='rank()',
@@ -477,9 +479,10 @@ class streamPlot():
                 )
 
         plot = plot.configure_axis(
-            labelFontSize=13, titleFontSize=12
+            labelFontSize=self.labelFontSize, titleFontSize=self.titleFontSize,
+            titlePadding=15
         ).configure_legend(
-            labelFontSize=13, titleFontSize=12)
+            labelFontSize=self.labelFontSize, titleFontSize=self.titleFontSize)
 
         message([F"{'Altair plot gen:': <20}", F"{time.time() - tic:.2f} s"],
                 tbl=self.mssg_tbl)
