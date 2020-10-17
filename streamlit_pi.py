@@ -32,32 +32,32 @@ def message(message_text,
 
 
 @st.cache()
-def serverStartup():
+def _serverStartup():
     message("Server Started")
 
 
 @st.cache(hash_funcs={"pymongo.database.Database": id})
-def cachedMongoConnect():
+def _cachedMongoConnect():
     message("Mongo Connected")
     return mongoConnect()
 
 
 @st.cache()
-def cachedMemCache():
+def _cachedMemCache():
     message("MemCache Connected")
     return libmc.Client(['localhost'])
 
 
 @st.cache(allow_output_mutation=True)
-def cachedWELData(date_range,
-                  data_source='Pi'):
+def _cachedWELData(date_range,
+                   data_source='Pi'):
     return WELData(timerange=date_range,
                    data_source=data_source,
                    dl_db_path="/home/ubuntu/WEL/log_db/",
-                   mongo_connection=cachedMongoConnect())
+                   mongo_connection=_cachedMongoConnect())
 
 
-def date_select():
+def _date_select():
     date_range = st.sidebar.date_input(label='Date Range',
                                        value=[(dt.datetime.now()
                                                - dt.timedelta(days=1)),
@@ -101,14 +101,14 @@ def ping(host):
         return "Not Pi 😞"
 
 
-def whichFormatFunc(option):
+def _whichFormatFunc(option):
     if option == 'temp':
         return "Temperature"
     if option == 'pandw':
         return "Power and Water"
 
 
-def nearestTimeGen():
+def _createNearestTime():
     return alt.selection(type='single',
                          nearest=True,
                          on='mouseover',
@@ -116,9 +116,13 @@ def nearestTimeGen():
                          empty='none')
 
 
-def resize():
+def _createResize():
     return alt.selection(type='interval',
                          encodings=['x'])
+
+
+def _timestamp(t):
+    return t.timestamp() * 1000
 
 
 class streamPlot():
@@ -149,7 +153,7 @@ class streamPlot():
     mssg_tbl = None
 
     def __init__(self):
-        self.nearestTime = nearestTimeGen()
+        self.nearestTime = _createNearestTime()
 
     def makeTbl(self):
         self.mssg_tbl = st.sidebar.table()
@@ -163,20 +167,20 @@ class streamPlot():
         tic = time.time()
         if not force_refresh:
             if date_range[0] < dt.datetime(2020, 8, 3):
-                dat = cachedWELData(date_range, data_source='WEL')
+                dat = _cachedWELData(date_range, data_source='WEL')
             else:
-                dat = cachedWELData(date_range)
+                dat = _cachedWELData(date_range)
         else:
             dat = WELData(timerange=date_range,
-                          mongo_connection=cachedMongoConnect())
+                          mongo_connection=_cachedMongoConnect())
         resample_T = (dat.timerange[1] - dat.timerange[0]) / resample_N
         dat.data = dat.data.resample(resample_T).mean()
         message([F"{'WEL Data init:': <20}", F"{time.time() - tic:.2f} s"],
                 tbl=self.mssg_tbl)
         self.dat = dat
 
-    def getDataSubset(self,
-                      vars):
+    def _getDataSubset(self,
+                       vars):
         source = self.dat.data
         source = source.reset_index()
         try:
@@ -189,8 +193,8 @@ class streamPlot():
             source = pd.DataFrame()
         return source
 
-    def createRules(self,
-                    source):
+    def _createRules(self,
+                     source):
         selectors = alt.Chart(source).mark_point(opacity=0).encode(
             x='dateandtime:T',
         ).add_selection(
@@ -207,8 +211,8 @@ class streamPlot():
 
         return [selectors, rules]
 
-    def createTimeText(self,
-                       rules):
+    def _createTimeText(self,
+                        rules):
         time_text_dy = self.def_height * self.cop_height_mod / 2 + 10
         time_text = rules.mark_text(align='center',
                                     dx=0,
@@ -224,9 +228,9 @@ class streamPlot():
 
         return time_text
 
-    def plotNightAlt(self,
-                     height_mod=1):
-        source = self.getDataSubset('daylight')
+    def _plotNightAlt(self,
+                      height_mod=1):
+        source = self._getDataSubset('daylight')
         area = alt.Chart(source).mark_bar(
             fill='black',
             width=10,
@@ -245,11 +249,11 @@ class streamPlot():
                         vars,
                         axis_label="Temperature / °C",
                         bottomPlot=False):
-        source = self.getDataSubset(vars)
+        source = self._getDataSubset(vars)
 
         lines = alt.Chart(source).mark_line(interpolate='basis').encode(
             x=alt.X('dateandtime:T',
-                    # scale=alt.Scale(domain=self.resize()),
+                    # scale=alt.Scale(domain=self._createResize()),
                     axis=alt.Axis(title=None,
                                   labels=False,
                                   grid=False,
@@ -280,14 +284,29 @@ class streamPlot():
                                format='.1f')
         )
 
-        selectors, rules = self.createRules(source)
+        latest_text = lines.mark_text(
+            align='left',
+            dx=6,
+            fontSize=13
+        ).transform_window(
+            rank='rank()',
+            sort=[alt.SortField('dateandtime', order='descending')]
+        ).encode(
+            text=alt.condition(alt.datum.rank == 1,
+                               'value:Q',
+                               alt.value(' '),
+                               format='.1f')
+        )
+
+        selectors, rules = self._createRules(source)
 
         plot = alt.layer(
-            self.plotNightAlt(), lines, points, text, selectors, rules
+            self._plotNightAlt(), lines, points, text, selectors, rules,
+            latest_text
         )
 
         if bottomPlot:
-            time_text = self.createTimeText(rules)
+            time_text = self._createTimeText(rules)
             plot = alt.layer(plot, time_text)
 
         return plot
@@ -295,7 +314,7 @@ class streamPlot():
     def plotStatus(self):
         status_list = ['TAH_fan_b', 'heat_1_b', 'heat_2_b', 'zone_1_b',
                        'zone_2_b', 'humid_b', 'rev_valve_b', 'aux_heat_b']
-        source = self.getDataSubset(status_list)
+        source = self._getDataSubset(status_list)
         source.value = source.value % 2
         # source = source.loc[source.value != 0]
 
@@ -320,15 +339,17 @@ class streamPlot():
             color=alt.Color('label', legend=None)
         )
 
+        selectors, rules = self._createRules(source)
+
         plot = alt.layer(
-            self.plotNightAlt(), chunks, *self.createRules(source)
+            self._plotNightAlt(), chunks, selectors, rules
         )
 
         return plot
 
     def plotCOP(self,
                 bottomPlot=False):
-        source = self.getDataSubset(['COP', 'well_COP'])
+        source = self._getDataSubset(['COP', 'well_COP'])
 
         rolling_frame = (3 * self.resample_N / ((self.dat.timerange[1]
                          - self.dat.timerange[0]).total_seconds() / 3600))
@@ -342,7 +363,7 @@ class streamPlot():
             strokeWidth=1.5
         ).encode(
             x=alt.X('dateandtime:T',
-                    # scale=alt.Scale(domain=self.resize()),
+                    # scale=alt.Scale(domain=self._createResize()),
                     axis=alt.Axis(grid=False,
                                   labels=False,
                                   ticks=False),
@@ -379,15 +400,15 @@ class streamPlot():
                                format='.1f')
         )
 
-        selectors, rules = self.createRules(source)
+        selectors, rules = self._createRules(source)
 
         plot = alt.layer(
-            self.plotNightAlt(), lines, raw_lines, points, text, selectors,
+            self._plotNightAlt(), lines, raw_lines, points, text, selectors,
             rules
         )
 
         if bottomPlot:
-            time_text = self.createTimeText(rules)
+            time_text = self._createTimeText(rules)
             plot = alt.layer(plot, time_text)
 
         return plot
@@ -466,7 +487,7 @@ class streamPlot():
         return plot
 
 
-def cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which='temp'):
+def _cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which='temp'):
     if which == 'temp':
         if (date_mode == 'default' and sensor_groups[0] == stp.in_default
                 and sensor_groups[1] == stp.out_default
@@ -481,7 +502,7 @@ def cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which='temp'):
     return False
 
 
-def page_select(mc, stp, date_mode, date_range, sensor_container, which):
+def _page_select(mc, stp, date_mode, date_range, sensor_container, which):
     sensor_groups = []
     if which == 'temp':
         in_sensors = sensor_container.multiselect("Inside Sensors",
@@ -504,7 +525,7 @@ def page_select(mc, stp, date_mode, date_range, sensor_container, which):
                                                     stp.wind_default)
         sensor_groups = [water_sensors, pwr_sensors, wind_sensors]
 
-    if cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which=which):
+    if _cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which=which):
         tic = time.time()
         memCache = mc.get(F"{which}PlotKey")
         plots = memCache['plots']
@@ -529,8 +550,8 @@ def page_select(mc, stp, date_mode, date_range, sensor_container, which):
 # ---------------------------- Start of Page Code ----------------------------
 
 def main():
-    serverStartup()
-    mc = cachedMemCache()
+    _serverStartup()
+    mc = _cachedMemCache()
 
     st.markdown(
         f"""
@@ -553,10 +574,10 @@ def main():
     st.sidebar.subheader("Monitor:")
     which = st.sidebar.selectbox("Page",
                                  ['temp', 'pandw'],
-                                 format_func=whichFormatFunc)
+                                 format_func=_whichFormatFunc)
 
     st.sidebar.subheader("Plot Options:")
-    date_range, date_mode = date_select()
+    date_range, date_mode = _date_select()
     stp = streamPlot()
     sensor_container = st.sidebar.beta_container()
 
@@ -564,10 +585,10 @@ def main():
     stp.makeTbl()
 
     # -- main area --
-    st.header(F"{whichFormatFunc(which)} Monitor")
+    st.header(F"{_whichFormatFunc(which)} Monitor")
     plot_placeholder = st.empty()
-    plots = page_select(mc, stp, date_mode, date_range, sensor_container,
-                        which)
+    plots = _page_select(mc, stp, date_mode, date_range, sensor_container,
+                         which)
 
     tic = time.time()
     plot_placeholder.altair_chart(plots)
