@@ -283,15 +283,18 @@ class streamPlot():
                                format='.1f')
         )
 
-        last_time = _timestamp(source.dateandtime.iloc[100])
-        select_last_time = alt.selection_single(name='select_last_time',
-                                                fields='dateandtime',
-                                                init={'dateandtime': [last_time]})
-        # print(predicate)
-        latest_text = lines.mark_text(align='left', dx=-10).encode(
-            text=alt.Text('value:Q', format='.1f'),
-        ).add_selection(select_last_time).transform_filter(
-            "datum.dateandtime == select_last_time.dateandtime"
+        latest_text = lines.mark_text(
+            align='left',
+            dx=6,
+            fontSize=13
+        ).transform_window(
+            rank='rank()',
+            sort=[alt.SortField('dateandtime', order='descending')]
+        ).encode(
+            text=alt.condition(alt.datum.rank == 1,
+                               'value:Q',
+                               alt.value(' '),
+                               format='.1f')
         )
 
         selectors, rules = self._createRules(source)
