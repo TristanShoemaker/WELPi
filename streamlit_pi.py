@@ -212,7 +212,8 @@ class streamPlot():
         time_text_dy = self.def_height * self.cop_height_mod / 2 + 10
         time_text = rules.mark_text(align='center',
                                     dx=0,
-                                    dy=time_text_dy
+                                    dy=time_text_dy,
+                                    fontSize=13
                                     ).encode(
             text=alt.condition(self.nearestTime,
                                'dateandtime:T',
@@ -453,6 +454,11 @@ class streamPlot():
                     y='independent',
                     color='independent'
                 )
+
+        plot = plot.configure_axis(
+            labelFontSize=13, titleFontSize=12
+        ).configure_legend(
+            labelFontSize=13, titleFontSize=12)
 
         message([F"{'Altair plot gen:': <20}", F"{time.time() - tic:.2f} s"],
                 tbl=self.mssg_tbl)
