@@ -289,7 +289,8 @@ class streamPlot():
         latest_text = lines.mark_text(
             align='left',
             dx=7,
-            fontSize=13
+            fontSize=13,
+            opacity=0.7
         ).transform_window(
             rank='rank()',
             sort=[alt.SortField('dateandtime', order='descending')]
