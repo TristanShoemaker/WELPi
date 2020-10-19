@@ -133,8 +133,9 @@ class streamPlot():
     stat_height_mod = 0.5
     cop_height_mod = 0.6
     pwr_height_mod = 0.7
-    labelFontSize = 12
-    titleFontSize = 11
+    mark_text_font_size = 13
+    label_font_size = 12
+    title_font_size = 11
     sensor_list = ['TAH_W', 'HP_W',  'TAH_fpm', 'liqu_refrig_T',
                    'gas_refrig_T', 'loop_in_T', 'loop_out_T', 'outside_T',
                    'power_tot', 'living_T', 'desup_T', 'house_hot_T',
@@ -219,7 +220,7 @@ class streamPlot():
         time_text = rules.mark_text(align='center',
                                     dx=0,
                                     dy=time_text_dy,
-                                    fontSize=13
+                                    fontSize=self.mark_text_font_size
                                     ).encode(
             text=alt.condition(self.nearestTime,
                                'dateandtime:T',
@@ -282,7 +283,7 @@ class streamPlot():
         text = lines.mark_text(
             align='left',
             dx=5, dy=-5,
-            fontSize=self.labelFontSize
+            fontSize=self.label_font_size
         ).encode(
             text=alt.condition(self.nearestTime,
                                'value:Q',
@@ -293,7 +294,7 @@ class streamPlot():
         latest_text = lines.mark_text(
             align='left',
             dx=7,
-            fontSize=13,
+            fontSize=self.mark_text_font_size,
             opacity=0.7
         ).transform_window(
             rank='rank()',
@@ -484,10 +485,10 @@ class streamPlot():
                 )
 
         plot = plot.configure_axis(
-            labelFontSize=self.labelFontSize, titleFontSize=self.titleFontSize,
+            label_font_size=self.label_font_size, title_font_size=self.title_font_size,
             titlePadding=15
         ).configure_legend(
-            labelFontSize=self.labelFontSize, titleFontSize=self.titleFontSize)
+            label_font_size=self.label_font_size, title_font_size=self.title_font_size)
 
         message([F"{'Altair plot gen:': <20}", F"{time.time() - tic:.2f} s"],
                 tbl=self.mssg_tbl)
