@@ -279,7 +279,11 @@ class streamPlot():
                                   alt.value(0))
         )
 
-        text = lines.mark_text(align='left', dx=5, dy=-5).encode(
+        text = lines.mark_text(
+            align='left',
+            dx=5, dy=-5,
+            fontSize=self.labelFontSize
+        ).encode(
             text=alt.condition(self.nearestTime,
                                'value:Q',
                                alt.value(' '),
