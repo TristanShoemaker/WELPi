@@ -167,7 +167,10 @@ class WELData:
         cop_heat_mask = frame.heat_1_b % 2
         cop_heat_mask[cop_heat_mask == 0] = np.nan
 
-        COP = (((1.15 * 0.37 * frame.TAH_fpm)
+        air_density = 1.15
+        surface_area = 0.34
+        heat_capacity = 1.01
+        COP = (((air_density * surface_area * heat_capacity * frame.TAH_fpm)
                 * (np.abs(frame.TAH_out_T - frame.TAH_in_T)))
                / (frame.HP_W / 1000))
         COP[COP > 8] = np.nan
@@ -175,7 +178,8 @@ class WELData:
         out_frame['COP'] = COP
 
         well_gpm = 13.6
-        out_frame['well_W'] = ((well_gpm * 0.0630902) * 4.186
+        gpm_to_lpm = 0.0630902
+        out_frame['well_W'] = ((well_gpm * gpm_to_lpm) * 4.186
                                * (np.abs(frame.loop_out_T - frame.loop_in_T)))
         well_COP = out_frame.well_W / (frame.HP_W / 1000)
         well_COP[well_COP > 8] = np.nan
