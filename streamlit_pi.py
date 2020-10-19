@@ -485,10 +485,12 @@ class streamPlot():
                 )
 
         plot = plot.configure_axis(
-            label_font_size=self.label_font_size, title_font_size=self.title_font_size,
+            labelFontSize=self.label_font_size,
+            titleFontSize=self.title_font_size,
             titlePadding=15
         ).configure_legend(
-            label_font_size=self.label_font_size, title_font_size=self.title_font_size)
+            labelFontSize=self.label_font_size,
+            titleFontSize=self.title_font_size)
 
         message([F"{'Altair plot gen:': <20}", F"{time.time() - tic:.2f} s"],
                 tbl=self.mssg_tbl)
