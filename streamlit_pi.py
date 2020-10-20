@@ -3,18 +3,16 @@ import altair as alt
 import pandas as pd
 import numpy as np
 import datetime as dt
-import sys
 import time
 import libmc
 import subprocess
 import json
+from sys import platform
 from WELData import WELData, mongoConnect
 
 
 st.beta_set_page_config(page_title="Geo Monitor",
                         page_icon="🌀")
-
-platform = sys.platform
 
 
 def message(message_text,
@@ -121,17 +119,13 @@ def _createResize():
                          encodings=['x'])
 
 
-def _timestamp(t):
-    return t.timestamp() * 1000
-
-
 class streamPlot():
     resample_N = 300
     def_width = 'container'
-    def_height = 280
+    def_height = 250
     def_spacing = 2
     stat_height_mod = 0.5
-    cop_height_mod = 0.6
+    cop_height_mod = 0.5
     pwr_height_mod = 0.7
     mark_text_font_size = 13
     label_font_size = 12
@@ -215,8 +209,14 @@ class streamPlot():
         return [selectors, rules]
 
     def _createTimeText(self,
-                        rules):
-        time_text_dy = self.def_height * self.cop_height_mod / 2 + 10
+                        rules,
+                        height_mod,
+                        top=False):
+        if top:
+            flip = -1
+        else:
+            flip = 1
+        time_text_dy = flip * (self.def_height * height_mod / 2 + 11)
         time_text = rules.mark_text(align='center',
                                     dx=0,
                                     dy=time_text_dy,
@@ -251,6 +251,7 @@ class streamPlot():
     def plotMainMonitor(self,
                         vars,
                         axis_label="Temperature / °C",
+                        height_mod=1,
                         bottomPlot=False):
         source = self._getDataSubset(vars)
 
@@ -268,7 +269,8 @@ class streamPlot():
                                   orient='right',
                                   grid=True)),
             color=alt.Color('label',
-                            legend=alt.Legend(title='Sensors')),
+                            legend=alt.Legend(title='Sensors',
+                                              orient='top')),
             strokeWidth=alt.condition(alt.datum.label == 'outside_T',
                                       alt.value(2.5),
                                       alt.value(1.5)),
@@ -314,7 +316,7 @@ class streamPlot():
         )
 
         if bottomPlot:
-            time_text = self._createTimeText(rules)
+            time_text = self._createTimeText(rules, height_mod=height_mod)
             plot = alt.layer(plot, time_text)
 
         return plot
@@ -335,7 +337,8 @@ class streamPlot():
                                   labels=False,
                                   grid=False,
                                   ticks=False,
-                                  domainWidth=0)),
+                                  orient='top',
+                                  offset=16)),
             y=alt.Y('label',
                     title=None,
                     axis=alt.Axis(orient='right',
@@ -349,8 +352,10 @@ class streamPlot():
 
         selectors, rules = self._createRules(source)
 
+        time_text = self._createTimeText(rules, self.stat_height_mod, top=True)
+
         plot = alt.layer(
-            self._plotNightAlt(), chunks, selectors, rules
+            self._plotNightAlt(), chunks, selectors, rules, time_text
         )
 
         return plot
@@ -381,7 +386,8 @@ class streamPlot():
                     axis=alt.Axis(orient='right',
                                   grid=True),
                     title='COP Rolling Mean'),
-            color=alt.Color('label', legend=alt.Legend(title='Efficiencies'))
+            color=alt.Color('label', legend=alt.Legend(title='Efficiencies',
+                                                       orient='top'))
         )
 
         raw_lines = alt.Chart(source).mark_line(
@@ -416,7 +422,7 @@ class streamPlot():
         )
 
         if bottomPlot:
-            time_text = self._createTimeText(rules)
+            time_text = self._createTimeText(rules, self.cop_height_mod)
             plot = alt.layer(plot, time_text)
 
         return plot
@@ -468,13 +474,17 @@ class streamPlot():
                         height=self.def_height
                     ),
                     self.plotMainMonitor(sensor_groups[1],
-                                         axis_label="Power / W").properties(
+                                         axis_label="Power / W",
+                                         height_mod=self.pwr_height_mod
+                                         ).properties(
                         width=self.def_width,
                         height=self.def_height * self.pwr_height_mod
                     ),
                     self.plotMainMonitor(sensor_groups[2],
                                          axis_label="Wind Speed / m/s",
-                                         bottomPlot=True).properties(
+                                         height_mod=self.pwr_height_mod,
+                                         bottomPlot=True
+                                         ).properties(
                         width=self.def_width,
                         height=self.def_height * self.pwr_height_mod
                     ),
@@ -487,10 +497,14 @@ class streamPlot():
         plot = plot.configure_axis(
             labelFontSize=self.label_font_size,
             titleFontSize=self.title_font_size,
-            titlePadding=15
+            titlePadding=19,
+            domain=False
         ).configure_legend(
             labelFontSize=self.label_font_size,
-            titleFontSize=self.title_font_size)
+            titleFontSize=self.title_font_size
+        ).configure_view(
+            cornerRadius=2
+        )
 
         message([F"{'Altair plot gen:': <20}", F"{time.time() - tic:.2f} s"],
                 tbl=self.mssg_tbl)
@@ -565,21 +579,20 @@ def main():
     mc = _cachedMemCache()
 
     st.markdown(
-        f"""
+        F"""
         <style>
             .stVegaLiteChart{{
-                width: {90}%;
+                width: {95}%;
             }}
             .reportview-container .main .block-container{{
-                max-width: {1300}px;
+                max-width: {1500}px;
                 padding-top: {2}%;
                 padding-right: {5}%;
                 padding-left: {5}%;
                 padding-bottom: {0}%;
             }}
         </style>
-        """,
-        unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
     # -- sidebar --
     st.sidebar.subheader("Monitor:")
