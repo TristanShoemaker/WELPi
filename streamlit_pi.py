@@ -123,7 +123,7 @@ def _createResize():
 class streamPlot():
     resample_N = 200
     def_width = 'container'
-    def_height = 250
+    def_height = 245
     def_spacing = 2
     stat_height_mod = 0.5
     cop_height_mod = 0.5
@@ -239,7 +239,7 @@ class streamPlot():
         source = self._getDataSubset('daylight')
         area = alt.Chart(source).mark_bar(
             fill='black',
-            width=10,
+            width=12,
             clip=True,
             height=self.def_height * height_mod
         ).encode(
@@ -349,7 +349,7 @@ class streamPlot():
         # source = source.loc[source.value != 0]
 
         chunks = alt.Chart(source).mark_bar(
-            width=3,
+            width=3.5,
             clip=True
         ).encode(
             x=alt.X('dateandtime:T',
