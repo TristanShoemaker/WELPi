@@ -65,7 +65,6 @@ def asyncPlot(mc, timeKey):
         plots = stp.plotAssembly(which=which)
         mc_result = mc.set(F"{which}PlotKey", {'plots': plots,
                                                'timeKey': timeKey})
-        return plots
         if not mc_result:
             message(F"❗{which} plot failed to cache❗")
             exit()
