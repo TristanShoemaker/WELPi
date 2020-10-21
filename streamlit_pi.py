@@ -12,7 +12,8 @@ from WELData import WELData, mongoConnect
 
 
 st.beta_set_page_config(page_title="Geo Monitor",
-                        page_icon="🌀")
+                        page_icon="🌀",
+                        initial_sidebar_state='expanded')
 
 
 def message(message_text,
@@ -120,7 +121,7 @@ def _createResize():
 
 
 class streamPlot():
-    resample_N = 275
+    resample_N = 200
     def_width = 'container'
     def_height = 250
     def_spacing = 2
@@ -147,10 +148,12 @@ class streamPlot():
     wind_default = ['TAH_fpm']
     dat = None
     nearestTime = None
+    resize = None
     mssg_tbl = None
 
     def __init__(self):
         self.nearestTime = _createNearestTime()
+        self.resize = _createResize()
 
     def makeTbl(self):
         self.mssg_tbl = st.sidebar.table()
@@ -242,7 +245,7 @@ class streamPlot():
         ).encode(
             x='dateandtime:T',
             opacity=alt.condition(alt.datum.value < 1,
-                                  alt.value(0.006),
+                                  alt.value(0.01),
                                   alt.value(0))
         )
 
@@ -255,9 +258,9 @@ class streamPlot():
                         bottomPlot=False):
         source = self._getDataSubset(vars)
 
-        lines = alt.Chart(source).mark_line(interpolate='basis').encode(
+        lines = alt.Chart(source).mark_line(interpolate='cardinal').encode(
             x=alt.X('dateandtime:T',
-                    # scale=alt.Scale(domain=self._createResize()),
+                    scale=alt.Scale(domain=self.resize),
                     axis=alt.Axis(title=None,
                                   labels=False,
                                   grid=False,
@@ -295,11 +298,12 @@ class streamPlot():
                                format='.1f')
         )
 
+        latest_opacity = 0.7
         latest_text = lines.mark_text(
             align='left',
             dx=25,
             fontSize=self.mark_text_font_size,
-            opacity=0.85
+            opacity=latest_opacity
         ).transform_window(
             rank='rank()',
             sort=[alt.SortField('dateandtime', order='descending')]
@@ -309,6 +313,20 @@ class streamPlot():
                                alt.value(' '),
                                format='.1f')
         )
+
+        # latest_text_tick = lines.mark_tick(
+        #     strokeDash=[1, 1],
+        #     xOffset=10,
+        #     size=20,
+        #     thickness=1.5
+        # ).transform_window(
+        #     rank='rank()',
+        #     sort=[alt.SortField('dateandtime', order='descending')]
+        # ).encode(
+        #     opacity=alt.condition(alt.datum.rank == 1,
+        #                           alt.value(latest_opacity),
+        #                           alt.value(0))
+        # )
 
         selectors, rules = self._createRules(source)
 
@@ -352,6 +370,8 @@ class streamPlot():
             color=alt.Color('new_label:N', legend=None)
         ).transform_calculate(
             new_label=alt.expr.slice(alt.datum.label, 0, -2)
+        ).add_selection(
+            self.resize
         )
 
         selectors, rules = self._createRules(source)
@@ -376,17 +396,16 @@ class streamPlot():
             rollmean='mean(value)',
             frame=[-rolling_frame, 0]
         ).mark_line(
-            interpolate='basis',
+            interpolate='cardinal',
             strokeWidth=1.5
         ).encode(
             x=alt.X('dateandtime:T',
-                    # scale=alt.Scale(domain=self._createResize()),
                     axis=alt.Axis(grid=False,
                                   labels=False,
                                   ticks=False),
                     title=None),
             y=alt.Y('rollmean:Q',
-                    scale=alt.Scale(zero=True),
+                    scale=alt.Scale(zero=False),
                     axis=alt.Axis(orient='right',
                                   grid=True),
                     title='COP Rolling Mean'),
@@ -395,7 +414,7 @@ class streamPlot():
         )
 
         raw_lines = alt.Chart(source).mark_line(
-            interpolate='basis',
+            interpolate='cardinal',
             strokeWidth=1.5,
             strokeDash=[1, 2],
             opacity=0.8
