@@ -260,7 +260,7 @@ class streamPlot():
 
         lines = alt.Chart(source).mark_line(interpolate='cardinal').encode(
             x=alt.X('dateandtime:T',
-                    scale=alt.Scale(domain=self.resize),
+                    # scale=alt.Scale(domain=self.resize),
                     axis=alt.Axis(title=None,
                                   labels=False,
                                   grid=False,
@@ -370,9 +370,10 @@ class streamPlot():
             color=alt.Color('new_label:N', legend=None)
         ).transform_calculate(
             new_label=alt.expr.slice(alt.datum.label, 0, -2)
-        ).add_selection(
-            self.resize
         )
+        # .add_selection(
+        #     self.resize
+        # )
 
         selectors, rules = self._createRules(source)
 
