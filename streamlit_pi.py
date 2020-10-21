@@ -120,7 +120,7 @@ def _createResize():
 
 
 class streamPlot():
-    resample_N = 300
+    resample_N = 275
     def_width = 'container'
     def_height = 250
     def_spacing = 2
@@ -268,17 +268,19 @@ class streamPlot():
                     axis=alt.Axis(title=axis_label,
                                   orient='right',
                                   grid=True)),
-            color=alt.Color('label',
+            color=alt.Color('new_label:N',
                             legend=alt.Legend(title='Sensors',
                                               orient='top')),
             strokeWidth=alt.condition(alt.datum.label == 'outside_T',
                                       alt.value(2.5),
                                       alt.value(1.5)),
+        ).transform_calculate(
+            new_label=alt.expr.slice(alt.datum.label, 0, -2)
         )
 
-        points = lines.mark_point().encode(
+        points = lines.mark_point(size=40, filled=True).encode(
             opacity=alt.condition(self.nearestTime,
-                                  alt.value(1),
+                                  alt.value(0.8),
                                   alt.value(0))
         )
 
@@ -295,9 +297,9 @@ class streamPlot():
 
         latest_text = lines.mark_text(
             align='left',
-            dx=7,
+            dx=25,
             fontSize=self.mark_text_font_size,
-            opacity=0.7
+            opacity=0.85
         ).transform_window(
             rank='rank()',
             sort=[alt.SortField('dateandtime', order='descending')]
@@ -339,7 +341,7 @@ class streamPlot():
                                   ticks=False,
                                   orient='top',
                                   offset=16)),
-            y=alt.Y('label',
+            y=alt.Y('new_label:N',
                     title=None,
                     axis=alt.Axis(orient='right',
                                   grid=False),
@@ -347,7 +349,9 @@ class streamPlot():
             opacity=alt.condition(alt.datum.value > 0,
                                   alt.value(1),
                                   alt.value(0)),
-            color=alt.Color('label', legend=None)
+            color=alt.Color('new_label:N', legend=None)
+        ).transform_calculate(
+            new_label=alt.expr.slice(alt.datum.label, 0, -2)
         )
 
         selectors, rules = self._createRules(source)
@@ -401,9 +405,9 @@ class streamPlot():
             color='label'
         )
 
-        points = lines.mark_point().encode(
+        points = lines.mark_point(size=40, filled=True).encode(
             opacity=alt.condition(self.nearestTime,
-                                  alt.value(1),
+                                  alt.value(0.8),
                                   alt.value(0))
         )
 
@@ -497,7 +501,7 @@ class streamPlot():
         plot = plot.configure_axis(
             labelFontSize=self.label_font_size,
             titleFontSize=self.title_font_size,
-            titlePadding=19,
+            titlePadding=35,
             domain=False
         ).configure_legend(
             labelFontSize=self.label_font_size,
