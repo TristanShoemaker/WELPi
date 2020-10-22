@@ -89,7 +89,7 @@ def ping(host):
         if subprocess.call(command, stdout=subprocess.DEVNULL) == 0:
             return "✅"
         else:
-            return "❗"
+            return "❎"
     if host == 'pi_temp' and platform == 'linux':
         command = ['sensors', '-j']
         temp = json.loads(subprocess.run(command,
@@ -529,7 +529,7 @@ class streamPlot():
             labelFontSize=self.label_font_size,
             titleFontSize=self.title_font_size
         ).configure_view(
-            cornerRadius=4
+            cornerRadius=2
         )
 
         message([F"{'Altair plot gen:': <20}", F"{time.time() - tic:.2f} s"],
@@ -608,15 +608,14 @@ def main():
         F"""
         <style>
             .stVegaLiteChart{{
-                width: {98}%;
+                width: {95}%;
             }}
             .reportview-container .main .block-container{{
-                mix-width: {500}px;
-                max-width: {1300}px;
-                padding-top: {10}px;
-                padding-right: {50}px;
-                padding-left: {10}px;
-                padding-bottom: {0}px;
+                max-width: {1500}px;
+                padding-top: {2}%;
+                padding-right: {5}%;
+                padding-left: {5}%;
+                padding-bottom: {0}%;
             }}
         </style>
         """, unsafe_allow_html=True)
