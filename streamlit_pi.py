@@ -121,7 +121,7 @@ def _createResize():
 
 
 class streamPlot():
-    resample_N = 200
+    resample_N = 250
     def_width = 'container'
     def_height = 245
     def_spacing = 2
@@ -271,6 +271,7 @@ class streamPlot():
             y=alt.Y('value:Q',
                     scale=alt.Scale(zero=False),
                     axis=alt.Axis(title=axis_label,
+                                  tickMinStep=1,
                                   orient='right',
                                   grid=True)),
             color=alt.Color('new_label:N',
@@ -611,11 +612,11 @@ def main():
                 width: {95}%;
             }}
             .reportview-container .main .block-container{{
-                max-width: {1500}px;
-                padding-top: {2}%;
-                padding-right: {5}%;
-                padding-left: {5}%;
-                padding-bottom: {0}%;
+                max-width: {1300}px;
+                padding-top: {10}px;
+                padding-right: {40}px;
+                padding-left: {10}px;
+                padding-bottom: {0}px;
             }}
         </style>
         """, unsafe_allow_html=True)
