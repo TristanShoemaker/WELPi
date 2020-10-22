@@ -147,6 +147,7 @@ class streamPlot():
     pwr_default = ['TAH_W', 'HP_W', 'power_tot']
     wind_default = ['TAH_fpm']
     dat = None
+    dat_resample = None
     nearestTime = None
     resize = None
     mssg_tbl = None
@@ -160,10 +161,7 @@ class streamPlot():
 
     def makeWEL(self,
                 date_range,
-                resample_N=None,
                 force_refresh=False):
-        if resample_N is None:
-            resample_N = self.resample_N
         tic = time.time()
         if not force_refresh:
             if date_range[0] < dt.datetime(2020, 8, 3):
@@ -173,15 +171,19 @@ class streamPlot():
         else:
             dat = WELData(timerange=date_range,
                           mongo_connection=_cachedMongoConnect())
-        resample_T = (dat.timerange[1] - dat.timerange[0]) / resample_N
-        dat.data = dat.data.resample(resample_T).mean()
+        resample_T = (dat.timerange[1] - dat.timerange[0]) / self.resample_N
+        self.dat_resample = dat.data.resample(resample_T).mean()
+        self.dat = dat
         message([F"{'WEL Data init:': <20}", F"{time.time() - tic:.2f} s"],
                 tbl=self.mssg_tbl)
-        self.dat = dat
 
     def _getDataSubset(self,
-                       vars):
-        source = self.dat.data
+                       vars,
+                       resample=True):
+        if resample:
+            source = self.dat_resample
+        else:
+            source = self.dat.data
         source = source.reset_index()
         try:
             source = source.melt(id_vars='dateandtime',
@@ -344,7 +346,7 @@ class streamPlot():
     def plotStatus(self):
         status_list = ['TAH_fan_b', 'heat_1_b', 'heat_2_b', 'zone_1_b',
                        'zone_2_b', 'humid_b', 'rev_valve_b', 'aux_heat_b']
-        source = self._getDataSubset(status_list)
+        source = self._getDataSubset(status_list, resample=False)
         source.value = source.value % 2
         # source = source.loc[source.value != 0]
 
