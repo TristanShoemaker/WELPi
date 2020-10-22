@@ -346,7 +346,7 @@ class streamPlot():
     def plotStatus(self):
         status_list = ['TAH_fan_b', 'heat_1_b', 'heat_2_b', 'zone_1_b',
                        'zone_2_b', 'humid_b', 'rev_valve_b', 'aux_heat_b']
-        source = self._getDataSubset(status_list, resample=False)
+        source = self._getDataSubset(status_list, resample=True)
         source.value = source.value % 2
         # source = source.loc[source.value != 0]
 
