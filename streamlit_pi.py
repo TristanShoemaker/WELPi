@@ -262,7 +262,7 @@ class streamPlot():
 
         lines = alt.Chart(source).mark_line(interpolate='cardinal').encode(
             x=alt.X('dateandtime:T',
-                    # scale=alt.Scale(domain=self.resize),
+                    scale=alt.Scale(domain=self.resize),
                     axis=alt.Axis(title=None,
                                   labels=False,
                                   grid=False,
@@ -315,6 +315,8 @@ class streamPlot():
                                'value:Q',
                                alt.value(' '),
                                format='.1f')
+        ).add_selection(
+            self.resize
         )
 
         # latest_text_tick = lines.mark_tick(
@@ -356,6 +358,7 @@ class streamPlot():
             clip=True
         ).encode(
             x=alt.X('dateandtime:T',
+                    scale=alt.Scale(domain=self.resize),
                     axis=alt.Axis(title=None,
                                   labels=False,
                                   grid=False,
@@ -373,10 +376,9 @@ class streamPlot():
             color=alt.Color('new_label:N', legend=None)
         ).transform_calculate(
             new_label=alt.expr.slice(alt.datum.label, 0, -2)
+        ).add_selection(
+            self.resize
         )
-        # .add_selection(
-        #     self.resize
-        # )
 
         selectors, rules = self._createRules(source)
 
@@ -404,6 +406,7 @@ class streamPlot():
             strokeWidth=1.5
         ).encode(
             x=alt.X('dateandtime:T',
+                    scale=alt.Scale(domain=self.resize),
                     axis=alt.Axis(grid=False,
                                   labels=False,
                                   ticks=False),
@@ -426,6 +429,8 @@ class streamPlot():
             x=alt.X('dateandtime:T'),
             y=alt.Y('value:Q'),
             color='label'
+        ).add_selection(
+            self.resize
         )
 
         points = lines.mark_point(size=40, filled=True).encode(
