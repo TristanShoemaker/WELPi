@@ -123,7 +123,7 @@ def _createResize():
 class streamPlot():
     resample_N = 200
     def_width = 'container'
-    def_height = 245
+    def_height = 260
     def_spacing = 2
     stat_height_mod = 0.5
     cop_height_mod = 0.5
@@ -275,7 +275,8 @@ class streamPlot():
                                   grid=True)),
             color=alt.Color('new_label:N',
                             legend=alt.Legend(title='Sensors',
-                                              orient='top')),
+                                              orient='top',
+                                              offset=5)),
             strokeWidth=alt.condition(alt.datum.label == 'outside_T',
                                       alt.value(2.5),
                                       alt.value(1.5)),
@@ -304,7 +305,7 @@ class streamPlot():
         latest_opacity = 0.7
         latest_text = lines.mark_text(
             align='left',
-            dx=25,
+            dx=30,
             fontSize=self.mark_text_font_size,
             opacity=latest_opacity
         ).transform_window(
@@ -413,7 +414,8 @@ class streamPlot():
                                   grid=True),
                     title='COP Rolling Mean'),
             color=alt.Color('label', legend=alt.Legend(title='Efficiencies',
-                                                       orient='top'))
+                                                       orient='top',
+                                                       offset=5))
         )
 
         raw_lines = alt.Chart(source).mark_line(
@@ -523,7 +525,7 @@ class streamPlot():
         plot = plot.configure_axis(
             labelFontSize=self.label_font_size,
             titleFontSize=self.title_font_size,
-            titlePadding=35,
+            titlePadding=41,
             domain=False
         ).configure_legend(
             labelFontSize=self.label_font_size,
@@ -612,10 +614,10 @@ def main():
             }}
             .reportview-container .main .block-container{{
                 max-width: {1500}px;
-                padding-top: {2}%;
-                padding-right: {5}%;
-                padding-left: {5}%;
-                padding-bottom: {0}%;
+                padding-top: {10}px;
+                padding-right: {40}px;
+                padding-left: {10}px;
+                padding-bottom: {0}px;
             }}
         </style>
         """, unsafe_allow_html=True)
