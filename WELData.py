@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import datetime as dt
 import os
-import sys
+import platform
 import re
 import argparse
 import time
@@ -21,10 +21,13 @@ def message(message_text):
 
 
 def mongoConnect():
-    if sys.platform == 'linux':
-        address = "mongodb://localhost:27017"
+    if platform.system() == 'Linux':
+        if platform.machine() == 'x86_64':
+            address = "mongodb://98.118.28.23:27017"
+        else:
+            address = "mongodb://localhost:27017"
         client = MongoClient(address)
-    elif sys.platform == 'darwin':
+    elif platform.system() == 'Darwin':
         address = "mongodb://192.168.68.101:27017"
         client = MongoClient(address)
     else:
