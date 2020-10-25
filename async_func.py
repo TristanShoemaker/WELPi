@@ -1,9 +1,10 @@
-from pymongo import MongoClient, DESCENDING
-from pymongo.errors import DuplicateKeyError
 import requests
-from requests.exceptions import ConnectionError
 import xmltodict
 import time
+import platform
+from pymongo import MongoClient, DESCENDING
+from pymongo.errors import DuplicateKeyError
+from requests.exceptions import ConnectionError
 from datetime import datetime as dt
 from dateutil import tz
 from astral import sun, LocationInfo
@@ -12,8 +13,12 @@ from streamlit_pi import streamPlot, message
 
 
 WEL_ip = '192.168.68.107'
-mongo_ip = 'localhost'
-# mongo_ip = '192.168.68.101'
+if platform.machine() == 'aarch64':
+    mongo_ip = 'localhost'
+elif platform.machine() == 'x86_64':
+    mongo_ip = '98.118.28.23'
+else:
+    raise("Unknown platform, can't choose mongoDB ip")
 loc = LocationInfo('Home', 'MA', 'America/New_York', 42.485557, -71.433445)
 to_tzone = tz.gettz('America/New_York')
 db_tzone = tz.gettz('UTC')
