@@ -7,7 +7,7 @@ import time
 import libmc
 import subprocess
 import json
-from sys import platform
+import platform
 from WELData import WELData, mongoConnect
 
 
@@ -90,7 +90,7 @@ def ping(host):
             return "✅"
         else:
             return "❎"
-    if host == 'pi_temp' and platform == 'linux':
+    if host == 'pi_temp' and platform.machine() == 'aarch64':
         command = ['sensors', '-j']
         temp = json.loads(subprocess.run(command,
                           stdout=subprocess.PIPE).stdout.decode('utf-8'))
@@ -283,7 +283,6 @@ class streamPlot():
         ).transform_calculate(
             new_label=alt.expr.slice(alt.datum.label, 0, -2)
         )
-
 
         points = lines.mark_point(size=40, filled=True).encode(
             opacity=alt.condition(self.nearestTime,
@@ -544,13 +543,13 @@ def _cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which='temp'):
     if which == 'temp':
         if (date_mode == 'default' and sensor_groups[0] == stp.in_default
                 and sensor_groups[1] == stp.out_default
-                and platform == 'linux'):
+                and platform.system() == 'Linux'):
             return True
     elif which == 'pandw':
         if (date_mode == 'default' and sensor_groups[0] == stp.water_default
                 and sensor_groups[1] == stp.pwr_default
                 and sensor_groups[2] == stp.wind_default
-                and platform == 'linux'):
+                and platform.system() == 'Linux'):
             return True
     return False
 
