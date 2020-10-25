@@ -84,7 +84,7 @@ def _date_select():
 
 
 def ping(host):
-    if host == 'wel':
+    if host == 'wel' and platform.machine() == 'aarch64':
         command = ['ping', '-c', '1', '192.168.68.107']
         if subprocess.call(command, stdout=subprocess.DEVNULL) == 0:
             return "✅"
