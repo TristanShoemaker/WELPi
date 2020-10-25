@@ -540,17 +540,18 @@ class streamPlot():
 
 
 def _cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which='temp'):
-    if which == 'temp':
-        if (date_mode == 'default' and sensor_groups[0] == stp.in_default
-                and sensor_groups[1] == stp.out_default
-                and platform.system() == 'Linux'):
-            return True
-    elif which == 'pandw':
-        if (date_mode == 'default' and sensor_groups[0] == stp.water_default
-                and sensor_groups[1] == stp.pwr_default
-                and sensor_groups[2] == stp.wind_default
-                and platform.system() == 'Linux'):
-            return True
+    if platform.machine() == 'aarch64':
+        if which == 'temp':
+            if (date_mode == 'default'
+                    and sensor_groups[0] == stp.in_default
+                    and sensor_groups[1] == stp.out_default):
+                return True
+        elif which == 'pandw':
+            if (date_mode == 'default'
+                    and sensor_groups[0] == stp.water_default
+                    and sensor_groups[1] == stp.pwr_default
+                    and sensor_groups[2] == stp.wind_default):
+                return True
     return False
 
 
