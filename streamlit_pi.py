@@ -241,6 +241,41 @@ class streamPlot():
 
         return time_text
 
+    def _createLatestText(self,
+                          lines,
+                          field):
+        opacity = 0.7
+        latest_text = lines.mark_text(
+            align='left',
+            dx=30,
+            fontSize=self.mark_text_font_size,
+            opacity=opacity
+        ).transform_window(
+            rank='rank()',
+            sort=[alt.SortField('dateandtime', order='descending')]
+        ).encode(
+            text=alt.condition(alt.datum.rank == 1,
+                               field,
+                               alt.value(' '),
+                               format='.1f')
+        )
+
+        latest_text_tick = lines.mark_tick(
+            strokeDash=[1, 1],
+            xOffset=15,
+            size=15,
+            thickness=1.5
+        ).transform_window(
+            rank='rank()',
+            sort=[alt.SortField('dateandtime', order='descending')]
+        ).encode(
+            opacity=alt.condition(alt.datum.rank == 1,
+                                  alt.value(opacity),
+                                  alt.value(0))
+        )
+
+        return alt.layer(latest_text, latest_text_tick)
+
     def _plotNightAlt(self,
                       height_mod=1):
         source = self._getDataSubset('daylight')
@@ -306,37 +341,9 @@ class streamPlot():
                                format='.1f')
         )
 
-        latest_opacity = 0.7
-        latest_text = lines.mark_text(
-            align='left',
-            dx=30,
-            fontSize=self.mark_text_font_size,
-            opacity=latest_opacity
-        ).transform_window(
-            rank='rank()',
-            sort=[alt.SortField('dateandtime', order='descending')]
-        ).encode(
-            text=alt.condition(alt.datum.rank == 1,
-                               'value:Q',
-                               alt.value(' '),
-                               format='.1f')
-        )
-
-        # latest_text_tick = lines.mark_tick(
-        #     strokeDash=[1, 1],
-        #     xOffset=10,
-        #     size=20,
-        #     thickness=1.5
-        # ).transform_window(
-        #     rank='rank()',
-        #     sort=[alt.SortField('dateandtime', order='descending')]
-        # ).encode(
-        #     opacity=alt.condition(alt.datum.rank == 1,
-        #                           alt.value(latest_opacity),
-        #                           alt.value(0))
-        # )
-
         selectors, rules = self._createRules(source)
+
+        latest_text = self._createLatestText(lines, 'value:Q')
 
         plot = alt.layer(
             self._plotNightAlt(), lines, points, text, selectors, rules,
@@ -448,21 +455,7 @@ class streamPlot():
 
         selectors, rules = self._createRules(source)
 
-        latest_opacity = 0.7
-        latest_text = lines.mark_text(
-            align='left',
-            dx=30,
-            fontSize=self.mark_text_font_size,
-            opacity=latest_opacity
-        ).transform_window(
-            rank='rank()',
-            sort=[alt.SortField('dateandtime', order='descending')]
-        ).encode(
-            text=alt.condition(alt.datum.rank == 1,
-                               'value:Q',
-                               alt.value(' '),
-                               format='.1f')
-        )
+        latest_text = self._createLatestText(lines, 'rollmean:Q')
 
         plot = alt.layer(
             self._plotNightAlt(), lines, raw_lines, points, text, selectors,
