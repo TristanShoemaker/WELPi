@@ -357,7 +357,7 @@ class streamPlot():
         # source = source.loc[source.value != 0]
 
         chunks = alt.Chart(source).mark_bar(
-            width=3.5,
+            width=800 / self.resample_N,
             clip=True
         ).encode(
             x=alt.X('dateandtime:T',
@@ -448,9 +448,25 @@ class streamPlot():
 
         selectors, rules = self._createRules(source)
 
+        latest_opacity = 0.7
+        latest_text = lines.mark_text(
+            align='left',
+            dx=30,
+            fontSize=self.mark_text_font_size,
+            opacity=latest_opacity
+        ).transform_window(
+            rank='rank()',
+            sort=[alt.SortField('dateandtime', order='descending')]
+        ).encode(
+            text=alt.condition(alt.datum.rank == 1,
+                               'value:Q',
+                               alt.value(' '),
+                               format='.1f')
+        )
+
         plot = alt.layer(
             self._plotNightAlt(), lines, raw_lines, points, text, selectors,
-            rules
+            rules, latest_text
         )
 
         if bottomPlot:
@@ -637,7 +653,7 @@ def main():
     sensor_container = st.sidebar.beta_container()
     resample_N = st.sidebar.slider("Data Resample",
                                    min_value=20, max_value=720, value=200,
-                                   step=40)
+                                   step=20)
     display_log = st.sidebar.checkbox("Display Log")
     stp = streamPlot(resample_N=resample_N)
     if display_log:
