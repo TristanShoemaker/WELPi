@@ -632,16 +632,16 @@ def main():
     which = st.sidebar.selectbox("Page",
                                  ['temp', 'pandw'],
                                  format_func=_whichFormatFunc)
-
     st.sidebar.subheader("Plot Options:")
     date_range, date_mode = _date_select()
     sensor_container = st.sidebar.beta_container()
     resample_N = st.sidebar.slider("Data Resample",
                                    min_value=20, max_value=720, value=200,
                                    step=40)
+    display_log = st.sidebar.checkbox("Display Log")
     stp = streamPlot(resample_N=resample_N)
-
-    # stp.makeDebugTbl()
+    if display_log:
+        stp.makeDebugTbl()
 
     # -- main area --
     st.header(F"{_whichFormatFunc(which)} Monitor")
