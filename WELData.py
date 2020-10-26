@@ -12,7 +12,7 @@ from wget import download
 from shutil import move
 from astral import sun, LocationInfo
 from pymongo import MongoClient
-from dateutil import tz
+from pytz import timezone
 
 
 def message(message_text):
@@ -40,8 +40,8 @@ class WELData:
     _loc = LocationInfo('Home', 'MA', 'America/New_York',
                         42.485557, -71.433445)
     _dl_db_path = None
-    _db_tzone = tz.gettz('UTC')
-    _to_tzone = tz.gettz('America/New_York')
+    _db_tzone = timezone('UTC')
+    _to_tzone = timezone('America/New_York')
     _mongo_db = None
     _data_source = None
     _now = None
@@ -152,7 +152,7 @@ class WELData:
                                for date, time in zip(data.Date,
                                                      data.Time)]
         data.index = data['dateandtime']
-        data = data.tz_localize(tz.gettz('EST'))
+        data = data.tz_localize(timezone('EST'))
         data = data.tz_convert(self._to_tzone)
         data.drop(columns=['Date', 'Time'])
 
