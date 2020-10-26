@@ -8,9 +8,10 @@ import libmc
 import subprocess
 import json
 import platform
+import pytz
 from WELData import WELData, mongoConnect
 
-
+to_tz = pytz.timezone('America/New_York')
 st.beta_set_page_config(page_title="Geo Monitor",
                         page_icon="🌀",
                         initial_sidebar_state='expanded')
@@ -57,19 +58,20 @@ def _cachedWELData(date_range,
 
 
 def _date_select():
+    local_now = dt.datetime.now(to_tz)
     date_range = st.sidebar.date_input(label='Date Range',
-                                       value=[(dt.datetime.now()
+                                       value=[(local_now
                                                - dt.timedelta(days=1)),
-                                              dt.datetime.now()],
+                                              local_now],
                                        min_value=dt.datetime(2020, 3, 21),
-                                       max_value=dt.datetime.now())
+                                       max_value=local_now)
     date_range = list(date_range)
     while len(date_range) < 2:
         st.warning('Please select a start and end date.')
         st.stop()
-    selected_today = date_range[1] == dt.datetime.now().date()
+    selected_today = date_range[1] == local_now.date()
     if selected_today:
-        date_range[1] = dt.datetime.now()
+        date_range[1] = local_now
     else:
         date_range[1] = dt.datetime.combine(date_range[1],
                                             dt.datetime.min.time())
@@ -156,7 +158,8 @@ class streamPlot():
         self.nearestTime = _createNearestTime()
         # self.resize = _createResize()
 
-    def makeTbl(self):
+    def makeDebugTbl(self):
+        st.sidebar.subheader("Log:")
         self.mssg_tbl = st.sidebar.table()
 
     def makeWEL(self,
@@ -164,7 +167,7 @@ class streamPlot():
                 force_refresh=False):
         tic = time.time()
         if not force_refresh:
-            if date_range[0] < dt.datetime(2020, 8, 3):
+            if date_range[0] < dt.datetime(2020, 8, 3).astimezone(to_tz):
                 dat = _cachedWELData(date_range, data_source='WEL')
             else:
                 dat = _cachedWELData(date_range)
@@ -633,8 +636,7 @@ def main():
     stp = streamPlot()
     sensor_container = st.sidebar.beta_container()
 
-    st.sidebar.subheader("Log:")
-    stp.makeTbl()
+    stp.makeDebugTbl()
 
     # -- main area --
     st.header(F"{_whichFormatFunc(which)} Monitor")
