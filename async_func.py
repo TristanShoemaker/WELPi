@@ -92,7 +92,7 @@ def connectMemCache():
 def main():
     message("\n Restarted ...")
     db = connectMongo(mongo_ip)
-    mc = connectMemCache()
+    # mc = connectMemCache()
     if "dateandtime_-1" not in list(db.index_information()):
         result = db.create_index([('dateandtime', DESCENDING)], unique=True)
         message(F"Creating Unique Time Index: {result}")
