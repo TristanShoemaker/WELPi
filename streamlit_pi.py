@@ -123,7 +123,6 @@ def _createResize():
 
 
 class streamPlot():
-    resample_N = 200
     def_width = 'container'
     def_height = 260
     def_spacing = 2
@@ -148,14 +147,17 @@ class streamPlot():
                      'buderus_h2o_T']
     pwr_default = ['TAH_W', 'HP_W', 'power_tot']
     wind_default = ['TAH_fpm']
+    resample_N = None
     dat = None
     dat_resample = None
     nearestTime = None
     resize = None
     mssg_tbl = None
 
-    def __init__(self):
+    def __init__(self,
+                 resample_N=200):
         self.nearestTime = _createNearestTime()
+        self.resample_N = resample_N
         # self.resize = _createResize()
 
     def makeDebugTbl(self):
@@ -633,10 +635,13 @@ def main():
 
     st.sidebar.subheader("Plot Options:")
     date_range, date_mode = _date_select()
-    stp = streamPlot()
     sensor_container = st.sidebar.beta_container()
+    resample_N = st.sidebar.slider("Data Resample",
+                                   min_value=20, max_value=720, value=200,
+                                   step=40)
+    stp = streamPlot(resample_N=resample_N)
 
-    stp.makeDebugTbl()
+    # stp.makeDebugTbl()
 
     # -- main area --
     st.header(F"{_whichFormatFunc(which)} Monitor")
