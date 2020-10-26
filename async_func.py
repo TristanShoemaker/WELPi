@@ -20,8 +20,8 @@ elif platform.machine() == 'x86_64':
 else:
     raise("Unknown platform, can't choose mongoDB ip")
 loc = LocationInfo('Home', 'MA', 'America/New_York', 42.485557, -71.433445)
-to_tzone = timezone.gettz('America/New_York')
-db_tzone = timezone.gettz('UTC')
+to_tzone = timezone('America/New_York')
+db_tzone = timezone('UTC')
 
 
 def getData(ip):
@@ -45,7 +45,7 @@ def getData(ip):
     timeStamp = dt.strptime(post['Time'], "%H:%M:%S").time()
     # print(time)
     post['dateandtime'] = (dt.combine(date, timeStamp)
-                           .replace(tzinfo=timezone.gettz('EST')))
+                           .replace(tzinfo=timezone('EST')))
     # print(post['dateandtime'])
     post['dateandtime'] = post['dateandtime'].astimezone(db_tzone)
     del post['Date']
