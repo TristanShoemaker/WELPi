@@ -6,7 +6,7 @@ from pymongo import MongoClient, DESCENDING
 from pymongo.errors import DuplicateKeyError
 from requests.exceptions import ConnectionError
 from datetime import datetime as dt
-from dateutil import tz
+from pytz import timezone
 from astral import sun, LocationInfo
 from libmc import Client
 from streamlit_pi import streamPlot, message
@@ -20,8 +20,8 @@ elif platform.machine() == 'x86_64':
 else:
     raise("Unknown platform, can't choose mongoDB ip")
 loc = LocationInfo('Home', 'MA', 'America/New_York', 42.485557, -71.433445)
-to_tzone = tz.gettz('America/New_York')
-db_tzone = tz.gettz('UTC')
+to_tzone = timezone.gettz('America/New_York')
+db_tzone = timezone.gettz('UTC')
 
 
 def getData(ip):
@@ -45,7 +45,7 @@ def getData(ip):
     timeStamp = dt.strptime(post['Time'], "%H:%M:%S").time()
     # print(time)
     post['dateandtime'] = (dt.combine(date, timeStamp)
-                           .replace(tzinfo=tz.gettz('EST')))
+                           .replace(tzinfo=timezone.gettz('EST')))
     # print(post['dateandtime'])
     post['dateandtime'] = post['dateandtime'].astimezone(db_tzone)
     del post['Date']
@@ -108,8 +108,8 @@ def main():
         except DuplicateKeyError:
             message(F"UTC time: {utc_time} post already in database")
 
-        if post_success:
-            asyncPlot(mc, post['dateandtime'].astimezone(to_tzone))
+        # if post_success:
+        #     asyncPlot(mc, post['dateandtime'].astimezone(to_tzone))
 
         time.sleep(30)
 
