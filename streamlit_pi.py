@@ -82,6 +82,7 @@ def _date_select():
         date_range[0] = date_range[1] - dt.timedelta(hours=12)
         date_mode = 'default'
 
+    date_range = [date.astimezone(to_tz) for date in date_range]
     return [date_range, date_mode]
 
 
@@ -644,7 +645,7 @@ def main():
     st.sidebar.subheader("Plot Options:")
     date_range, date_mode = _date_select()
     sensor_container = st.sidebar.beta_container()
-    resample_N = st.sidebar.slider("Data Resample",
+    resample_N = st.sidebar.slider("Number of Data Samples",
                                    min_value=20, max_value=720, value=200,
                                    step=20)
     display_log = st.sidebar.checkbox("Display Log")
