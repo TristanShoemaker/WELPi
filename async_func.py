@@ -76,7 +76,7 @@ def asyncPlot(mc, timeKey):
 
 
 def connectMongo(ip):
-    address = "mongodb://" + ip + ":27017"
+    address = "mongodb://admin:78r9oLTJeG&;GdHcs@" + ip + ":27017"
     client = MongoClient(address)
     db = client.WEL.data
     message("Mongo Connected")
