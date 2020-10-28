@@ -30,7 +30,8 @@ def mongoConnect():
         ip = "192.168.68.101"
     else:
         raise("Unrecognized platform")
-    uri = "mongodb://admin:e72iBWRkaL6nYsXhCg@" + ip + ":27017/admin"
+    admin = open("mongo_admin_info.txt").read().strip()
+    uri = F"mongodb://{admin}@{ip}:27017/admin"
     client = MongoClient(uri)
     return client.WEL
 
@@ -57,7 +58,7 @@ class WELData:
                  data_source='Pi',
                  timerange=None,
                  WEL_download=False,
-                 dl_db_path='./log_db/',
+                 dl_db_path='../log_db/',
                  mongo_connection=None):
         self._data_source = data_source
         self._dl_db_path = dl_db_path
