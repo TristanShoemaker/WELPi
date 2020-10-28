@@ -234,7 +234,6 @@ class WELData:
                 except Exception:
                     message(F"Error while downloading log: {HTTPError}")
 
-
     """
     Redownload all months since 2020-3-1 to db.
     """
