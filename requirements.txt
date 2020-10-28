@@ -4,3 +4,4 @@ wget
 astral
 pymongo
 libmc
+xmltodict
