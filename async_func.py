@@ -10,6 +10,7 @@ from pytz import timezone
 from astral import sun, LocationInfo
 from libmc import Client
 from streamlit_pi import streamPlot, message
+from WELData import mongoConnect
 
 
 WEL_ip = '192.168.68.107'
@@ -75,14 +76,6 @@ def asyncPlot(mc, timeKey):
             exit()
 
 
-def connectMongo(ip):
-    address = "mongodb://admin:e72iBWRkaL6nYsXhCg@" + ip + ":27017/admin"
-    client = MongoClient(address)
-    db = client.WEL.data
-    message("Mongo Connected")
-    return db
-
-
 def connectMemCache():
     mc = Client(['localhost'])
     message("MemCache Connected")
@@ -91,7 +84,7 @@ def connectMemCache():
 
 def main():
     message("\n Restarted ...")
-    db = connectMongo(mongo_ip)
+    db = mongoConnect().data
     # mc = connectMemCache()
     if "dateandtime_-1" not in list(db.index_information()):
         result = db.create_index([('dateandtime', DESCENDING)], unique=True)
