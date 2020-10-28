@@ -9,6 +9,7 @@ import argparse
 import time
 from dateutil.relativedelta import relativedelta
 from wget import download
+from urllib.error import HTTPError
 from shutil import move
 from astral import sun, LocationInfo
 from pymongo import MongoClient
@@ -49,6 +50,7 @@ class WELData:
     _mongo_db = None
     _data_source = None
     _now = None
+    _calc_cols = None
     data = None
     timerange = None
 
@@ -62,7 +64,9 @@ class WELData:
                  timerange=None,
                  WEL_download=False,
                  dl_db_path='../log_db/',
-                 mongo_connection=None):
+                 mongo_connection=None,
+                 calc_cols=True):
+        self._calc_cols = calc_cols
         self._data_source = data_source
         self._dl_db_path = dl_db_path
         self._now = dt.datetime.now().astimezone(self._to_tzone)
@@ -160,7 +164,8 @@ class WELData:
         data = data.tz_convert(self._to_tzone)
         data.drop(columns=['Date', 'Time'])
 
-        data = pd.concat((data, self._calced_cols(data)), axis=1)
+        if self._calc_cols:
+            data = pd.concat((data, self._calced_cols(data)), axis=1)
 
         return data
 
@@ -214,16 +219,20 @@ class WELData:
                                                F'_{month.month:02d}.xls')
         if (not os.path.exists(prev_db_path_xls)) or forcedl:
             prev_url = ('http://www.welserver.com/WEL1060/'
-                        F'WEL_log_{month.year}_{month.month:02d}.zip')
+                        F'WEL_log_{month.year}_{month.month:02d}')
             prev_db_path_zip = (self._dl_db_path + F'WEL_log_{month.year}'
                                                    F'_{month.month:02d}.zip')
             try:
                 message(F"Downloading {month.year}-{month.month}:\n")
-                download(prev_url, prev_db_path_zip)
+                download(prev_url + '.zip', prev_db_path_zip)
                 os.system(F'unzip {prev_db_path_zip} -d {self._dl_db_path}'
                           F';rm {prev_db_path_zip}')
-            except Exception:
-                message('Not available for download')
+            except HTTPError:
+                try:
+                    download(prev_url + '.xls', prev_db_path_xls)
+                except Exception:
+                    message(F"Error while downloading log: {HTTPError}")
+
 
     """
     Redownload all months since 2020-3-1 to db.
