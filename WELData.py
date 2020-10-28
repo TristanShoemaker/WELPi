@@ -217,7 +217,8 @@ class WELData:
             month = self._now - relativedelta(months=1)
         prev_db_path_xls = (self._dl_db_path + F'WEL_log_{month.year}'
                                                F'_{month.month:02d}.xls')
-        if (not os.path.exists(prev_db_path_xls)) or forcedl:
+        this_month = self._now.date().month == month.month
+        if (not os.path.exists(prev_db_path_xls)) or forcedl or this_month:
             prev_url = ('http://www.welserver.com/WEL1060/'
                         F'WEL_log_{month.year}_{month.month:02d}')
             prev_db_path_zip = (self._dl_db_path + F'WEL_log_{month.year}'
