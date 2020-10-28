@@ -2,3 +2,4 @@ __pycache__/
 .git
 .DS_Store
 WELPi_remote
+mongo_admin_info.txt
