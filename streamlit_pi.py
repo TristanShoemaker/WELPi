@@ -170,10 +170,7 @@ class streamPlot():
                 force_refresh=False):
         tic = time.time()
         if not force_refresh:
-            if date_range[0] < dt.datetime(2020, 8, 3).astimezone(to_tz):
-                dat = _cachedWELData(date_range, data_source='WEL')
-            else:
-                dat = _cachedWELData(date_range)
+            dat = _cachedWELData(date_range)
         else:
             dat = WELData(timerange=date_range,
                           mongo_connection=_cachedMongoConnect())
