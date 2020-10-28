@@ -30,7 +30,7 @@ def mongoConnect():
         ip = "192.168.68.101"
     else:
         raise("Unrecognized platform")
-    admin = open("mongo_admin_info.txt").read().strip()
+    admin = open("./mongo_admin_info.txt").read().strip()
     uri = F"mongodb://{admin}@{ip}:27017/admin"
     client = MongoClient(uri)
     return client.WEL
