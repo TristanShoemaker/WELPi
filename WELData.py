@@ -22,15 +22,18 @@ def message(message_text):
 
 def mongoConnect():
     if platform.system() == 'Linux':
+        admin = open("/home/ubuntu/WEL/WELPi/"
+                     "mongo_admin_info.txt").read().strip()
         if platform.machine() == 'x86_64':
             ip = "98.118.28.23"
         else:
             ip = "localhost"
     elif platform.system() == 'Darwin':
+        admin = open("./mongo_admin_info.txt").read().strip()
         ip = "192.168.68.101"
     else:
         raise("Unrecognized platform")
-    admin = open("./mongo_admin_info.txt").read().strip()
+
     uri = F"mongodb://{admin}@{ip}:27017/admin"
     client = MongoClient(uri)
     return client.WEL
