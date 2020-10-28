@@ -279,13 +279,13 @@ class streamPlot():
         source = self._getDataSubset('daylight')
         area = alt.Chart(source).mark_bar(
             fill='black',
-            width=12,
+            width=800 / self.resample_N,
             clip=True,
             height=self.def_height * height_mod
         ).encode(
             x='dateandtime:T',
             opacity=alt.condition(alt.datum.value < 1,
-                                  alt.value(0.01),
+                                  alt.value(0.06),
                                   alt.value(0))
         )
 
