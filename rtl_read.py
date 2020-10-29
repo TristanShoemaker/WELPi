@@ -67,7 +67,7 @@ def processLine(line):
             packet[sensor_name] = float(line[quantity])
         return packet
     except KeyError:
-        message(F"Unknown Sensor ID: {id}")
+        message(F"Unknown Sensor ID: {id} \n {line}")
 
 
 def accumulate(p):
