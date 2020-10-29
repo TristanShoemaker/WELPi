@@ -42,7 +42,7 @@ id_to_name = {'2669': {'name': 'D_room',
                        'sensors': ['temperature_C', 'humidity']},
               '3634': {'name': 'outside_shade',
                        'sensors': ['temperature_C', 'humidity']},
-              '7285': {'name': 'room_monitor',
+              '7285': {'name': 'attic',
                        'sensors': ['temperature_C', 'humidity']},
               '4856': {'name': 'barn',
                        'sensors': ['temperature_C', 'humidity']}}
