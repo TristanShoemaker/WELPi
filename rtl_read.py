@@ -1,14 +1,17 @@
+import pandas as pd
 import subprocess
+import json
+import time
+from streamlit_pi import message
+from async_func import connectMemCache
 
 """
 rtl command:
 
-rtl_433 -R 40 -R 55 -R 74 -R 163 -C si -F json
-
 [-R <device> | help] Enable only the specified device decoding protocol (can be
     used multiple times)
-    [40]  Acurite 592TXR Temp/Humidity, 5n1 Weather Station, 6045 Lightning, 3N1,
-        Atlas
+    [40]  Acurite 592TXR Temp/Humidity, 5n1 Weather Station, 6045 Lightning,
+        3N1, Atlas
     [55]  Acurite 606TX Temperature Sensor
     [74]  Acurite 00275rm,00276rm Temp/Humidity with optional probe
     [163]  Acurite 590TX Temperature with optional Humidity
@@ -18,3 +21,77 @@ rtl_433 -R 40 -R 55 -R 74 -R 163 -C si -F json
 [-F kv | json | csv | mqtt | influx | syslog | null | help] Produce decoded
     output in given format.
 """
+rtl_cmd = "rtl_433 -R 40 -R 55 -R 74 -R 163 -C si -F json".split()
+
+
+id_to_name = {'2669': {'name': 'D_room',
+                       'sensors': ['temperature_C', 'humidity']},
+              '13097': {'name': 'V_room',
+                        'sensors': ['temperature_C', 'humidity']},
+              '8068': {'name': 'T_room',
+                       'sensors': ['temperature_C', 'humidity']},
+              '13945': {'name': 'fireplace',
+                        'sensors': ['temperature_C', 'humidity']},
+              '443_56': {'name': 'weather_station',
+                         'sensors': ['temperature_C', 'humidity',
+                                     'wind_avg_km_h']},
+              '443_49': {'name': 'weather_station',
+                         'sensors': ['wind_avg_km_h', 'wind_dir_deg',
+                                     'rain_mm']},
+              '3838': {'name': 'basement',
+                       'sensors': ['temperature_C', 'humidity']},
+              '3634': {'name': 'outside_shade',
+                       'sensors': ['temperature_C', 'humidity']},
+              '7285': {'name': 'room_monitor',
+                       'sensors': ['temperature_C', 'humidity']}}
+
+quantity_short = {'temperature_C': 'T',
+                  'humidity': 'H',
+                  'wind_avg_km_h': 'W',
+                  'wind_dir_deg': 'A',
+                  'rain_mm': 'R'}
+
+
+def processLine(line):
+    line = json.loads(line)
+    packet = {}
+    try:
+        id = F"{line['id']}_{line['message_type']}"
+    except KeyError:
+        id = str(line['id'])
+
+    try:
+        for quantity in id_to_name[id]['sensors']:
+            sensor_name = (F"{id_to_name[id]['name']}_"
+                           F"{quantity_short[quantity]}")
+            packet[sensor_name] = float(line[quantity])
+        return packet
+    except KeyError:
+        message(F"Unknown Sensor ID: {id}")
+
+
+def accumulate(p):
+    signals = pd.DataFrame()
+    tic = time.time()
+    for line in p.stdout:
+        packet = processLine(line)
+        signals = signals.append(packet, ignore_index=True)
+        print(time.time() - tic)
+        if time.time() - tic >= 60:
+            break
+    signals.drop_duplicates(inplace=True)
+    return signals.mean()
+
+
+def main():
+    mc = connectMemCache()
+    with subprocess.Popen(rtl_cmd, stdout=subprocess.PIPE, text=True) as p:
+        while True:
+            signals = accumulate(p)
+            mc_result = mc.set("rtl", signals)
+            if not mc_result:
+                message("❗rtl failed to cache❗")
+
+
+if __name__ == "__main__":
+    main()
