@@ -79,7 +79,7 @@ def accumulate(p):
         if time.time() - tic >= 60:
             break
     signals.drop_duplicates(inplace=True)
-    return signals.mean()
+    return signals.mean().to_dict()
 
 
 def main():
