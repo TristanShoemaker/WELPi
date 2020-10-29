@@ -25,7 +25,7 @@ to_tzone = timezone('America/New_York')
 db_tzone = timezone('UTC')
 
 
-def getData(ip):
+def getWELData(ip):
     url = "http://" + ip + ":5150/data.xml"
     try:
         response = requests.get(url)
@@ -61,6 +61,11 @@ def getData(ip):
     return post
 
 
+def getRtlData(mc):
+    rtl_post = mc.get('rtl')
+    return rtl_post
+
+
 def asyncPlot(mc, timeKey):
     stp = streamPlot()
     stp.makeWEL(['-t', '12'], force_refresh=True)
@@ -84,12 +89,13 @@ def connectMemCache():
 def main():
     message("\n Restarted ...")
     db = mongoConnect().data
-    # mc = connectMemCache()
+    mc = connectMemCache()
     if "dateandtime_-1" not in list(db.index_information()):
         result = db.create_index([('dateandtime', DESCENDING)], unique=True)
         message(F"Creating Unique Time Index: {result}")
     while True:
-        post = getData(WEL_ip)
+        post = getWELData(WEL_ip)
+        post.update(getRtlData(mc))
         post_success = False
         utc_time = post['dateandtime'].strftime('%Y-%m-%d %H:%M')
         try:
