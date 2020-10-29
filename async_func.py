@@ -63,7 +63,10 @@ def getWELData(ip):
 
 def getRtlData(mc):
     rtl_post = mc.get('rtl')
-    return rtl_post
+    if rtl_post is None:
+        message("rtl data not found in memCache")
+    else:
+        return rtl_post
 
 
 def asyncPlot(mc, timeKey):
@@ -95,7 +98,10 @@ def main():
         message(F"Creating Unique Time Index: {result}")
     while True:
         post = getWELData(WEL_ip)
-        post.update(getRtlData(mc))
+        try:
+            post.update(getRtlData(mc))
+        except TypeError:
+            pass
         post_success = False
         utc_time = post['dateandtime'].strftime('%Y-%m-%d %H:%M')
         try:
