@@ -141,7 +141,7 @@ class streamPlot():
                    'zone_2_b', 'TAH_out_T', 'desup_return_T', 'buderus_h2o_T',
                    'wood_fire_T', 'tank_h2o_T', 'trist_T', 'base_T',
                    'daylight', 'T_diff', 'COP', 'well_W', 'well_COP']
-    in_default = ['living_T', 'trist_T', 'base_T', 'wood_fire_T']
+    in_default = ['living_T', 'trist_T', 'base_T']
     out_default = ['TAH_in_T', 'TAH_out_T', 'loop_in_T', 'loop_out_T',
                    'outside_T']
     water_default = ['desup_T', 'desup_return_T', 'house_hot_T', 'tank_h2o_T',
