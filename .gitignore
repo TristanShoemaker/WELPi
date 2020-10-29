@@ -3,3 +3,4 @@ __pycache__/
 .DS_Store
 WELPi_remote
 mongo_admin_info.txt
+aws_WELPi_remote/
