@@ -76,7 +76,6 @@ def accumulate(p):
     for line in p.stdout:
         packet = processLine(line)
         signals = signals.append(packet, ignore_index=True)
-        print(time.time() - tic)
         if time.time() - tic >= 60:
             break
     signals.drop_duplicates(inplace=True)
@@ -84,6 +83,7 @@ def accumulate(p):
 
 
 def main():
+    message("\n Restarted ...")
     mc = connectMemCache()
     with subprocess.Popen(rtl_cmd, stdout=subprocess.PIPE, text=True) as p:
         while True:
@@ -91,6 +91,8 @@ def main():
             mc_result = mc.set("rtl", signals)
             if not mc_result:
                 message("❗rtl failed to cache❗")
+            else:
+                message("Succesful cache")
 
 
 if __name__ == "__main__":
