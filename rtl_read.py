@@ -43,6 +43,8 @@ id_to_name = {'2669': {'name': 'D_room',
               '3634': {'name': 'outside_shade',
                        'sensors': ['temperature_C', 'humidity']},
               '7285': {'name': 'room_monitor',
+                       'sensors': ['temperature_C', 'humidity']},
+              '4856': {'name': 'barn',
                        'sensors': ['temperature_C', 'humidity']}}
 
 quantity_short = {'temperature_C': 'T',
@@ -67,7 +69,7 @@ def processLine(line):
             packet[sensor_name] = float(line[quantity])
         return packet
     except KeyError:
-        message(F"Unknown Sensor ID: {id}")
+        message(F"Unknown Sensor ID: {id} \n {line}")
 
 
 def accumulate(p):

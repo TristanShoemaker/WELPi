@@ -146,7 +146,8 @@ class streamPlot():
                    'fireplace_T', 'D_room_H', 'D_room_T', 'T_room_H',
                    'T_room_T', 'room_monitor_H', 'room_monitor_T',
                    'basement_H', 'basement_T', 'outside_shade_H',
-                   'outside_shade_T', 'weather_station_A', 'weather_station_R']
+                   'outside_shade_T', 'weather_station_A', 'weather_station_R',
+                   'barn_T', 'barn_H']
     in_default = ['living_T', 'trist_T', 'base_T', 'T_room_T', 'D_room_T',
                   'V_room_T', 'fireplace_T', 'basement_T']
     out_default = ['TAH_in_T', 'TAH_out_T', 'loop_in_T', 'loop_out_T',
