@@ -156,7 +156,7 @@ class streamPlot():
     water_default = ['desup_T', 'desup_return_T', 'house_hot_T', 'tank_h2o_T',
                      'buderus_h2o_T']
     pwr_default = ['TAH_W', 'HP_W', 'power_tot']
-    wthr_default = ['outside_shade_T', 'outside_T']
+    wthr_default = ['outside_shade_T', 'outside_T', 'weather_station_T']
     wind_default = ['TAH_fpm']
     resample_N = None
     dat = None
