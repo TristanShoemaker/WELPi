@@ -2,7 +2,7 @@ import requests
 import xmltodict
 import time
 import platform
-from pymongo import MongoClient, DESCENDING
+from pymongo import DESCENDING
 from pymongo.errors import DuplicateKeyError
 from requests.exceptions import ConnectionError
 from datetime import datetime as dt
