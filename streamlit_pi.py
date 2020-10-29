@@ -148,7 +148,7 @@ class streamPlot():
                    'basement_H', 'basement_T', 'outside_shade_H',
                    'outside_shade_T', 'weather_station_A', 'weather_station_R']
     in_default = ['living_T', 'trist_T', 'base_T', 'T_room_T', 'D_room_T',
-                  'V_room_T', 'fireplace_T']
+                  'V_room_T', 'fireplace_T', 'basement_T']
     out_default = ['TAH_in_T', 'TAH_out_T', 'loop_in_T', 'loop_out_T',
                    'outside_T']
     water_default = ['desup_T', 'desup_return_T', 'house_hot_T', 'tank_h2o_T',
