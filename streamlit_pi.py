@@ -108,6 +108,8 @@ def _whichFormatFunc(option):
         return "Temperature"
     if option == 'pandw':
         return "Power and Water"
+    if option == 'wthr':
+        return "Weather Station"
 
 
 def _createNearestTime():
@@ -150,10 +152,11 @@ class streamPlot():
                    'barn_T', 'barn_H']
     in_default = ['T_room_T', 'D_room_T', 'V_room_T', 'fireplace_T']
     out_default = ['TAH_in_T', 'TAH_out_T', 'loop_in_T', 'loop_out_T',
-                   'outside_T']
+                   'outside_T', 'barn_T', 'basement_T']
     water_default = ['desup_T', 'desup_return_T', 'house_hot_T', 'tank_h2o_T',
                      'buderus_h2o_T']
     pwr_default = ['TAH_W', 'HP_W', 'power_tot']
+    wthr_default = ['outside_shade_T', 'outside_T']
     wind_default = ['TAH_fpm']
     resample_N = None
     dat = None
@@ -473,10 +476,6 @@ class streamPlot():
 
         return plot
 
-    def plotWeather(self):
-        weather_list = ['weather_station_T', '']
-        source = self._getDataSubset(['COP', 'well_COP'])
-
     def plotAssembly(self,
                      sensor_groups=None,
                      which='temp'):
@@ -525,7 +524,6 @@ class streamPlot():
                     ),
                     self.plotMainMonitor(sensor_groups[1],
                                          axis_label="Power / W",
-                                         height_mod=self.pwr_height_mod
                                          ).properties(
                         width=self.def_width,
                         height=self.def_height * self.pwr_height_mod
@@ -537,6 +535,47 @@ class streamPlot():
                                          ).properties(
                         width=self.def_width,
                         height=self.def_height * self.pwr_height_mod
+                    ),
+                    spacing=self.def_spacing
+                ).resolve_scale(
+                    y='independent',
+                    color='independent'
+                )
+
+        if which == 'wthr':
+            humidity = ['weather_station_H', 'outside_shade_H',
+                        'basement_H', 'fireplace_H']
+            if sensor_groups is None:
+                sensor_groups = [self.wthr_default]
+            with st.spinner('Generating Plots'):
+                plot = alt.vconcat(
+                    self.plotStatus().properties(
+                        width=self.def_width,
+                        height=self.def_height * self.stat_height_mod
+                    ),
+                    self.plotMainMonitor(self.wthr_default).properties(
+                        width=self.def_width,
+                        height=self.def_height * self.pwr_height_mod
+                    ),
+                    self.plotMainMonitor(humidity,
+                                         axis_label="Humidity / %",
+                                         ).properties(
+                        width=self.def_width,
+                        height=self.def_height * self.pwr_height_mod
+                    ),
+                    self.plotMainMonitor('weather_station_R',
+                                         axis_label='Rain Accumulation / mm',
+                                         ).properties(
+                        width=self.def_width,
+                        height=self.def_height * self.cop_height_mod
+                    ),
+                    self.plotMainMonitor('weather_station_W',
+                                         axis_label='Wind Speed / km/h',
+                                         height_mod=self.cop_height_mod,
+                                         bottomPlot=True
+                                         ).properties(
+                        width=self.def_width,
+                        height=self.def_height * self.cop_height_mod
                     ),
                     spacing=self.def_spacing
                 ).resolve_scale(
@@ -575,6 +614,10 @@ def _cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which='temp'):
                     and sensor_groups[1] == stp.pwr_default
                     and sensor_groups[2] == stp.wind_default):
                 return True
+        elif which == 'wthr':
+            if (date_mode == 'default'
+                    and sensor_groups[0] == stp.wthr_default):
+                return True
     return False
 
 
@@ -600,6 +643,12 @@ def _page_select(mc, stp, date_mode, date_range, sensor_container, which):
                                                     stp.sensor_list,
                                                     stp.wind_default)
         sensor_groups = [water_sensors, pwr_sensors, wind_sensors]
+
+    if which == 'wthr':
+        wthr_sensors = sensor_container.multiselect("Weather Station Sensors",
+                                                    stp.sensor_list,
+                                                    stp.wthr_default)
+        sensor_groups = [wthr_sensors]
 
     for sensor_group in sensor_groups:
         while len(sensor_group) < 1:
@@ -653,7 +702,7 @@ def main():
     # -- sidebar --
     st.sidebar.subheader("Monitor:")
     which = st.sidebar.selectbox("Page",
-                                 ['temp', 'pandw'],
+                                 ['temp', 'pandw', 'wthr'],
                                  format_func=_whichFormatFunc)
     st.sidebar.subheader("Plot Options:")
     date_range, date_mode = _date_select()
