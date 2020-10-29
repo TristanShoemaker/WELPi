@@ -33,9 +33,9 @@ def getData(ip):
         message("Error in connecting to WEL, waiting 10 sec then trying again")
         time.sleep(10)
         response = requests.get(url)
-    # print(response.content)
+
     response_data = xmltodict.parse(response.content)['Devices']['Device']
-    # print(response_data)
+
     post = {}
     for item in response_data:
         try:
@@ -44,10 +44,9 @@ def getData(ip):
             post[item['@Name']] = item['@Value']
     date = dt.strptime(post['Date'], "%m/%d/%Y")
     timeStamp = dt.strptime(post['Time'], "%H:%M:%S").time()
-    # print(time)
+
     post['dateandtime'] = (dt.combine(date, timeStamp)
                            .replace(tzinfo=timezone('EST')))
-    # print(post['dateandtime'])
     post['dateandtime'] = post['dateandtime'].astimezone(db_tzone)
     del post['Date']
     del post['Time']
