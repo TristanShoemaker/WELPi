@@ -48,7 +48,7 @@ def _cachedMemCache():
     return libmc.Client(['localhost'])
 
 
-@st.cache(allow_output_mutation=True)
+@st.cache(allow_output_mutation=True, show_spinner=False)
 def _cachedWELData(date_range,
                    data_source='Pi'):
     return WELData(timerange=date_range,
@@ -67,7 +67,7 @@ def _date_select():
                                        max_value=local_now)
     date_range = list(date_range)
     while len(date_range) < 2:
-        st.warning('Please select a start and end date.')
+        st.warning('Please select both a start and end date')
         st.stop()
     selected_today = date_range[1] == local_now.date()
     if selected_today:
@@ -473,6 +473,10 @@ class streamPlot():
 
         return plot
 
+    def plotWeather(self):
+        weather_list = ['weather_station_T', '']
+        source = self._getDataSubset(['COP', 'well_COP'])
+
     def plotAssembly(self,
                      sensor_groups=None,
                      which='temp'):
@@ -596,6 +600,11 @@ def _page_select(mc, stp, date_mode, date_range, sensor_container, which):
                                                     stp.sensor_list,
                                                     stp.wind_default)
         sensor_groups = [water_sensors, pwr_sensors, wind_sensors]
+
+    for sensor_group in sensor_groups:
+        while len(sensor_group) < 1:
+            st.warning('Please select at least one sensor per plot')
+            st.stop()
 
     if _cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which=which):
         tic = time.time()
