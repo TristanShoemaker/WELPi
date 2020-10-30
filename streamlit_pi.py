@@ -150,7 +150,7 @@ class streamPlot():
                    'basement_T', 'outside_shade_H', 'outside_shade_T',
                    'weather_station_A', 'weather_station_R',  'barn_T',
                    'barn_H']
-    in_default = ['T_room_T', 'D_room_T', 'V_room_T', 'fireplace_T']
+    in_default = ['T_room_T', 'D_room_T', 'V_room_T', 'fireplace_T', 'attic_T']
     out_default = ['TAH_in_T', 'TAH_out_T', 'loop_in_T', 'loop_out_T',
                    'outside_T', 'barn_T', 'basement_T']
     water_default = ['desup_T', 'desup_return_T', 'house_hot_T', 'tank_h2o_T',
@@ -252,7 +252,7 @@ class streamPlot():
     def _createLatestText(self,
                           lines,
                           field):
-        print(dir(lines))
+        # print(dir(lines))
         opacity = 0.7
         latest_text = lines.mark_text(
             align='left',
