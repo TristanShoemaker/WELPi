@@ -407,9 +407,11 @@ class streamPlot():
 
         return plot
 
-    def plotCOP(self,
-                bottomPlot=False):
-        source = self._getDataSubset(['COP', 'well_COP'])
+    def plotRollMean(self,
+                     vars,
+                     axis_label="COP Rolling Mean",
+                     bottomPlot=False):
+        source = self._getDataSubset(vars)
 
         rolling_frame = (3 * self.resample_N / ((self.dat.timerange[1]
                          - self.dat.timerange[0]).total_seconds() / 3600))
@@ -432,7 +434,7 @@ class streamPlot():
                     scale=alt.Scale(zero=False),
                     axis=alt.Axis(orient='right',
                                   grid=True),
-                    title='COP Rolling Mean'),
+                    title=axis_label),
             color=alt.Color('label', legend=alt.Legend(title='Efficiencies',
                                                        orient='top',
                                                        offset=5))
@@ -442,7 +444,8 @@ class streamPlot():
             interpolate='cardinal',
             strokeWidth=1.5,
             strokeDash=[1, 2],
-            opacity=0.8
+            opacity=0.8,
+            clip=True
         ).encode(
             x=alt.X('dateandtime:T'),
             y=alt.Y('value:Q'),
@@ -493,13 +496,19 @@ class streamPlot():
                     ),
                     self.plotMainMonitor(sensor_groups[0]).properties(
                         width=self.def_width,
-                        height=self.def_height
+                        height=self.def_height * self.pwr_height_mod
                     ),
                     self.plotMainMonitor(sensor_groups[1]).properties(
                         width=self.def_width,
-                        height=self.def_height
+                        height=self.def_height * self.pwr_height_mod
                     ),
-                    self.plotCOP(bottomPlot=True).properties(
+                    self.plotRollMean(['COP', 'well_COP']).properties(
+                        width=self.def_width,
+                        height=self.def_height * self.cop_height_mod
+                    ),
+                    self.plotRollMean(['deg_day_eff'],
+                                      axis_label="House Efficiency / °C/kW"
+                                      ).properties(
                         width=self.def_width,
                         height=self.def_height * self.cop_height_mod
                     ),
