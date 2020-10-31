@@ -173,11 +173,14 @@ class WELData:
                      frame):
         out_frame = pd.DataFrame()
 
-        # Additional calculated columns
-        out_frame['T_diff'] = frame.living_T - frame.outside_T
+        heat_mask = frame.heat_1_b % 2
+        heat_mask[heat_mask == 0] = np.nan
 
-        cop_heat_mask = frame.heat_1_b % 2
-        cop_heat_mask[cop_heat_mask == 0] = np.nan
+        # Additional calculated columns
+
+        out_frame['T_diff'] = frame.fireplace_T - frame.outside_T
+        out_frame['deg_day_eff'] = (heat_mask * out_frame.T_diff
+                                    / (frame.power_tot / 1000))
 
         air_density = 1.15
         surface_area = 0.34
@@ -186,7 +189,7 @@ class WELData:
                 * (np.abs(frame.TAH_out_T - frame.TAH_in_T)))
                / (frame.HP_W / 1000))
         COP[COP > 8] = np.nan
-        COP = COP * cop_heat_mask
+        COP = COP * heat_mask
         out_frame['COP'] = COP
 
         well_gpm = 13.6
@@ -195,7 +198,7 @@ class WELData:
                                * (np.abs(frame.loop_out_T - frame.loop_in_T)))
         well_COP = out_frame.well_W / (frame.HP_W / 1000)
         well_COP[well_COP > 8] = np.nan
-        well_COP = well_COP * cop_heat_mask
+        well_COP = well_COP * heat_mask
         out_frame['well_COP'] = well_COP
 
         return out_frame
