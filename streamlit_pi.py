@@ -708,9 +708,11 @@ def main():
     st.sidebar.subheader("Plot Options:")
     date_range, date_mode = _date_select()
     sensor_container = st.sidebar.beta_container()
+    max_samples = int(np.clip((date_range[1] - date_range[0])
+                              .total_seconds() / 60, 720, 1440))
     resample_N = st.sidebar.slider("Number of Data Samples",
-                                   min_value=20, max_value=720, value=200,
-                                   step=20)
+                                   min_value=10, max_value=max_samples,
+                                   value=200, step=10)
     display_log = st.sidebar.checkbox("Display Log")
     stp = streamPlot(resample_N=resample_N)
     if display_log:
