@@ -179,8 +179,8 @@ class WELData:
         # Additional calculated columns
 
         out_frame['T_diff'] = frame.fireplace_T - frame.outside_T
-        out_frame['deg_day_eff'] = (heat_mask * out_frame.T_diff
-                                    / (frame.power_tot / 1000))
+        out_frame['deg_day_eff'] = (heat_mask * (frame.power_tot)
+                                    / out_frame.T_diff)
 
         air_density = 1.15
         surface_area = 0.34
