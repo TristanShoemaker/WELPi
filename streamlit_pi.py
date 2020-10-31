@@ -507,7 +507,7 @@ class streamPlot():
                         height=self.def_height * self.cop_height_mod
                     ),
                     self.plotRollMean(['deg_day_eff'],
-                                      axis_label="House Efficiency / °C/kW"
+                                      axis_label="House Efficiency / W/°C"
                                       ).properties(
                         width=self.def_width,
                         height=self.def_height * self.cop_height_mod
