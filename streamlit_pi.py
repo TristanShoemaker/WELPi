@@ -130,7 +130,7 @@ class streamPlot():
     def_height = 260
     def_spacing = 2
     stat_height_mod = 0.5
-    cop_height_mod = 0.5
+    cop_height_mod = 0.4
     pwr_height_mod = 0.7
     mark_text_font_size = 13
     label_font_size = 12
@@ -149,7 +149,7 @@ class streamPlot():
                    'T_room_T', 'attic_H', 'attic_T', 'basement_H',
                    'basement_T', 'outside_shade_H', 'outside_shade_T',
                    'weather_station_A', 'weather_station_R',  'barn_T',
-                   'barn_H']
+                   'barn_H', 'deg_day_eff']
     in_default = ['T_room_T', 'D_room_T', 'V_room_T', 'fireplace_T', 'attic_T']
     out_default = ['TAH_in_T', 'TAH_out_T', 'loop_in_T', 'loop_out_T',
                    'outside_T', 'barn_T', 'basement_T']
@@ -510,7 +510,8 @@ class streamPlot():
                                       axis_label="House Efficiency / W/°C"
                                       ).properties(
                         width=self.def_width,
-                        height=self.def_height * self.cop_height_mod
+                        height=self.def_height * self.cop_height_mod,
+                        bottomPlot=True
                     ),
                     spacing=self.def_spacing
                 ).resolve_scale(
