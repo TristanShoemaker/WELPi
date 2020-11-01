@@ -507,11 +507,11 @@ class streamPlot():
                         height=self.def_height * self.cop_height_mod
                     ),
                     self.plotRollMean(['deg_day_eff'],
-                                      axis_label="House Efficiency / W/°C"
+                                      axis_label="House Efficiency / W/°C",
+                                      bottomPlot=True
                                       ).properties(
                         width=self.def_width,
                         height=self.def_height * self.cop_height_mod,
-                        bottomPlot=True
                     ),
                     spacing=self.def_spacing
                 ).resolve_scale(
