@@ -14,14 +14,13 @@ rtl command:
         3N1, Atlas
     [55]  Acurite 606TX Temperature Sensor
     [74]  Acurite 00275rm,00276rm Temp/Humidity with optional probe
-    [163]  Acurite 590TX Temperature with optional Humidity
 
 [-C native | si | customary] Convert units in decoded output.
 
 [-F kv | json | csv | mqtt | influx | syslog | null | help] Produce decoded
     output in given format.
 """
-rtl_cmd = "rtl_433 -R 40 -R 55 -R 74 -C si -F json".split()
+rtl_cmd = "rtl_433 -a -R 40 -R 55 -R 74 -C si -F json".split()
 
 
 id_to_name = {'2669': {'name': 'D_room',
