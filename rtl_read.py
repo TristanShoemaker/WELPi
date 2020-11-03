@@ -21,7 +21,7 @@ rtl command:
 [-F kv | json | csv | mqtt | influx | syslog | null | help] Produce decoded
     output in given format.
 """
-rtl_cmd = "rtl_433 -R 40 -R 55 -R 74 -R 163 -C si -F json".split()
+rtl_cmd = "rtl_433 -R 40 -R 55 -R 74 -C si -F json".split()
 
 
 id_to_name = {'2669': {'name': 'D_room',
