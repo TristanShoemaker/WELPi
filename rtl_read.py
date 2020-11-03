@@ -80,8 +80,8 @@ def accumulate(p):
         signals = signals.append(packet, ignore_index=True)
         if time.time() - tic >= 60:
             break
-    signals.drop_duplicates(inplace=True)
     message(F"\n{signals.count()}")
+    signals.drop_duplicates(inplace=True)
     return signals.mean().to_dict()
 
 
