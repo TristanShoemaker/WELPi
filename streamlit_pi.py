@@ -739,9 +739,9 @@ def main():
     message([F"{'Altair plot disp:': <20}", F"{time.time() - tic:.2f} s"],
             tbl=stp.mssg_tbl)
 
-    message([F"{'WEL Status:': <20}", F"{ping('wel')}"], tbl=stp.mssg_tbl)
+    # message([F"{'WEL Status:': <20}", F"{ping('wel')}"], tbl=stp.mssg_tbl)
 
-    message([F"{'Pi Temp:': <20}", F"{ping('pi_temp')}"], tbl=stp.mssg_tbl)
+    # message([F"{'Pi Temp:': <20}", F"{ping('pi_temp')}"], tbl=stp.mssg_tbl)
 
 
 if __name__ == "__main__":
