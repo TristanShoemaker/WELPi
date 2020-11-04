@@ -124,6 +124,7 @@ def connectSense():
 def main():
     message("\n    Restarted ...")
     db = mongoConnect().data
+    message("Mongo Connected")
     mc = connectMemCache()
     sn = connectSense()
     if "dateandtime_-1" not in list(db.index_information()):
