@@ -131,24 +131,19 @@ def main():
         message(F"Creating Unique Time Index: {result}")
     while True:
         post = getWELData(WEL_ip)
-        try:
-            last_post = db.find_one(sort=[('_id', DESCENDING)])
-            last_post = last_post['WELdateandtime']
-            new_post = post != last_post
-        except KeyError:
-            new_post = True
+        last_post = db.find_one(sort=[('_id', DESCENDING)])['WELdateandtime']
 
-        if new_post:
+        if post['WELdateandtime'] != last_post:
             try:
                 rtl_post = getRtlData(mc)
                 post.update(rtl_post)
             except TypeError:
                 message("Empty rtl memCache.")
-            try:
-                sense_post = getSenseData(sn)
-                post.update(sense_post)
-            except TypeError:
-                message("Empty sense data.")
+            # try:
+            #     sense_post = getSenseData(sn)
+            #     post.update(sense_post)
+            # except TypeError:
+            #     message("Empty sense data.")
 
             utc_time = post['dateandtime'].strftime('%Y-%m-%d %H:%M')
             try:
