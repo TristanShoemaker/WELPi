@@ -87,6 +87,7 @@ def accumulate(p):
 def main():
     message("\n Restarted ...")
     mc = connectMemCache()
+    time.sleep(5)
     with subprocess.Popen(rtl_cmd, stdout=subprocess.PIPE, text=True) as p:
         while True:
             signals = accumulate(p)
