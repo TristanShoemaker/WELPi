@@ -3,7 +3,7 @@ import xmltodict
 import time
 import platform
 import datetime as dt
-from pymongo import DESCENDING
+from pymongo import ASCENDING, DESCENDING
 from pymongo.errors import DuplicateKeyError
 from requests.exceptions import ConnectionError
 from pytz import timezone
@@ -131,8 +131,8 @@ def main():
         message(F"Creating Unique Time Index: {result}")
     while True:
         post = getWELData(WEL_ip)
-        last_post = db.find_one(sort=[('_id', DESCENDING)])['WELdateandtime']
-
+        last_post = db.find_one(sort=[('_id', DESCENDING)])
+        last_post = last_post['WELdateandtime'].replace(tzinfo = db_tzone)
         if post['WELdateandtime'] != last_post:
             try:
                 rtl_post = getRtlData(mc)
