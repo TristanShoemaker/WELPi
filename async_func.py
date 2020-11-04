@@ -118,6 +118,7 @@ def connectSense():
     sense_info = open(path).read().strip().split()
     sn.authenticate(*sense_info)
     sn.rate_limit = 20
+    message("Sense Connected")
     return sn
 
 
