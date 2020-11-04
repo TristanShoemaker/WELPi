@@ -5,3 +5,4 @@ astral
 pymongo
 libmc
 xmltodict
+sense_energy
