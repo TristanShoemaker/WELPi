@@ -110,7 +110,12 @@ def connectMemCache():
 
 def connectSense():
     sn = Senseable()
-    sense_info = open('sense_info.txt').read().strip().split()
+    if platform.system() == 'Linux':
+        path = "/home/ubuntu/WEL/WELPi/sense_info.txt"
+    elif platform.system() == 'Darwin':
+        path = "./sense_info.txt"
+
+    sense_info = open(path).read().strip().split()
     sn.authenticate(*sense_info)
     sn.rate_limit = 20
     return sn
