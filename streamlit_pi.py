@@ -158,6 +158,8 @@ class streamPlot():
     pwr_default = ['TAH_W', 'HP_W', 'power_tot']
     wthr_default = ['outside_shade_T', 'outside_T', 'weather_station_T']
     wind_default = ['TAH_fpm']
+    humid_default = ['weather_station_H', 'outside_shade_H', 'basement_H',
+                     'fireplace_H']
     resample_N = None
     dat = None
     dat_resample = None
@@ -554,21 +556,19 @@ class streamPlot():
                 )
 
         if which == 'wthr':
-            humidity = ['weather_station_H', 'outside_shade_H',
-                        'basement_H', 'fireplace_H']
             if sensor_groups is None:
-                sensor_groups = [self.wthr_default]
+                sensor_groups = [self.wthr_default, self.humid_default]
             with st.spinner('Generating Plots'):
                 plot = alt.vconcat(
                     self.plotStatus().properties(
                         width=self.def_width,
                         height=self.def_height * self.stat_height_mod
                     ),
-                    self.plotMainMonitor(self.wthr_default).properties(
+                    self.plotMainMonitor(sensor_groups[0]).properties(
                         width=self.def_width,
                         height=self.def_height * self.pwr_height_mod
                     ),
-                    self.plotMainMonitor(humidity,
+                    self.plotMainMonitor(sensor_groups[1],
                                          axis_label="Humidity / %",
                                          ).properties(
                         width=self.def_width,
@@ -627,7 +627,8 @@ def _cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which='temp'):
                 return True
         elif which == 'wthr':
             if (date_mode == 'default'
-                    and sensor_groups[0] == stp.wthr_default):
+                    and sensor_groups[0] == stp.wthr_default
+                    and sensor_groups[1] == stp.humid_default):
                 return True
     return False
 
@@ -656,10 +657,13 @@ def _page_select(mc, stp, date_mode, date_range, sensor_container, which):
         sensor_groups = [water_sensors, pwr_sensors, wind_sensors]
 
     if which == 'wthr':
-        wthr_sensors = sensor_container.multiselect("Weather Station Sensors",
+        wthr_sensors = sensor_container.multiselect("Weather Temp Sensors",
                                                     stp.sensor_list,
                                                     stp.wthr_default)
-        sensor_groups = [wthr_sensors]
+        humid_sensors = sensor_container.multiselect("Humidity Sensors",
+                                                     stp.sensor_list,
+                                                     stp.humid_default)
+        sensor_groups = [wthr_sensors, humid_sensors]
 
     for sensor_group in sensor_groups:
         while len(sensor_group) < 1:
