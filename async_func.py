@@ -9,6 +9,7 @@ from requests.exceptions import ConnectionError
 from pytz import timezone
 from astral import sun, LocationInfo
 from libmc import Client
+from sense_energy import Senseable
 from streamlit_pi import streamPlot, message
 from WELData import mongoConnect
 
@@ -69,11 +70,22 @@ def getWELData(ip):
 
 
 def getRtlData(mc):
-    rtl_post = mc.get('rtl')
-    if rtl_post is None:
+    post = mc.get('rtl')
+    if post is None:
         message("rtl data not found in memCache")
     else:
-        return rtl_post
+        return post
+
+
+def getSenseData(sn):
+    sn.update_realtime()
+    sense_post = sn.get_realtime()
+    post = {}
+    post['solar_w'] = sense_post['solar_w']
+    post['house_w'] = sense_post['w']
+    post['dehumidifier_w'] = [device for device in sense_post['devices']
+                              if device['name'] == 'Dehumidifier '][0]['w']
+    return post
 
 
 def asyncPlot(mc, timeKey):
@@ -96,10 +108,19 @@ def connectMemCache():
     return mc
 
 
+def connectSense():
+    sn = Senseable()
+    sense_info = open('sense_info.txt').read().strip().split()
+    sn.authenticate(*sense_info)
+    sn.rate_limit = 20
+    return sn
+
+
 def main():
-    message("\n Restarted ...")
+    message("\n    Restarted ...")
     db = mongoConnect().data
     mc = connectMemCache()
+    sn = connectSense()
     if "dateandtime_-1" not in list(db.index_information()):
         result = db.create_index([('dateandtime', DESCENDING)], unique=True)
         message(F"Creating Unique Time Index: {result}")
@@ -114,9 +135,16 @@ def main():
 
         if new_post:
             try:
-                post.update(getRtlData(mc))
+                rtl_post = getRtlData(mc)
+                post.update(rtl_post)
             except TypeError:
-                pass
+                message("Empty rtl memCache.")
+            try:
+                sense_post = getSenseData(sn)
+                post.update(sense_post)
+            except TypeError:
+                message("Empty sense data.")
+
             utc_time = post['dateandtime'].strftime('%Y-%m-%d %H:%M')
             try:
                 post_id = db.insert_one(post).inserted_id
