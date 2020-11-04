@@ -2,10 +2,10 @@ import requests
 import xmltodict
 import time
 import platform
+import datetime as dt
 from pymongo import DESCENDING
 from pymongo.errors import DuplicateKeyError
 from requests.exceptions import ConnectionError
-from datetime import datetime as dt
 from pytz import timezone
 from astral import sun, LocationInfo
 from libmc import Client
@@ -18,11 +18,14 @@ if platform.machine() == 'aarch64':
     mongo_ip = 'localhost'
 elif platform.machine() == 'x86_64':
     mongo_ip = '98.118.28.23'
+elif platform.system() == 'Darwin':
+    mongo_ip = '192.168.68.101'
 else:
     raise("Unknown platform, can't choose mongoDB ip")
 loc = LocationInfo('Home', 'MA', 'America/New_York', 42.485557, -71.433445)
 to_tzone = timezone('America/New_York')
 db_tzone = timezone('UTC')
+WEL_tzone = timezone('EST')
 
 
 def getWELData(ip):
@@ -42,11 +45,15 @@ def getWELData(ip):
             post[item['@Name']] = float(item['@Value'])
         except ValueError:
             post[item['@Name']] = item['@Value']
-    date = dt.strptime(post['Date'], "%m/%d/%Y")
-    timeStamp = dt.strptime(post['Time'], "%H:%M:%S").time()
+    date = dt.datetime.strptime(post['Date'], "%m/%d/%Y")
+    timeStamp = dt.datetime.strptime(post['Time'], "%H:%M:%S").time()
 
-    post['dateandtime'] = (dt.combine(date, timeStamp)
-                           .replace(tzinfo=timezone('EST')))
+    post['WELdateandtime'] = (dt.datetime.combine(date, timeStamp)
+                              .replace(tzinfo=WEL_tzone)
+                              .astimezone(db_tzone))
+    post['dateandtime'] = (dt.datetime.now()
+                           .replace(microsecond=0)
+                           .replace(tzinfo=to_tzone))
     post['dateandtime'] = post['dateandtime'].astimezone(db_tzone)
     del post['Date']
     del post['Time']
@@ -99,21 +106,23 @@ def main():
     while True:
         post = getWELData(WEL_ip)
         try:
-            post.update(getRtlData(mc))
-        except TypeError:
-            pass
-        post_success = False
-        utc_time = post['dateandtime'].strftime('%Y-%m-%d %H:%M')
-        try:
-            post_id = db.insert_one(post).inserted_id
-            message(F"UTC time: {utc_time} | "
-                    F"post_id: {post_id}")
-            post_success = True
-        except DuplicateKeyError:
-            message(F"UTC time: {utc_time} post already in database")
+            last_post = db.find_one(sort=[('_id', DESCENDING)])
+            last_post = last_post['WELdateandtime']
+            new_post = post != last_post
+        except KeyError:
+            new_post = True
 
-        # if post_success:
-        #     asyncPlot(mc, post['dateandtime'].astimezone(to_tzone))
+        if new_post:
+            try:
+                post.update(getRtlData(mc))
+            except TypeError:
+                pass
+            utc_time = post['dateandtime'].strftime('%Y-%m-%d %H:%M')
+            try:
+                post_id = db.insert_one(post).inserted_id
+                message(F"UTC time: {utc_time} | post_id: {post_id}")
+            except DuplicateKeyError:
+                message(F"UTC time: {utc_time} post already in database")
 
         time.sleep(30)
 
