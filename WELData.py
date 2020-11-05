@@ -177,11 +177,11 @@ class WELData:
         heat_mask[heat_mask == 0] = np.nan
 
         # Additional calculated columns
-
-        out_frame['house_ops_w'] = frame.power_tot - frame.house_w
+        out_frame['power_tot_pi'] = frame.HP_W + frame.TAH_W
+        out_frame['house_ops_w'] = frame.house_w - frame.power_tot
 
         out_frame['T_diff'] = frame.fireplace_T - frame.outside_T
-        out_frame['deg_day_eff'] = (heat_mask * (frame.power_tot)
+        out_frame['deg_day_eff'] = (heat_mask * (out_frame.power_tot_pi)
                                     / out_frame.T_diff)
 
         air_density = 1.15
@@ -278,6 +278,10 @@ class WELData:
                             for month in monthlist]
                 # print(datalist)
                 self.data = pd.concat(datalist)
+
+                # Shift power meter data by one sample for better alignment with others
+                self.data.HP_W = self.data.HP_W.shift(-1)
+                self.data.TAH_W = self.data.TAH_W.shift(-1)
                 tmask = ((self.data.index > self.timerange[0])
                          & (self.data.index < self.timerange[1]))
                 self.data = self.data[tmask]
@@ -298,13 +302,14 @@ class WELData:
             self.data = self.data.tz_convert(self._to_tzone)
             # print(F"#DEBUG: timerange from: {self.data.index[-1]}"
             #       "to {self.data.index[0]}")
-            # For now, calculate columns at data load
+
+
+            # Shift power meter data by one sample for better alignment with others
+            self.data.HP_W = self.data.HP_W.shift(-1)
+            self.data.TAH_W = self.data.TAH_W.shift(-1)
             self.data = pd.concat((self.data, self._calced_cols(self.data)),
                                   axis=1)
 
-        # Shift power meter data by one sample for better alignment with others
-        self.data.HP_W = self.data.HP_W.shift(-1)
-        self.data.TAH_W = self.data.TAH_W.shift(-1)
 
     """
     Returns list of all column names.
