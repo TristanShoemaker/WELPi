@@ -168,7 +168,7 @@ class streamPlot():
     mssg_tbl = None
 
     def __init__(self,
-                 resample_N=200):
+                 resample_N=300):
         self.nearestTime = _createNearestTime()
         self.resample_N = resample_N
         # self.resize = _createResize()
@@ -489,18 +489,18 @@ class streamPlot():
 
         return plot
 
-    def plotStack(self,
-                  vars,
-                  axis_label="Power / kW",
-                  height_mod=1,
-                  bottomPlot=False):
+    def plotPowerStack(self,
+                       vars,
+                       axis_label="Power / kW",
+                       height_mod=1,
+                       bottomPlot=False):
         source = self._getDataSubset(vars)
 
-        label_unit = source['label'][0][-2:]
-        if label_unit == '_w' or label_unit == '_W':
-            source['value'] = source['value'] / 1000
+        source['value'] = source['value'] / 1000
+        solar_mask = source['label'] == 'solar_w'
+        source.loc[solar_mask, 'value'] = -1 * source.loc[solar_mask, 'value']
 
-        lines = alt.Chart(source).mark_area(
+        area = alt.Chart(source).mark_area(
             interpolate='cardinal',
             clip=True
         ).encode(
@@ -516,24 +516,24 @@ class streamPlot():
                     axis=alt.Axis(title=axis_label,
                                   orient='right',
                                   grid=True)),
+            order="order:O",
             color=alt.Color('new_label:N',
                             legend=alt.Legend(title='Sensors',
                                               orient='top',
-                                              offset=5)),
-            strokeWidth=alt.condition(alt.datum.label == 'outside_T',
-                                      alt.value(2.5),
-                                      alt.value(1.5)),
+                                              offset=5))
         ).transform_calculate(
             new_label=alt.expr.slice(alt.datum.label, 0, -2)
+        ).transform_calculate(
+            order="{'house_ops_w':0, 'power_tot':1, 'solar_w':2}[datum.label]"
         )
 
-        points = lines.mark_point(size=40, filled=True).encode(
+        points = area.mark_point(size=40, filled=True).encode(
             opacity=alt.condition(self.nearestTime,
                                   alt.value(0.8),
                                   alt.value(0))
         )
 
-        text = lines.mark_text(
+        text = area.mark_text(
             align='left',
             dx=5, dy=-5,
             fontSize=self.label_font_size
@@ -546,10 +546,10 @@ class streamPlot():
 
         selectors, rules = self._createRules(source)
 
-        latest_text = self._createLatestText(lines, 'value:Q')
+        latest_text = self._createLatestText(area, 'value:Q')
 
         plot = alt.layer(
-            self._plotNightAlt(), lines, points, text, selectors, rules,
+            self._plotNightAlt(), area, points, text, selectors, rules,
             latest_text
         )
 
@@ -600,28 +600,28 @@ class streamPlot():
 
         if which == 'pandw':
             if sensor_groups is None:
-                sensor_groups = [self.water_default, self.pwr_default]
+                sensor_groups = [self.pwr_default, self.water_default]
             with st.spinner('Generating Plots'):
                 plot = alt.vconcat(
                     self.plotStatus().properties(
                         width=self.def_width,
                         height=self.def_height * self.stat_height_mod
                     ),
-                    self.plotMainMonitor(sensor_groups[0]).properties(
+                    self.plotPowerStack(['solar_w', 'power_tot',
+                                         'house_ops_w'],
+                                        axis_label="Power / kW").properties(
                         width=self.def_width,
-                        height=self.def_height * self.pwr_height_mod
+                        height=self.def_height
                     ),
-                    self.plotStack(['house_w', 'house_ops_w'],
-                                   axis_label="Power / kW"
-                                   ).properties(
-                        width=self.def_width,
-                        height=self.def_height * self.pwr_height_mod
-                    ),
-                    self.plotMainMonitor(sensor_groups[1],
+                    self.plotMainMonitor(sensor_groups[0],
                                          axis_label="Power / kW",
                                          ).properties(
                         width=self.def_width,
                         height=self.def_height * self.stat_height_mod
+                    ),
+                    self.plotMainMonitor(sensor_groups[1]).properties(
+                        width=self.def_width,
+                        height=self.def_height * self.pwr_height_mod
                     ),
                     self.plotMainMonitor('TAH_fpm',
                                          axis_label="Wind Speed / m/s",
@@ -703,8 +703,8 @@ def _cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which='temp'):
                 return True
         elif which == 'pandw':
             if (date_mode == 'default'
-                    and sensor_groups[0] == stp.water_default
-                    and sensor_groups[1] == stp.pwr_default):
+                    and sensor_groups[0] == stp.pwr_default
+                    and sensor_groups[1] == stp.water_default):
                 return True
         elif which == 'wthr':
             if (date_mode == 'default'
@@ -726,13 +726,13 @@ def _page_select(mc, stp, date_mode, date_range, sensor_container, which):
         sensor_groups = [in_sensors, out_sensors]
 
     if which == 'pandw':
-        water_sensors = sensor_container.multiselect("Water Sensors",
-                                                     stp.sensor_list,
-                                                     stp.water_default)
         pwr_sensors = sensor_container.multiselect("Power Sensors",
                                                    stp.sensor_list,
                                                    stp.pwr_default)
-        sensor_groups = [water_sensors, pwr_sensors]
+        water_sensors = sensor_container.multiselect("Water Sensors",
+                                                     stp.sensor_list,
+                                                     stp.water_default)
+        sensor_groups = [pwr_sensors, water_sensors]
 
     if which == 'wthr':
         wthr_sensors = sensor_container.multiselect("Weather Temp Sensors",
@@ -796,6 +796,7 @@ def main():
     st.sidebar.subheader("Monitor:")
     which = st.sidebar.selectbox("Page",
                                  ['temp', 'pandw', 'wthr'],
+                                 index=0,
                                  format_func=_whichFormatFunc)
     st.sidebar.subheader("Plot Options:")
     date_range, date_mode = _date_select()
@@ -804,7 +805,7 @@ def main():
                               .total_seconds() / 60, 720, 1440))
     resample_N = st.sidebar.slider("Number of Data Samples",
                                    min_value=10, max_value=max_samples,
-                                   value=200, step=10)
+                                   value=300, step=10)
     display_log = st.sidebar.checkbox("Display Log")
     stp = streamPlot(resample_N=resample_N)
     if display_log:
