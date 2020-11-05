@@ -104,7 +104,7 @@ def ping(host):
 
 
 def _whichFormatFunc(option):
-    if option == 'temp':
+    if option == 'main':
         return "Temperature"
     if option == 'pandw':
         return "Power and Water"
@@ -562,10 +562,10 @@ class streamPlot():
 
     def plotAssembly(self,
                      sensor_groups=None,
-                     which='temp'):
+                     which='main'):
         tic = time.time()
 
-        if which == 'temp':
+        if which == 'main':
             if sensor_groups is None:
                 sensor_groups = [self.in_default, self.out_default]
             with st.spinner('Generating Plots'):
@@ -704,7 +704,7 @@ class streamPlot():
 
 def _page_select(stp, date_mode, date_range, sensor_container, which):
     sensor_groups = []
-    if which == 'temp':
+    if which == 'main':
         in_sensors = sensor_container.multiselect("Inside Sensors",
                                                   stp.sensor_list,
                                                   stp.in_default)
@@ -772,7 +772,7 @@ def main():
     # -- sidebar --
     st.sidebar.subheader("Monitor:")
     which = st.sidebar.selectbox("Page",
-                                 ['temp', 'pandw', 'wthr'],
+                                 ['main', 'pandw', 'wthr'],
                                  index=0,
                                  format_func=_whichFormatFunc)
     st.sidebar.subheader("Plot Options:")
