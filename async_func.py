@@ -10,7 +10,7 @@ from pytz import timezone
 from astral import sun, LocationInfo
 from libmc import Client
 from sense_energy import Senseable
-from StreamPlot import StreamPlot, message
+from StreamPlot import message
 from WELData import mongoConnect
 
 
