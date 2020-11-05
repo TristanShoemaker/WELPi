@@ -131,7 +131,7 @@ class streamPlot():
     def_spacing = 2
     stat_height_mod = 0.5
     cop_height_mod = 0.4
-    pwr_height_mod = 0.7
+    pwr_height_mod = 0.8
     mark_text_font_size = 13
     label_font_size = 12
     title_font_size = 11
@@ -311,7 +311,10 @@ class streamPlot():
                         bottomPlot=False):
         source = self._getDataSubset(vars)
 
-        lines = alt.Chart(source).mark_line(interpolate='cardinal').encode(
+        lines = alt.Chart(source).mark_line(
+            interpolate='cardinal',
+            clip=True
+        ).encode(
             x=alt.X('dateandtime:T',
                     # scale=alt.Scale(domain=self.resize),
                     axis=alt.Axis(title=None,
