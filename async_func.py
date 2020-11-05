@@ -134,18 +134,18 @@ def main():
     while True:
         post = getWELData(WEL_ip)
         last_post = db.find_one(sort=[('_id', DESCENDING)])
-        last_post = last_post['WELdateandtime'].replace(tzinfo = db_tzone)
+        last_post = last_post['WELdateandtime'].replace(tzinfo=db_tzone)
         if post['WELdateandtime'] != last_post:
             try:
                 rtl_post = getRtlData(mc)
                 post.update(rtl_post)
             except TypeError:
                 message("Empty rtl memCache.")
-            # try:
-            #     sense_post = getSenseData(sn)
-            #     post.update(sense_post)
-            # except TypeError:
-            #     message("Empty sense data.")
+            try:
+                sense_post = getSenseData(sn)
+                post.update(sense_post)
+            except TypeError:
+                message("Empty sense data.")
 
             utc_time = post['dateandtime'].strftime('%Y-%m-%d %H:%M')
             try:
