@@ -489,6 +489,76 @@ class streamPlot():
 
         return plot
 
+    def plotStack(self,
+                  vars,
+                  axis_label="Power / kW",
+                  height_mod=1,
+                  bottomPlot=False):
+        source = self._getDataSubset(vars)
+
+        label_unit = source['label'][0][-2:]
+        if label_unit == '_w' or label_unit == '_W':
+            source['value'] = source['value'] / 1000
+
+        lines = alt.Chart(source).mark_area(
+            interpolate='cardinal',
+            clip=True
+        ).encode(
+            x=alt.X('dateandtime:T',
+                    # scale=alt.Scale(domain=self.resize),
+                    axis=alt.Axis(title=None,
+                                  labels=False,
+                                  grid=False,
+                                  ticks=False,
+                                  domainWidth=0)),
+            y=alt.Y('value:Q',
+                    scale=alt.Scale(zero=False),
+                    axis=alt.Axis(title=axis_label,
+                                  orient='right',
+                                  grid=True)),
+            color=alt.Color('new_label:N',
+                            legend=alt.Legend(title='Sensors',
+                                              orient='top',
+                                              offset=5)),
+            strokeWidth=alt.condition(alt.datum.label == 'outside_T',
+                                      alt.value(2.5),
+                                      alt.value(1.5)),
+        ).transform_calculate(
+            new_label=alt.expr.slice(alt.datum.label, 0, -2)
+        )
+
+        points = lines.mark_point(size=40, filled=True).encode(
+            opacity=alt.condition(self.nearestTime,
+                                  alt.value(0.8),
+                                  alt.value(0))
+        )
+
+        text = lines.mark_text(
+            align='left',
+            dx=5, dy=-5,
+            fontSize=self.label_font_size
+        ).encode(
+            text=alt.condition(self.nearestTime,
+                               'value:Q',
+                               alt.value(' '),
+                               format='.1f')
+        )
+
+        selectors, rules = self._createRules(source)
+
+        latest_text = self._createLatestText(lines, 'value:Q')
+
+        plot = alt.layer(
+            self._plotNightAlt(), lines, points, text, selectors, rules,
+            latest_text
+        )
+
+        if bottomPlot:
+            time_text = self._createTimeText(rules, height_mod=height_mod)
+            plot = alt.layer(plot, time_text)
+
+        return plot
+
     def plotAssembly(self,
                      sensor_groups=None,
                      which='temp'):
@@ -541,9 +611,9 @@ class streamPlot():
                         width=self.def_width,
                         height=self.def_height * self.pwr_height_mod
                     ),
-                    self.plotMainMonitor(['solar_w', 'house_w'],
-                                         axis_label="Power / kW"
-                                         ).properties(
+                    self.plotStack(['house_w', 'house_ops_w'],
+                                   axis_label="Power / kW"
+                                   ).properties(
                         width=self.def_width,
                         height=self.def_height * self.pwr_height_mod
                     ),
