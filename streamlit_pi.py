@@ -311,6 +311,10 @@ class streamPlot():
                         bottomPlot=False):
         source = self._getDataSubset(vars)
 
+        label_unit = source['label'][0][-2:]
+        if label_unit == '_w' or label_unit == '_W':
+            source['value'] = source['value'] / 1000
+
         lines = alt.Chart(source).mark_line(
             interpolate='cardinal',
             clip=True
@@ -537,8 +541,14 @@ class streamPlot():
                         width=self.def_width,
                         height=self.def_height * self.pwr_height_mod
                     ),
+                    self.plotMainMonitor(['solar_w', 'house_w'],
+                                         axis_label="Power / kW"
+                                         ).properties(
+                        width=self.def_width,
+                        height=self.def_height * self.pwr_height_mod
+                    ),
                     self.plotMainMonitor(sensor_groups[1],
-                                         axis_label="Power / W",
+                                         axis_label="Power / kW",
                                          ).properties(
                         width=self.def_width,
                         height=self.def_height * self.stat_height_mod
@@ -551,7 +561,6 @@ class streamPlot():
                         width=self.def_width,
                         height=self.def_height * self.stat_height_mod
                     ),
-
                     spacing=self.def_spacing
                 ).resolve_scale(
                     y='independent',
