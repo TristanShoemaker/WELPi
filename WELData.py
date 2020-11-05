@@ -178,7 +178,7 @@ class WELData:
 
         # Additional calculated columns
         out_frame['power_tot_pi'] = frame.HP_W + frame.TAH_W
-        out_frame['house_ops_w'] = frame.house_w - frame.power_tot
+        out_frame['house_ops_w'] = np.abs(frame.house_w - frame.power_tot)
 
         out_frame['T_diff'] = frame.fireplace_T - frame.outside_T
         out_frame['deg_day_eff'] = (heat_mask * (out_frame.power_tot_pi)
