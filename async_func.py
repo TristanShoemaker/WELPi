@@ -3,14 +3,14 @@ import xmltodict
 import time
 import platform
 import datetime as dt
-from pymongo import ASCENDING, DESCENDING
+from pymongo import DESCENDING
 from pymongo.errors import DuplicateKeyError
 from requests.exceptions import ConnectionError
 from pytz import timezone
 from astral import sun, LocationInfo
 from libmc import Client
 from sense_energy import Senseable
-from streamlit_pi import streamPlot, message
+from StreamPlot import StreamPlot, message
 from WELData import mongoConnect
 
 
@@ -88,18 +88,18 @@ def getSenseData(sn):
     return post
 
 
-def asyncPlot(mc, timeKey):
-    stp = streamPlot()
-    stp.makeWEL(['-t', '12'], force_refresh=True)
-    plot_options = ['temp', 'pandw']
-    for which in plot_options:
-        message(F"Async plot {which}")
-        plots = stp.plotAssembly(which=which)
-        mc_result = mc.set(F"{which}PlotKey", {'plots': plots,
-                                               'timeKey': timeKey})
-        if not mc_result:
-            message(F"❗{which} plot failed to cache❗")
-            exit()
+# def asyncPlot(mc, timeKey):
+#     stp = StreamPlot()
+#     stp.makeWEL(['-t', '12'], force_refresh=True)
+#     plot_options = ['temp', 'pandw']
+#     for which in plot_options:
+#         message(F"Async plot {which}")
+#         plots = stp.plotAssembly(which=which)
+#         mc_result = mc.set(F"{which}PlotKey", {'plots': plots,
+#                                                'timeKey': timeKey})
+#         if not mc_result:
+#             message(F"❗{which} plot failed to cache❗")
+#             exit()
 
 
 def connectMemCache():
