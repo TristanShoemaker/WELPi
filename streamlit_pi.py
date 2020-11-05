@@ -157,7 +157,6 @@ class streamPlot():
                      'buderus_h2o_T']
     pwr_default = ['TAH_W', 'HP_W', 'power_tot']
     wthr_default = ['outside_shade_T', 'outside_T', 'weather_station_T']
-    wind_default = ['TAH_fpm']
     humid_default = ['weather_station_H', 'outside_shade_H', 'basement_H',
                      'fireplace_H']
     resample_N = None
@@ -526,8 +525,7 @@ class streamPlot():
 
         if which == 'pandw':
             if sensor_groups is None:
-                sensor_groups = [self.water_default, self.pwr_default,
-                                 self.wind_default]
+                sensor_groups = [self.water_default, self.pwr_default]
             with st.spinner('Generating Plots'):
                 plot = alt.vconcat(
                     self.plotStatus().properties(
@@ -544,7 +542,7 @@ class streamPlot():
                         width=self.def_width,
                         height=self.def_height * self.pwr_height_mod
                     ),
-                    self.plotMainMonitor(sensor_groups[2],
+                    self.plotMainMonitor('TAH_fpm',
                                          axis_label="Wind Speed / m/s",
                                          height_mod=self.pwr_height_mod,
                                          bottomPlot=True
@@ -625,8 +623,7 @@ def _cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which='temp'):
         elif which == 'pandw':
             if (date_mode == 'default'
                     and sensor_groups[0] == stp.water_default
-                    and sensor_groups[1] == stp.pwr_default
-                    and sensor_groups[2] == stp.wind_default):
+                    and sensor_groups[1] == stp.pwr_default):
                 return True
         elif which == 'wthr':
             if (date_mode == 'default'
@@ -654,10 +651,7 @@ def _page_select(mc, stp, date_mode, date_range, sensor_container, which):
         pwr_sensors = sensor_container.multiselect("Power Sensors",
                                                    stp.sensor_list,
                                                    stp.pwr_default)
-        wind_sensors = sensor_container.multiselect("Wind Sensors",
-                                                    stp.sensor_list,
-                                                    stp.wind_default)
-        sensor_groups = [water_sensors, pwr_sensors, wind_sensors]
+        sensor_groups = [water_sensors, pwr_sensors]
 
     if which == 'wthr':
         wthr_sensors = sensor_container.multiselect("Weather Temp Sensors",
