@@ -26,10 +26,10 @@ def _cachedMongoConnect():
     return mongoConnect()
 
 
-@st.cache()
-def _cachedMemCache():
-    message("MemCache Connected")
-    return libmc.Client(['localhost'])
+# @st.cache()
+# def _cachedMemCache():
+#     message("MemCache Connected")
+#     return libmc.Client(['localhost'])
 
 
 @st.cache(allow_output_mutation=True, show_spinner=False)
@@ -39,15 +39,6 @@ def _cachedWELData(date_range,
                    data_source=data_source,
                    dl_db_path="/home/ubuntu/WEL/log_db/",
                    mongo_connection=_cachedMongoConnect())
-
-
-def _whichFormatFunc(option):
-    if option == 'main':
-        return "Temperature"
-    if option == 'pandw':
-        return "Power and Water"
-    if option == 'wthr':
-        return "Weather Station"
 
 
 def _createNearestTime():
@@ -495,146 +486,5 @@ class StreamPlot():
         if bottomPlot:
             time_text = self._createTimeText(rules, height_mod=height_mod)
             plot = alt.layer(plot, time_text)
-
-        return plot
-
-    def plotAssembly(self,
-                     sensor_groups=None,
-                     which='main'):
-        tic = time.time()
-
-        if which == 'main':
-            if sensor_groups is None:
-                sensor_groups = [self.in_default, self.out_default]
-            with st.spinner('Generating Plots'):
-                plot = alt.vconcat(
-                    self.plotStatus().properties(
-                        width=self.def_width,
-                        height=self.def_height * self.stat_height_mod
-                    ),
-                    self.plotMainMonitor(sensor_groups[0]).properties(
-                        width=self.def_width,
-                        height=self.def_height * self.pwr_height_mod
-                    ),
-                    self.plotPowerStack(['solar_w', 'power_tot',
-                                         'house_ops_w'],
-                                        axis_label="Electrical Power / kW"
-                                        ).properties(
-                        width=self.def_width,
-                        height=self.def_height * self.pwr_height_mod
-                    ),
-                    # self.plotMainMonitor(sensor_groups[1]).properties(
-                    #     width=self.def_width,
-                    #     height=self.def_height * self.pwr_height_mod
-                    # ),
-                    self.plotRollMean(['COP', 'well_COP']).properties(
-                        width=self.def_width,
-                        height=self.def_height * self.cop_height_mod
-                    ),
-                    self.plotRollMean(['deg_day_eff'],
-                                      axis_label="House Efficiency / W/°C",
-                                      bottomPlot=True
-                                      ).properties(
-                        width=self.def_width,
-                        height=self.def_height * self.cop_height_mod,
-                    ),
-                    spacing=self.def_spacing
-                ).resolve_scale(
-                    y='independent',
-                    color='independent'
-                )
-
-        if which == 'pandw':
-            if sensor_groups is None:
-                sensor_groups = [self.pwr_default, self.water_default]
-            with st.spinner('Generating Plots'):
-                plot = alt.vconcat(
-                    self.plotStatus().properties(
-                        width=self.def_width,
-                        height=self.def_height * self.stat_height_mod
-                    ),
-                    self.plotPowerStack(['solar_w', 'power_tot',
-                                         'house_ops_w'],
-                                        axis_label="Power / kW").properties(
-                        width=self.def_width,
-                        height=self.def_height
-                    ),
-                    self.plotMainMonitor(sensor_groups[0],
-                                         axis_label="Power / kW",
-                                         ).properties(
-                        width=self.def_width,
-                        height=self.def_height * self.stat_height_mod
-                    ),
-                    self.plotMainMonitor(sensor_groups[1]).properties(
-                        width=self.def_width,
-                        height=self.def_height * self.pwr_height_mod
-                    ),
-                    self.plotMainMonitor('TAH_fpm',
-                                         axis_label="Wind Speed / m/s",
-                                         height_mod=self.pwr_height_mod,
-                                         bottomPlot=True
-                                         ).properties(
-                        width=self.def_width,
-                        height=self.def_height * self.stat_height_mod
-                    ),
-                    spacing=self.def_spacing
-                ).resolve_scale(
-                    y='independent',
-                    color='independent'
-                )
-
-        if which == 'wthr':
-            if sensor_groups is None:
-                sensor_groups = [self.wthr_default, self.humid_default]
-            with st.spinner('Generating Plots'):
-                plot = alt.vconcat(
-                    self.plotStatus().properties(
-                        width=self.def_width,
-                        height=self.def_height * self.stat_height_mod
-                    ),
-                    self.plotMainMonitor(sensor_groups[0]).properties(
-                        width=self.def_width,
-                        height=self.def_height * self.pwr_height_mod
-                    ),
-                    self.plotMainMonitor(sensor_groups[1],
-                                         axis_label="Humidity / %",
-                                         ).properties(
-                        width=self.def_width,
-                        height=self.def_height * self.pwr_height_mod
-                    ),
-                    self.plotMainMonitor('weather_station_R',
-                                         axis_label='Rain Accumulation / mm',
-                                         ).properties(
-                        width=self.def_width,
-                        height=self.def_height * self.cop_height_mod
-                    ),
-                    self.plotMainMonitor('weather_station_W',
-                                         axis_label='Wind Speed / km/h',
-                                         height_mod=self.cop_height_mod,
-                                         bottomPlot=True
-                                         ).properties(
-                        width=self.def_width,
-                        height=self.def_height * self.cop_height_mod
-                    ),
-                    spacing=self.def_spacing
-                ).resolve_scale(
-                    y='independent',
-                    color='independent'
-                )
-
-        plot = plot.configure_axis(
-            labelFontSize=self.label_font_size,
-            titleFontSize=self.title_font_size,
-            titlePadding=41,
-            domain=False
-        ).configure_legend(
-            labelFontSize=self.label_font_size,
-            titleFontSize=self.title_font_size
-        ).configure_view(
-            cornerRadius=2
-        )
-
-        message([F"{'Altair plot gen:': <20}", F"{time.time() - tic:.2f} s"],
-                tbl=self.mssg_tbl)
 
         return plot
