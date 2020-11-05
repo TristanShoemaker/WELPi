@@ -149,7 +149,8 @@ class streamPlot():
                    'T_room_T', 'attic_H', 'attic_T', 'basement_H',
                    'basement_T', 'outside_shade_H', 'outside_shade_T',
                    'weather_station_A', 'weather_station_R',  'barn_T',
-                   'barn_H', 'deg_day_eff']
+                   'barn_H', 'deg_day_eff', 'solar_w', 'house_w',
+                   'dehumidifier_w']
     in_default = ['T_room_T', 'D_room_T', 'V_room_T', 'fireplace_T', 'attic_T']
     out_default = ['TAH_in_T', 'TAH_out_T', 'loop_in_T', 'loop_out_T',
                    'outside_T', 'barn_T', 'basement_T']
@@ -536,13 +537,13 @@ class streamPlot():
                     ),
                     self.plotMainMonitor(sensor_groups[0]).properties(
                         width=self.def_width,
-                        height=self.def_height
+                        height=self.def_height * self.pwr_height_mod
                     ),
                     self.plotMainMonitor(sensor_groups[1],
                                          axis_label="Power / W",
                                          ).properties(
                         width=self.def_width,
-                        height=self.def_height * self.pwr_height_mod
+                        height=self.def_height * self.stat_height_mod
                     ),
                     self.plotMainMonitor(sensor_groups[2],
                                          axis_label="Wind Speed / m/s",
@@ -550,8 +551,9 @@ class streamPlot():
                                          bottomPlot=True
                                          ).properties(
                         width=self.def_width,
-                        height=self.def_height * self.pwr_height_mod
+                        height=self.def_height * self.stat_height_mod
                     ),
+
                     spacing=self.def_spacing
                 ).resolve_scale(
                     y='independent',
