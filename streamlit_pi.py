@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import datetime as dt
 import time
-import libmc
+# import libmc
 import subprocess
 import json
 import platform
@@ -127,9 +127,9 @@ def _createResize():
 
 class streamPlot():
     def_width = 'container'
-    def_height = 260
+    def_height = 310
     def_spacing = 2
-    stat_height_mod = 0.5
+    stat_height_mod = 0.4
     cop_height_mod = 0.4
     pwr_height_mod = 0.8
     mark_text_font_size = 13
@@ -150,7 +150,7 @@ class streamPlot():
                    'basement_T', 'outside_shade_H', 'outside_shade_T',
                    'weather_station_A', 'weather_station_R',  'barn_T',
                    'barn_H', 'deg_day_eff', 'solar_w', 'house_w',
-                   'dehumidifier_w']
+                   'dehumidifier_w', 'house_ops_w', 'power_tot_pi']
     in_default = ['T_room_T', 'D_room_T', 'V_room_T', 'fireplace_T', 'attic_T']
     out_default = ['TAH_in_T', 'TAH_out_T', 'loop_in_T', 'loop_out_T',
                    'outside_T', 'barn_T', 'basement_T']
@@ -333,7 +333,7 @@ class streamPlot():
                                   grid=True)),
             color=alt.Color('new_label:N',
                             legend=alt.Legend(title='Sensors',
-                                              orient='top',
+                                              orient='left',
                                               offset=5)),
             strokeWidth=alt.condition(alt.datum.label == 'outside_T',
                                       alt.value(2.5),
@@ -445,7 +445,7 @@ class streamPlot():
                                   grid=True),
                     title=axis_label),
             color=alt.Color('label', legend=alt.Legend(title='Efficiencies',
-                                                       orient='top',
+                                                       orient='left',
                                                        offset=5))
         )
 
@@ -502,7 +502,8 @@ class streamPlot():
 
         area = alt.Chart(source).mark_area(
             interpolate='cardinal',
-            clip=True
+            clip=True,
+            opacity=0.9
         ).encode(
             x=alt.X('dateandtime:T',
                     # scale=alt.Scale(domain=self.resize),
@@ -519,7 +520,7 @@ class streamPlot():
             order="order:O",
             color=alt.Color('new_label:N',
                             legend=alt.Legend(title='Sensors',
-                                              orient='top',
+                                              orient='left',
                                               offset=5))
         ).transform_calculate(
             new_label=alt.expr.slice(alt.datum.label, 0, -2)
@@ -577,10 +578,17 @@ class streamPlot():
                         width=self.def_width,
                         height=self.def_height * self.pwr_height_mod
                     ),
-                    self.plotMainMonitor(sensor_groups[1]).properties(
+                    self.plotPowerStack(['solar_w', 'power_tot',
+                                         'house_ops_w'],
+                                        axis_label="Electrical Power / kW"
+                                        ).properties(
                         width=self.def_width,
                         height=self.def_height * self.pwr_height_mod
                     ),
+                    # self.plotMainMonitor(sensor_groups[1]).properties(
+                    #     width=self.def_width,
+                    #     height=self.def_height * self.pwr_height_mod
+                    # ),
                     self.plotRollMean(['COP', 'well_COP']).properties(
                         width=self.def_width,
                         height=self.def_height * self.cop_height_mod
@@ -694,36 +702,17 @@ class streamPlot():
         return plot
 
 
-def _cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which='temp'):
-    if platform.machine() == 'aarch64':
-        if which == 'temp':
-            if (date_mode == 'default'
-                    and sensor_groups[0] == stp.in_default
-                    and sensor_groups[1] == stp.out_default):
-                return True
-        elif which == 'pandw':
-            if (date_mode == 'default'
-                    and sensor_groups[0] == stp.pwr_default
-                    and sensor_groups[1] == stp.water_default):
-                return True
-        elif which == 'wthr':
-            if (date_mode == 'default'
-                    and sensor_groups[0] == stp.wthr_default
-                    and sensor_groups[1] == stp.humid_default):
-                return True
-    return False
-
-
-def _page_select(mc, stp, date_mode, date_range, sensor_container, which):
+def _page_select(stp, date_mode, date_range, sensor_container, which):
     sensor_groups = []
     if which == 'temp':
         in_sensors = sensor_container.multiselect("Inside Sensors",
                                                   stp.sensor_list,
                                                   stp.in_default)
-        out_sensors = sensor_container.multiselect("Loop Sensors",
-                                                   stp.sensor_list,
-                                                   stp.out_default)
-        sensor_groups = [in_sensors, out_sensors]
+        # out_sensors = sensor_container.multiselect("Loop Sensors",
+        #                                            stp.sensor_list,
+        #                                            stp.out_default)
+        # sensor_groups = [in_sensors, out_sensors]
+        sensor_groups = [in_sensors]
 
     if which == 'pandw':
         pwr_sensors = sensor_container.multiselect("Power Sensors",
@@ -748,22 +737,6 @@ def _page_select(mc, stp, date_mode, date_range, sensor_container, which):
             st.warning('Please select at least one sensor per plot')
             st.stop()
 
-    if _cacheCheck(mc, stp, date_mode, date_range, sensor_groups, which=which):
-        tic = time.time()
-        memCache = mc.get(F"{which}PlotKey")
-        plots = memCache['plots']
-        if plots is not None:
-            cache_hit_mssg = ("MemCache hit | "
-                              F"{memCache['timeKey'].strftime('%H:%M')}:")
-            message([F"{cache_hit_mssg: <20}",
-                     F"{time.time() - tic:.2f} s"],
-                    tbl=stp.mssg_tbl)
-            return plots
-        else:
-            message([F"{'❗MemCache MISS❗:': <20}",
-                     F"{time.time() - tic:.2f} s"],
-                    tbl=stp.mssg_tbl)
-
     stp.makeWEL(date_range)
     plots = stp.plotAssembly(sensor_groups, which)
 
@@ -774,20 +747,24 @@ def _page_select(mc, stp, date_mode, date_range, sensor_container, which):
 
 def main():
     _serverStartup()
-    mc = _cachedMemCache()
 
     st.markdown(
         F"""
         <style>
             .stVegaLiteChart{{
-                width: {95}%;
+                width: {90}%;
             }}
             .reportview-container .main .block-container{{
                 max-width: {1500}px;
-                padding-top: {10}px;
-                padding-right: {40}px;
+                padding-top: {0}px;
+                padding-right: {90}px;
                 padding-left: {10}px;
                 padding-bottom: {0}px;
+            }}
+        </style>
+        <style type='text/css'>
+            details {{
+                display: none;
             }}
         </style>
         """, unsafe_allow_html=True)
@@ -814,8 +791,7 @@ def main():
     # -- main area --
     st.header(F"{_whichFormatFunc(which)} Monitor")
     plot_placeholder = st.empty()
-    plots = _page_select(mc, stp, date_mode, date_range, sensor_container,
-                         which)
+    plots = _page_select(stp, date_mode, date_range, sensor_container, which)
 
     tic = time.time()
     plot_placeholder.altair_chart(plots)
