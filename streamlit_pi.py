@@ -37,7 +37,7 @@ def _serverStartup():
 
 
 def _whichFormatFunc(option):
-    if option == 'main':
+    if option == 'monit':
         return "Temperature"
     if option == 'pandw':
         return "Power and Water"
@@ -90,7 +90,7 @@ def ping(host):
 
 
 def _page_select(resample_N, date_range, sensor_container, which):
-    if which == 'main':
+    if which == 'monit':
         stp = Monit(resample_N, date_range, sensor_container=sensor_container)
 
     if which == 'pandw':
@@ -131,7 +131,7 @@ def main():
     # -- sidebar --
     st.sidebar.subheader("Monitor:")
     which = st.sidebar.selectbox("Page",
-                                 ['main', 'pandw', 'wthr'],
+                                 ['monit', 'pandw', 'wthr'],
                                  index=0,
                                  format_func=_whichFormatFunc)
     st.sidebar.subheader("Plot Options:")
@@ -142,7 +142,6 @@ def main():
     resample_N = st.sidebar.slider("Number of Data Samples",
                                    min_value=10, max_value=max_samples,
                                    value=300, step=10)
-    display_log = st.sidebar.checkbox("Display Log")
 
     # -- main area --
     st.header(F"{_whichFormatFunc(which)} Monitor")

@@ -14,7 +14,13 @@ class PandW(StreamPlot):
                  onlyPlots=False,
                  sensor_container=None):
         super().__init__(resample_N)
+
+        display_log = st.sidebar.checkbox("Display Log")
+        if display_log:
+            self.makeDebugTbl()
+
         self.makeWEL(date_range)
+
         if onlyPlots:
             self.plots = self._plots()
         else:
