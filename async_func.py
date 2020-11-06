@@ -67,7 +67,7 @@ def getWELData(ip):
     post['daylight'] = ((post['dateandtime'] > sunrise)
                         and (post['dateandtime'] < sunset)) * 1
 
-    message(F"Getting WEL: {time.time() - tic:.1f} s")
+    message(F"{'Getting WEL:': <20}{time.time() - tic:.1f} s")
     return post
 
 
@@ -77,7 +77,7 @@ def getRtlData(mc):
     if post is None:
         message("RTL data not found in memCache")
     else:
-        message(F"Getting RTL: {time.time() - tic:.3f} s")
+        message(F"{'Getting RTL:' <20}{time.time() - tic:.3f} s")
         return post
 
 
@@ -90,7 +90,7 @@ def getSenseData(sn):
     post['house_w'] = sense_post['w']
     post['dehumidifier_w'] = [device for device in sense_post['devices']
                               if device['name'] == 'Dehumidifier '][0]['w']
-    message(F"Getting Sense: {time.time() - tic:.1f} s")
+    message(F"{'Getting Sense:': <20}{time.time() - tic:.1f} s")
     return post
 
 
@@ -162,7 +162,7 @@ def main():
             except DuplicateKeyError:
                 message("Tried to insert duplicate key "
                         F"{post['dateandtime'].strftime('%Y-%m-%d %H:%M:%S')}")
-                        
+
         else:
             message(F"WEL UTC time: {utc_time} post already in database")
 
