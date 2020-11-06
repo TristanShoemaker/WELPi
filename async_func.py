@@ -159,11 +159,12 @@ def main():
                 message(F"Sucessful post @ WEL UTC time: {utc_time}"
                         F" | post_id: {post_id}")
             except DuplicateKeyError:
-                message(F"WEL UTC time: {utc_time} post already in database")
+                message("Tried to insert duplicate key "
+                        F"{post['dateandtime'].strftime('%Y-%m-%d %H:%M:%S')}")
         else:
-            message("")
+            message(F"WEL UTC time: {utc_time} post already in database")
 
-        time.sleep(25)
+        time.sleep(20)
 
 
 if __name__ == "__main__":
