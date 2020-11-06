@@ -68,7 +68,7 @@ def getWELData(ip):
     post['daylight'] = ((post['dateandtime'] > sunrise)
                         and (post['dateandtime'] < sunset)) * 1
 
-    message(F"{'Getting WEL:': <20}{time.time() - tic:.1f} s",
+    message([F"{'Getting WEL:': <20}", F"{time.time() - tic:.1f} s"],
             mssgType='TIMING')
     return post
 
@@ -79,7 +79,7 @@ def getRtlData(mc):
     if post is None:
         message("RTL data not found in memCache", mssgType='WARNING')
     else:
-        message(F"{'Getting RTL:': <20}{time.time() - tic:.3f} s",
+        message([F"{'Getting RTL:': <20}", F"{time.time() - tic:.3f} s"],
                 mssgType='TIMING')
         return post
 
@@ -93,7 +93,7 @@ def getSenseData(sn):
     post['house_w'] = sense_post['w']
     post['dehumidifier_w'] = [device for device in sense_post['devices']
                               if device['name'] == 'Dehumidifier '][0]['w']
-    message(F"{'Getting Sense:': <20}{time.time() - tic:.1f} s",
+    message([F"{'Getting Sense:': <20}", F"{time.time() - tic:.1f} s"],
             mssgType='TIMING')
     return post
 
