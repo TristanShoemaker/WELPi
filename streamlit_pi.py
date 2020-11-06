@@ -19,7 +19,7 @@ st.set_page_config(page_title="Geo Monitor",
 
 @st.cache()
 def _serverStartup():
-    message("Server Started")
+    message("Server Started", mssgType='ADMIN')
 
 
 def _whichFormatFunc(option):
@@ -138,7 +138,7 @@ def main():
     tic = time.time()
     plot_placeholder.altair_chart(stp.plots)
     message([F"{'Altair plot disp:': <20}", F"{time.time() - tic:.2f} s"],
-            tbl=stp.mssg_tbl)
+            tbl=stp.mssg_tbl, mssgType='TIMING')
 
 
 if __name__ == "__main__":

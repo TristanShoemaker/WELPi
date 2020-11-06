@@ -68,7 +68,7 @@ def processLine(line):
             packet[sensor_name] = float(line[quantity])
         return packet
     except KeyError:
-        message(F"Unknown Sensor ID: {id} \n {line}")
+        message(F"Unknown Sensor ID: {id} \n {line}", mssgType='WARNING')
 
 
 def accumulate(p):
@@ -85,7 +85,7 @@ def accumulate(p):
 
 
 def main():
-    message("\n Restarted ...")
+    message("\n Restarted ...", mssgType='ADMIN')
     mc = connectMemCache()
     time.sleep(5)
     with subprocess.Popen(rtl_cmd, stdout=subprocess.PIPE, text=True) as p:
@@ -93,9 +93,9 @@ def main():
             signals = accumulate(p)
             mc_result = mc.set("rtl", signals)
             if not mc_result:
-                message("❗rtl failed to cache❗")
+                message("RTL failed to cache", mssgType='ERROR')
             else:
-                message("Succesful cache")
+                message("Succesful cache", mssgType='SUCCESS')
 
 
 if __name__ == "__main__":

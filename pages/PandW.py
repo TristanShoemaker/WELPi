@@ -97,6 +97,6 @@ class PandW(StreamPlot):
         )
 
         message([F"{'Altair plot gen:': <20}", F"{time.time() - tic:.2f} s"],
-                tbl=self.mssg_tbl)
+                tbl=self.mssg_tbl, mssgType='TIMING')
 
         return plot

@@ -9,7 +9,7 @@ from log_message import message
 
 @st.cache(hash_funcs={"pymongo.database.Database": id})
 def _cachedMongoConnect():
-    message("Mongo Connected")
+    message("Mongo Connected", mssgType='ADMIN')
     return mongoConnect()
 
 
@@ -106,7 +106,7 @@ class StreamPlot():
         self.dat_resample = dat.data.resample(resample_T).mean()
         self.dat = dat
         message([F"{'WEL Data init:': <20}", F"{time.time() - tic:.2f} s"],
-                tbl=self.mssg_tbl)
+                tbl=self.mssg_tbl, mssgType='TIMING')
 
     def _getDataSubset(self,
                        vars,
@@ -122,7 +122,7 @@ class StreamPlot():
                                  var_name='label')
         except KeyError:
             message(["Key(s) not found in db:", F"{vars}"],
-                    tbl=self.mssg_tbl)
+                    tbl=self.mssg_tbl, mssgType='WARNING')
             source = pd.DataFrame()
         return source
 
@@ -421,7 +421,7 @@ class StreamPlot():
             pass
 
         area = alt.Chart(source).mark_area(
-            interpolate='cardinal',
+            interpolate='basis',
             clip=True,
             opacity=0.9
         ).encode(

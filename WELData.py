@@ -95,7 +95,7 @@ class WELData:
                 self._mongo_db = mongo_connection
             self._stitch()
         else:
-            message("Valid data sources are 'Pi' or 'WEL'")
+            message("Valid data sources are 'Pi' or 'WEL'", mssgType='WARNING')
             quit()
 
     def time_from_args(self,
@@ -230,7 +230,8 @@ class WELData:
             prev_db_path_zip = (self._dl_db_path + F'WEL_log_{month.year}'
                                                    F'_{month.month:02d}.zip')
             try:
-                message(F"Downloading {month.year}-{month.month}:\n")
+                message(F"Downloading {month.year}-{month.month}:\n",
+                        mssgType='ADMIN')
                 download(prev_url + '.zip', prev_db_path_zip)
                 os.system(F'unzip {prev_db_path_zip} -d {self._dl_db_path}'
                           F';rm {prev_db_path_zip}')
@@ -238,7 +239,8 @@ class WELData:
                 try:
                     download(prev_url + '.xls', prev_db_path_xls)
                 except Exception:
-                    message(F"Error while downloading log: {HTTPError}")
+                    message(F"Error while downloading log: {HTTPError}",
+                            mssgType='ERROR')
 
     """
     Redownload all months since 2020-3-1 to db.
@@ -272,7 +274,7 @@ class WELData:
                              for x in range(num_months + 1)]
                 loadedstring = [F'{month.year}-{month.month}'
                                 for month in monthlist]
-                message(F'Loaded: {loadedstring}')
+                message(F'Loaded: {loadedstring}', mssgType='ADMIN')
                 datalist = [self.read_log(self._dl_db_path
                                           + F'WEL_log_{month.year}'
                                           + F'_{month.month:02d}.xls')
