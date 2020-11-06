@@ -26,9 +26,9 @@ def message(message_text,
         message.set_index("Message", inplace=True)
         tbl.add_rows(message)
     if type(message_text) is list:
-        print(F"{timestamp} : {message_text[0]} {message_text[1]}", flush=True)
+        print(F"[{timestamp}] {message_text[0]} {message_text[1]}", flush=True)
     else:
-        print(F"{timestamp} : {message_text}", flush=True)
+        print(F"[{timestamp}] {message_text}", flush=True)
 
 
 @st.cache()
