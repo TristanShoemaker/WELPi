@@ -74,11 +74,10 @@ def getWELData(ip):
 def getRtlData(mc):
     tic = time.time()
     post = mc.get('rtl')
-    print(post)
     if post is None:
         message("RTL data not found in memCache")
     else:
-        message(F"{'Getting RTL:' <20}{time.time() - tic:.3f} s")
+        message(F"{'Getting RTL:': <20}{time.time() - tic:.3f} s")
         return post
 
 
@@ -144,11 +143,8 @@ def main():
         last_post = last_post['WELdateandtime'].replace(tzinfo=db_tzone)
         utc_time = post['WELdateandtime'].strftime('%Y-%m-%d %H:%M:%S')
         if post['WELdateandtime'] != last_post:
-            try:
-                rtl_post = getRtlData(mc)
-                post.update(rtl_post)
-            except TypeError:
-                message("Empty rtl memCache.")
+            rtl_post = getRtlData(mc)
+            post.update(rtl_post)
 
             try:
                 sense_post = getSenseData(sn)
