@@ -141,19 +141,20 @@ def main():
         post = getWELData(WEL_ip)
         last_post = db.find_one(sort=[('_id', DESCENDING)])
         last_post = last_post['WELdateandtime'].replace(tzinfo=db_tzone)
+        utc_time = post['WELdateandtime'].strftime('%Y-%m-%d %H:%M:%S')
         if post['WELdateandtime'] != last_post:
             try:
                 rtl_post = getRtlData(mc)
                 post.update(rtl_post)
             except TypeError:
                 message("Empty rtl memCache.")
+
             try:
                 sense_post = getSenseData(sn)
                 post.update(sense_post)
             except TypeError:
                 message("Empty sense data.")
 
-            utc_time = post['WELdateandtime'].strftime('%Y-%m-%d %H:%M:%S')
             try:
                 post_id = db.insert_one(post).inserted_id
                 message(F"Sucessful post @ WEL UTC time: {utc_time}"
@@ -161,6 +162,7 @@ def main():
             except DuplicateKeyError:
                 message("Tried to insert duplicate key "
                         F"{post['dateandtime'].strftime('%Y-%m-%d %H:%M:%S')}")
+                        
         else:
             message(F"WEL UTC time: {utc_time} post already in database")
 
