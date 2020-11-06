@@ -6,7 +6,6 @@ import os
 import platform
 import re
 import argparse
-import time
 from dateutil.relativedelta import relativedelta
 from wget import download
 from urllib.error import HTTPError
@@ -14,11 +13,7 @@ from shutil import move
 from astral import sun, LocationInfo
 from pymongo import MongoClient
 from pytz import timezone
-
-
-def message(message_text):
-    timestamp = F"{time.strftime('%Y-%m-%d %H:%M')}"
-    print(F"{timestamp} : {message_text}", flush=True)
+from log_message import message
 
 
 def mongoConnect():

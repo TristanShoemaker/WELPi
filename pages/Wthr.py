@@ -1,7 +1,8 @@
 import streamlit as st
 import altair as alt
 import time
-from StreamPlot import StreamPlot, message
+from StreamPlot import StreamPlot
+from log_message import message
 
 
 class Wthr(StreamPlot):
