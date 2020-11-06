@@ -154,7 +154,7 @@ def main():
             except DuplicateKeyError:
                 message(F"UTC time: {utc_time} post already in database")
 
-        time.sleep(30)
+        time.sleep(29)
 
 
 if __name__ == "__main__":
