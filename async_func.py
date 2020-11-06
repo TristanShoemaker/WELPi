@@ -10,7 +10,7 @@ from pytz import timezone
 from astral import sun, LocationInfo
 from libmc import Client
 from sense_energy import Senseable
-from StreamPlot import message
+from log_message import message
 from WELData import mongoConnect
 
 
@@ -74,6 +74,7 @@ def getWELData(ip):
 def getRtlData(mc):
     tic = time.time()
     post = mc.get('rtl')
+    print(post)
     if post is None:
         message("RTL data not found in memCache")
     else:
@@ -145,7 +146,6 @@ def main():
         if post['WELdateandtime'] != last_post:
             try:
                 rtl_post = getRtlData(mc)
-                print(rtl_post)
                 post.update(rtl_post)
             except TypeError:
                 message("Empty rtl memCache.")
