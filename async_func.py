@@ -145,6 +145,7 @@ def main():
         if post['WELdateandtime'] != last_post:
             try:
                 rtl_post = getRtlData(mc)
+                print(rtl_post)
                 post.update(rtl_post)
             except TypeError:
                 message("Empty rtl memCache.")
