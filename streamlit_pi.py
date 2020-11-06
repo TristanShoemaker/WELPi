@@ -12,9 +12,9 @@ from pages.Monit import Monit
 from pages.Wthr import Wthr
 
 to_tz = pytz.timezone('America/New_York')
-st.beta_set_page_config(page_title="Geo Monitor",
-                        page_icon="🌀",
-                        initial_sidebar_state='expanded')
+st.set_page_config(page_title="Geo Monitor",
+                   page_icon="🌀",
+                   initial_sidebar_state='expanded')
 
 
 @st.cache()
