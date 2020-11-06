@@ -24,7 +24,7 @@ def _serverStartup():
 
 def _whichFormatFunc(option):
     if option == 'monit':
-        return "Temperature"
+        return "Main"
     if option == 'pandw':
         return "Power and Water"
     if option == 'wthr':
