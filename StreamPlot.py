@@ -455,7 +455,9 @@ class StreamPlot():
         ).transform_calculate(
             new_label=alt.expr.slice(alt.datum.label, 0, -2)
         ).transform_calculate(
-            order="{'house_ops_w':0, 'power_tot':1, 'solar_w':2}[datum.label]"
+            # order=F"{{'house_ops_w':0, 'power_tot':1, 'solar_w':2}}[datum.label]"
+            order=(str({label: idx for label, idx in enumerate(vars)})
+                   + "[datum.label]")
         )
 
         points = area.mark_point(size=40, filled=True).encode(

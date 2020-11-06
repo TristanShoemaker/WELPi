@@ -177,12 +177,13 @@ class WELData:
         heat_mask[heat_mask == 0] = np.nan
 
         # Additional calculated columns
-        out_frame['power_tot_pi'] = frame.HP_W + frame.TAH_W
-        out_frame['house_ops_w'] = np.abs(frame.house_w - frame.power_tot)
+        out_frame['geo_tot_w'] = frame.power_tot
+        out_frame['base_load_w'] = np.abs(frame.house_w - frame.power_tot
+                                          - frame.dehumidifier_w)
 
         out_frame['T_diff'] = frame.fireplace_T - frame.outside_T
-        out_frame['deg_day_eff'] = (heat_mask * (out_frame.power_tot_pi)
-                                    / out_frame.T_diff)
+        out_frame['T_diff_eff'] = (heat_mask * frame.power_tot
+                                   / out_frame.T_diff)
 
         air_density = 1.15
         surface_area = 0.34
