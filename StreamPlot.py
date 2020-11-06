@@ -4,20 +4,7 @@ import pandas as pd
 import numpy as np
 import time
 from WELData import WELData, mongoConnect
-
-
-def message(message_text,
-            tbl=None):
-    timestamp = F"{time.strftime('%Y-%m-%d %H:%M:%S')}"
-    if tbl is not None:
-        message = pd.DataFrame([{"Message": message_text[0],
-                                 "Value": message_text[1]}])
-        message.set_index("Message", inplace=True)
-        tbl.add_rows(message)
-    if type(message_text) is list:
-        print(F"[{timestamp}] {message_text[0]} {message_text[1]}", flush=True)
-    else:
-        print(F"[{timestamp}] {message_text}", flush=True)
+from log_message import message
 
 
 @st.cache(hash_funcs={"pymongo.database.Database": id})

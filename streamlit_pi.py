@@ -6,7 +6,7 @@ import subprocess
 import json
 import platform
 import pytz
-from StreamPlot import message
+from log_message import message
 from pages.PandW import PandW
 from pages.Monit import Monit
 from pages.Wthr import Wthr
