@@ -79,13 +79,14 @@ def accumulate(p):
         signals = signals.append(packet, ignore_index=True)
         if time.time() - tic >= 60:
             break
-    message(F"\n{signals.count(): >22}")
+    message("Found Signals:")
+    [print(F"{22 * ' '}{value}", flush=True) for value in signals.count()]
     signals.drop_duplicates(inplace=True)
     return signals.mean().to_dict()
 
 
 def main():
-    message("\n Restarted ...", mssgType='ADMIN')
+    message("\n    Restarted ...", mssgType='ADMIN')
     mc = connectMemCache()
     time.sleep(5)
     with subprocess.Popen(rtl_cmd, stdout=subprocess.PIPE, text=True) as p:
