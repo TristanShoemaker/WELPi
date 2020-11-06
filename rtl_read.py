@@ -79,7 +79,7 @@ def accumulate(p):
         signals = signals.append(packet, ignore_index=True)
         if time.time() - tic >= 60:
             break
-    message("Found Signals:")
+    message("Found Signals:", mssgType='HEADER')
     [print(F"{22 * ' '}{idx: <25}{value}", flush=True)
      for idx, value in signals.count().items()]
     signals.drop_duplicates(inplace=True)
