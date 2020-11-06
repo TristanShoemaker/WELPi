@@ -30,6 +30,7 @@ WEL_tzone = timezone('EST')
 
 
 def getWELData(ip):
+    tic = time.time()
     url = "http://" + ip + ":5150/data.xml"
     try:
         response = requests.get(url)
@@ -66,18 +67,22 @@ def getWELData(ip):
     post['daylight'] = ((post['dateandtime'] > sunrise)
                         and (post['dateandtime'] < sunset)) * 1
 
+    message(F"Getting WEL: {time.time() - tic:.1f} s")
     return post
 
 
 def getRtlData(mc):
+    tic = time.time()
     post = mc.get('rtl')
     if post is None:
-        message("rtl data not found in memCache")
+        message("RTL data not found in memCache")
     else:
+        message(F"Getting RTL: {time.time() - tic:.1f} s")
         return post
 
 
 def getSenseData(sn):
+    tic = time.time()
     sn.update_realtime()
     sense_post = sn.get_realtime()
     post = {}
@@ -85,6 +90,7 @@ def getSenseData(sn):
     post['house_w'] = sense_post['w']
     post['dehumidifier_w'] = [device for device in sense_post['devices']
                               if device['name'] == 'Dehumidifier '][0]['w']
+    message(F"Getting Sense: {time.time() - tic:.1f} s")
     return post
 
 
@@ -154,7 +160,7 @@ def main():
             except DuplicateKeyError:
                 message(F"UTC time: {utc_time} post already in database")
 
-        time.sleep(29)
+        time.sleep(25)
 
 
 if __name__ == "__main__":
