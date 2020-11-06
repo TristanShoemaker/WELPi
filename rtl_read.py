@@ -80,7 +80,8 @@ def accumulate(p):
         if time.time() - tic >= 60:
             break
     message("Found Signals:")
-    [print(F"{22 * ' '}{value}", flush=True) for value in signals.count()]
+    [print(F"{22 * ' '}{idx: <25}{value}", flush=True)
+     for idx, value in signals.count().items()]
     signals.drop_duplicates(inplace=True)
     return signals.mean().to_dict()
 
