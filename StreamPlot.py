@@ -412,10 +412,13 @@ class StreamPlot():
                        height_mod=1,
                        bottomPlot=False):
         source = self._getDataSubset(vars)
-
-        source['value'] = source['value'] / 1000
-        solar_mask = source['label'] == 'solar_w'
-        source.loc[solar_mask, 'value'] = -1 * source.loc[solar_mask, 'value']
+        try:
+            source['value'] = source['value'] / 1000
+            solar_mask = source['label'] == 'solar_w'
+            source.loc[solar_mask, 'value'] = -1 * source.loc[solar_mask,
+                                                              'value']
+        except KeyError:
+            message("Power data unavailable", tbl=self.mssg_tbl)
 
         area = alt.Chart(source).mark_area(
             interpolate='cardinal',
