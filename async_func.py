@@ -77,7 +77,7 @@ def getRtlData(mc):
     if post is None:
         message("RTL data not found in memCache")
     else:
-        message(F"Getting RTL: {time.time() - tic:.1f} s")
+        message(F"Getting RTL: {time.time() - tic:.3f} s")
         return post
 
 
@@ -153,12 +153,15 @@ def main():
             except TypeError:
                 message("Empty sense data.")
 
-            utc_time = post['dateandtime'].strftime('%Y-%m-%d %H:%M:%S')
+            utc_time = post['WELdateandtime'].strftime('%Y-%m-%d %H:%M:%S')
             try:
                 post_id = db.insert_one(post).inserted_id
-                message(F"UTC time: {utc_time} | post_id: {post_id}")
+                message(F"Sucessful post @ WEL UTC time: {utc_time}"
+                        F" | post_id: {post_id}")
             except DuplicateKeyError:
-                message(F"UTC time: {utc_time} post already in database")
+                message(F"WEL UTC time: {utc_time} post already in database")
+        else:
+            message("")
 
         time.sleep(25)
 
