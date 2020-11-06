@@ -173,10 +173,15 @@ class WELData:
 
         # Additional calculated columns
         out_frame['geo_tot_w'] = frame.power_tot
-        out_frame['base_load_w'] = np.abs(frame.house_w - frame.power_tot
-                                          - frame.dehumidifier_w)
-
-        out_frame['T_diff'] = frame.fireplace_T - frame.outside_T
+        try:
+            out_frame['base_load_w'] = np.abs(frame.house_w - frame.power_tot
+                                              - frame.dehumidifier_w)
+        except AttributeError:
+            pass
+        try:
+            out_frame['T_diff'] = frame.fireplace_T - frame.outside_T
+        except AttributeError:
+            out_frame['T_diff'] = frame.living_T - frame.outside_T
         out_frame['T_diff_eff'] = (heat_mask * frame.power_tot
                                    / out_frame.T_diff)
 
