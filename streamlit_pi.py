@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 import numpy as np
 import datetime as dt
 import time
@@ -7,6 +6,7 @@ import subprocess
 import json
 import platform
 import pytz
+from StreamPlot import message
 from pages.PandW import PandW
 from pages.Monit import Monit
 from pages.Wthr import Wthr
@@ -15,20 +15,6 @@ to_tz = pytz.timezone('America/New_York')
 st.beta_set_page_config(page_title="Geo Monitor",
                         page_icon="🌀",
                         initial_sidebar_state='expanded')
-
-
-def message(message_text,
-            tbl=None):
-    timestamp = F"{time.strftime('%Y-%m-%d %H:%M')}"
-    if tbl is not None:
-        message = pd.DataFrame([{"Message": message_text[0],
-                                 "Value": message_text[1]}])
-        message.set_index("Message", inplace=True)
-        tbl.add_rows(message)
-    if type(message_text) is list:
-        print(F"[{timestamp}] {message_text[0]} {message_text[1]}", flush=True)
-    else:
-        print(F"[{timestamp}] {message_text}", flush=True)
 
 
 @st.cache()
