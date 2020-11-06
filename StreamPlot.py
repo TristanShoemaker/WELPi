@@ -204,7 +204,7 @@ class StreamPlot():
             strokeDash=[1, 1],
             xOffset=15,
             size=15,
-            thickness=1.5
+            thickness=2
         ).transform_window(
             rank='rank()',
             sort=[alt.SortField('dateandtime', order='descending')]
@@ -266,8 +266,8 @@ class StreamPlot():
                                               orient='left',
                                               offset=5)),
             strokeWidth=alt.condition(alt.datum.label == 'outside_T',
-                                      alt.value(2.5),
-                                      alt.value(1.5)),
+                                      alt.value(3),
+                                      alt.value(2)),
         ).transform_calculate(
             new_label=alt.expr.slice(alt.datum.label, 0, -2)
         )
@@ -361,7 +361,7 @@ class StreamPlot():
             frame=[-rolling_frame, 0]
         ).mark_line(
             interpolate='cardinal',
-            strokeWidth=1.5
+            strokeWidth=2
         ).encode(
             x=alt.X('dateandtime:T',
                     # scale=alt.Scale(domain=self.resize),
@@ -381,7 +381,7 @@ class StreamPlot():
 
         raw_lines = alt.Chart(source).mark_line(
             interpolate='cardinal',
-            strokeWidth=1.5,
+            strokeWidth=2,
             strokeDash=[1, 2],
             opacity=0.8,
             clip=True
