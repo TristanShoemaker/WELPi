@@ -418,7 +418,7 @@ class StreamPlot():
             source.loc[solar_mask, 'value'] = -1 * source.loc[solar_mask,
                                                               'value']
         except KeyError:
-            message("Power data unavailable", tbl=self.mssg_tbl)
+            pass
 
         area = alt.Chart(source).mark_area(
             interpolate='cardinal',
