@@ -5,7 +5,7 @@ import pandas as pd
 def message(message_text,
             mssgType='ENDC',
             tbl=None):
-    colors = {'TIMESTAMP': '\033[95m',
+    colors = {'HEADER': '\033[95m',
               'TIMING': '\033[94m',
               'ADMIN': '\033[96m',
               'SUCCESS': '\033[92m',
