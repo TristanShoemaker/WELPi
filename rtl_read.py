@@ -2,7 +2,7 @@ import pandas as pd
 import subprocess
 import json
 import time
-from streamlit_pi import message
+from StreamPlot import message
 from async_func import connectMemCache
 
 """
