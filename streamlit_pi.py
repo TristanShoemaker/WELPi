@@ -114,7 +114,7 @@ def main():
                 width: {90}%;
             }}
             .reportview-container .main .block-container{{
-                max-width: {1500}px;
+                max-width: {1300}px;
                 padding-top: {0}px;
                 padding-right: {90}px;
                 padding-left: {10}px;
