@@ -172,7 +172,11 @@ class WELData:
         heat_mask[heat_mask == 0] = np.nan
 
         # Additional calculated columns
-        out_frame['geo_tot_w'] = frame.power_tot
+        try:
+            out_frame['geo_tot_w'] = frame.power_tot
+        except AttributeError:
+            frame['power_tot'] = frame.TAH_W + frame.HP_W
+            out_frame['geo_tot_w'] = frame.power_tot
         try:
             out_frame['base_load_w'] = np.abs(frame.house_w - frame.power_tot
                                               - frame.dehumidifier_w)
