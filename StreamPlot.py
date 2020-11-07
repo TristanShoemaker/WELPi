@@ -228,11 +228,6 @@ class StreamPlot():
                         bottomPlot=False):
         source = self._getDataSubset(vars)
 
-        if source is not None:
-            label_unit = source['label'][0][-2:]
-            if label_unit == '_w' or label_unit == '_W':
-                source['value'] = source['value'] / 1000
-
         lines = alt.Chart(source).mark_line(
             interpolate='cardinal',
             clip=True
