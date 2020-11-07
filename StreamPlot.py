@@ -234,7 +234,7 @@ class StreamPlot():
                 source['value'] = source['value'] / 1000
         except KeyError:
             pass
-            
+
         lines = alt.Chart(source).mark_line(
             interpolate='cardinal',
             clip=True
