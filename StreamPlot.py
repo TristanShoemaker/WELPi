@@ -110,6 +110,7 @@ class StreamPlot():
 
     def _getDataSubset(self,
                        vars,
+                       id_vars='dateandtime',
                        resample=True):
         if resample:
             source = self.dat_resample
@@ -117,7 +118,7 @@ class StreamPlot():
             source = self.dat.data
         source = source.reset_index()
         try:
-            source = source.melt(id_vars='dateandtime',
+            source = source.melt(id_vars=id_vars,
                                  value_vars=vars,
                                  var_name='label')
         except KeyError:
@@ -227,10 +228,13 @@ class StreamPlot():
                         bottomPlot=False):
         source = self._getDataSubset(vars)
 
-        label_unit = source['label'][0][-2:]
-        if label_unit == '_w' or label_unit == '_W':
-            source['value'] = source['value'] / 1000
-
+        try:
+            label_unit = source['label'][0][-2:]
+            if label_unit == '_w' or label_unit == '_W':
+                source['value'] = source['value'] / 1000
+        except KeyError:
+            pass
+            
         lines = alt.Chart(source).mark_line(
             interpolate='cardinal',
             clip=True
@@ -480,3 +484,33 @@ class StreamPlot():
             plot = alt.layer(plot, time_text)
 
         return plot
+
+    def plotNonTime(self,
+                    id_var,
+                    vars):
+        source = self._getDataSubset(vars, id_vars=[id_var, 'heat_1_b', 'heat_2_b'])
+        # modes = self._getDataSubset(['heat_2_b'], id_vars=id_var)
+        source['heat_1_b'] = source['heat_1_b'] % 2
+        source['heat'] = (source['heat_2_b'] % 2 > 0) + 1
+        source['heat'] = source['heat'].astype('str')
+        source = source.dropna()
+        st.text(any(source['heat'] == np.nan))
+        # source.loc[source['heat'] == 0] = 'heat_1'
+        # source.loc[source['heat'] == 1] = 'heat_2'
+        st.dataframe(source)
+        # source['mode'] = modes['label']
+        # source.dropna()
+
+        points = alt.Chart(source).mark_point().encode(
+            x=F"{id_var}:Q",
+            y="value:Q",
+            color='heat:N'
+        )
+
+        reg = points.transform_regression(
+            F"{id_var}",
+            "value",
+            method='exp'
+        ).mark_line()
+
+        return points + reg
