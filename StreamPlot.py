@@ -513,7 +513,7 @@ class StreamPlot():
         ).mark_text(align='left').encode(
             x=alt.value(20),  # pixels from left
             y=alt.value(20),  # pixels from top
-            text='coef:N',
+            text=alt.Text('rSquared:N', format='.4f'),
             color=alt.ColorValue('black')
         )
 
