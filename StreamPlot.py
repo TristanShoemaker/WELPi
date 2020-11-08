@@ -481,29 +481,40 @@ class StreamPlot():
     def plotNonTime(self,
                     id_var,
                     vars):
-        source = self._getDataSubset(vars, id_vars=[id_var, 'heat_1_b', 'heat_2_b'])
+        source = self._getDataSubset(vars, id_vars=[id_var, 'heat_1_b',
+                                                    'heat_2_b'])
         # modes = self._getDataSubset(['heat_2_b'], id_vars=id_var)
         source['heat_1_b'] = source['heat_1_b'] % 2
         source['heat'] = (source['heat_2_b'] % 2 > 0) + 1
         source['heat'] = source['heat'].astype('str')
         source = source.dropna()
-        st.text(any(source['heat'] == np.nan))
-        # source.loc[source['heat'] == 0] = 'heat_1'
-        # source.loc[source['heat'] == 1] = 'heat_2'
-        st.dataframe(source)
+
+        # st.dataframe(source)
         # source['mode'] = modes['label']
         # source.dropna()
 
         points = alt.Chart(source).mark_point().encode(
-            x=F"{id_var}:Q",
-            y="value:Q",
+            x=alt.X(F"{id_var}:Q", scale=alt.Scale(zero=False)),
+            y=alt.Y("value:Q", axis=alt.Axis(title=vars)),
             color='heat:N'
         )
 
         reg = points.transform_regression(
             F"{id_var}",
             "value",
-            method='exp'
-        ).mark_line()
+            method='exp',
+        ).mark_line().encode(color=alt.ColorValue('black'))
 
-        return points + reg
+        reg_params = points.transform_regression(
+            F"{id_var}",
+            "value",
+            method='exp',
+            params=True
+        ).mark_text(align='left').encode(
+            x=alt.value(20),  # pixels from left
+            y=alt.value(20),  # pixels from top
+            text='coef:N',
+            color=alt.ColorValue('black')
+        )
+
+        return points + reg + reg_params

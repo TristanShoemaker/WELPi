@@ -46,7 +46,7 @@ class Testing(StreamPlot):
         if self._sensor_groups is None:
             self._sensor_groups = [self.in_default]
         with st.spinner('Generating Plots'):
-            plot = self.plotNonTime('T_diff', 'T_diff_eff')
+            plot = self.plotNonTime('T_diff', 'COP')
 
         plot = plot.configure_axis(
             labelFontSize=self.label_font_size,

@@ -10,6 +10,7 @@ from log_message import message
 from pages.PandW import PandW
 from pages.Monit import Monit
 from pages.Wthr import Wthr
+from pages.Testing import Testing
 
 to_tz = pytz.timezone('America/New_York')
 st.set_page_config(page_title="Geo Monitor",
@@ -20,15 +21,6 @@ st.set_page_config(page_title="Geo Monitor",
 @st.cache()
 def _serverStartup():
     message("Server Started", mssgType='ADMIN')
-
-
-def _whichFormatFunc(option):
-    if option == 'monit':
-        return "Main"
-    if option == 'pandw':
-        return "Power and Water"
-    if option == 'wthr':
-        return "Weather Station"
 
 
 def _date_select():
@@ -84,8 +76,19 @@ def _page_select(resample_N, date_range, sensor_container, which):
 
     if which == 'wthr':
         stp = Wthr(resample_N, date_range, sensor_container=sensor_container)
+    if which == 'test':
+        stp = Testing(resample_N, date_range,
+                      sensor_container=sensor_container)
 
     return stp
+
+
+def _whichFormatFunc(option):
+    which = {'monit': "Main",
+             'pandw': "Power and Water",
+             'wthr': "Weather Station",
+             'test': "Testing"}
+    return which[option]
 
 
 # ---------------------------- Start of Page Code ----------------------------
@@ -117,7 +120,7 @@ def main():
     # -- sidebar --
     st.sidebar.subheader("Monitor:")
     which = st.sidebar.selectbox("Page",
-                                 ['monit', 'pandw', 'wthr'],
+                                 ['monit', 'pandw', 'wthr', 'test'],
                                  index=0,
                                  format_func=_whichFormatFunc)
     st.sidebar.subheader("Plot Options:")
