@@ -416,7 +416,8 @@ class StreamPlot():
                                                               'value']
         except KeyError:
             pass
-
+        order = (str({label: idx for label, idx in enumerate(vars)})
+                 + "[datum.label]")
         area = alt.Chart(source).mark_area(
             interpolate='basis',
             clip=True,
@@ -438,12 +439,12 @@ class StreamPlot():
             color=alt.Color('new_label:N',
                             legend=alt.Legend(title='Sensors',
                                               orient='left',
-                                              offset=5))
+                                              offset=5),
+                            sort=vars)
         ).transform_calculate(
             new_label=alt.expr.slice(alt.datum.label, 0, -2)
         ).transform_calculate(
-            order=(str({label: idx for label, idx in enumerate(vars)})
-                   + "[datum.label]")
+            order=order
         )
 
         points = area.mark_point(size=40, filled=True).encode(
