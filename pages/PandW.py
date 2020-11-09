@@ -54,8 +54,8 @@ class PandW(StreamPlot):
                     width=self.def_width,
                     height=self.def_height * self.stat_height_mod
                 ),
-                self.plotPowerStack(['solar_w', 'power_tot',
-                                     'house_ops_w'],
+                self.plotPowerStack(['base_load_w', 'dehumidifier_w',
+                                     'geo_tot_w', 'solar_w'],
                                     axis_label="Power / kW").properties(
                     width=self.def_width,
                     height=self.def_height
