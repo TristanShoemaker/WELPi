@@ -93,6 +93,10 @@ def getSenseData(sn):
     post['house_w'] = sense_post['w']
     post['dehumidifier_w'] = [device for device in sense_post['devices']
                               if device['name'] == 'Dehumidifier '][0]['w']
+    post['furnace_w'] = [device for device in sense_post['devices']
+                         if device['name'] == 'Furnace'][0]['w']
+    post['barn_pump_w'] = [device for device in sense_post['devices']
+                           if device['name'] == 'Barn pump'][0]['w']
     message([F"{'Getting Sense:': <20}", F"{time.time() - tic:.1f} s"],
             mssgType='TIMING')
     return post
