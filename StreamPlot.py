@@ -65,16 +65,8 @@ class StreamPlot():
                    'basement_T', 'outside_shade_H', 'outside_shade_T',
                    'weather_station_A', 'weather_station_R',  'barn_T',
                    'barn_H', 'deg_day_eff', 'solar_w', 'house_w',
-                   'dehumidifier_w', 'house_ops_w', 'power_tot_pi']
-    in_default = ['T_room_T', 'D_room_T', 'V_room_T', 'fireplace_T', 'attic_T']
-    out_default = ['TAH_in_T', 'TAH_out_T', 'loop_in_T', 'loop_out_T',
-                   'outside_T', 'barn_T', 'basement_T']
-    water_default = ['desup_T', 'desup_return_T', 'house_hot_T', 'tank_h2o_T',
-                     'buderus_h2o_T']
-    pwr_default = ['TAH_W', 'HP_W', 'power_tot']
-    wthr_default = ['outside_shade_T', 'outside_T', 'weather_station_T']
-    humid_default = ['weather_station_H', 'outside_shade_H', 'basement_H',
-                     'fireplace_H']
+                   'dehumidifier_w', 'house_ops_w', 'power_tot_pi',
+                   'furnace_w']
     resample_N = None
     dat = None
     dat_resample = None

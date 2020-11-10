@@ -6,6 +6,9 @@ from log_message import message
 
 
 class Monit(StreamPlot):
+    in_default = ['T_room_T', 'D_room_T', 'V_room_T', 'fireplace_T']
+    out_default = ['TAH_in_T', 'TAH_out_T', 'loop_in_T', 'loop_out_T',
+                   'outside_T', 'barn_T', 'basement_T']
     _sensor_groups = None
     plots = None
 
