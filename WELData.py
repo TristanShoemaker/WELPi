@@ -32,6 +32,7 @@ def mongoConnect():
 
     uri = F"mongodb://{admin}@{ip}:27017/admin"
     client = MongoClient(uri)
+    message("Mongo Connected", mssgType='ADMIN')
     return client.WEL
 
 

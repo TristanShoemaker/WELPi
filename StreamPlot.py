@@ -9,7 +9,6 @@ from log_message import message
 
 @st.cache(hash_funcs={"pymongo.database.Database": id})
 def _cachedMongoConnect():
-    message("Mongo Connected", mssgType='ADMIN')
     return mongoConnect()
 
 
