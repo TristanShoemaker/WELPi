@@ -125,8 +125,7 @@ async def getSenseData(sn):
 async def send_post(db, post):
     utc_time = post['dateandtime'].strftime('%Y-%m-%d %H:%M:%S')
     try:
-        # post_id = db.insert_one(post).inserted_id
-        post_id = "fake"
+        post_id = db.insert_one(post).inserted_id
         message(F"Successful post @ UTC time: {utc_time}"
                 F" | post_id: {post_id}", mssgType='SUCCESS')
     except DuplicateKeyError:
