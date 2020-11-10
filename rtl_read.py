@@ -77,7 +77,7 @@ def accumulate(p):
     for line in p.stdout:
         packet = processLine(line)
         signals = signals.append(packet, ignore_index=True)
-        if time.time() - tic >= 60:
+        if time.time() - tic >= 29:
             break
     message("Found Signals:", mssgType='HEADER')
     [print(F"{22 * ' '}{idx: <25}{value}", flush=True)
