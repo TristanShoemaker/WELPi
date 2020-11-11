@@ -286,7 +286,7 @@ class WELData:
                 # print(datalist)
                 self.data = pd.concat(datalist)
 
-                # Shift power meter data by one sample for better alignment with others
+                # Shift power meter data by one sample for better alignment
                 self.data.HP_W = self.data.HP_W.shift(-1)
                 self.data.TAH_W = self.data.TAH_W.shift(-1)
                 tmask = ((self.data.index > self.timerange[0])
@@ -310,13 +310,11 @@ class WELData:
             # print(F"#DEBUG: timerange from: {self.data.index[-1]}"
             #       "to {self.data.index[0]}")
 
-
-            # Shift power meter data by one sample for better alignment with others
+            # Shift power meter data by one sample for better alignment
             self.data.HP_W = self.data.HP_W.shift(-1)
             self.data.TAH_W = self.data.TAH_W.shift(-1)
             self.data = pd.concat((self.data, self._calced_cols(self.data)),
                                   axis=1)
-
 
     """
     Returns list of all column names.

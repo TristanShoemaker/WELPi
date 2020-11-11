@@ -46,7 +46,14 @@ def _date_select():
     if selected_today and date_range[1].day - date_range[0].day == 1:
         date_range[0] = date_range[1] - dt.timedelta(hours=12)
 
-    date_range = [date.astimezone(to_tz) for date in date_range]
+    def min_round(time):
+        time = time.replace(microsecond=0)
+        if time.second > 29:
+            time = time + dt.timedelta(minutes=1)
+        time = time.replace(second=0)
+        return time
+
+    date_range = [min_round(date.astimezone(to_tz)) for date in date_range]
     return date_range
 
 
@@ -70,10 +77,8 @@ def ping(host):
 def _page_select(resample_N, date_range, sensor_container, which):
     if which == 'monit':
         stp = Monit(resample_N, date_range, sensor_container=sensor_container)
-
     if which == 'pandw':
         stp = PandW(resample_N, date_range, sensor_container=sensor_container)
-
     if which == 'wthr':
         stp = Wthr(resample_N, date_range, sensor_container=sensor_container)
     if which == 'test':
@@ -104,10 +109,10 @@ def main():
             }}
             .reportview-container .main .block-container{{
                 max-width: {1300}px;
-                padding-top: {0}px;
+                padding-top: {5}px;
                 padding-right: {90}px;
                 padding-left: {10}px;
-                padding-bottom: {0}px;
+                padding-bottom: {5}px;
             }}
         </style>
         <style type='text/css'>
