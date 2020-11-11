@@ -78,7 +78,7 @@ class Monit(StreamPlot):
                     height=self.def_height * self.cop_height_mod
                 ),
                 self.plotRollMean(['T_diff_eff'],
-                                  axis_label="House 'D'efficiency / W/°C",
+                                  axis_label="Defficiency / W/°C",
                                   bottomPlot=True
                                   ).properties(
                     width=self.def_width,
