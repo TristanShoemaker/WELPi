@@ -75,9 +75,12 @@ def ping(host):
 
 
 def calc_stats(stp):
-    load = ((stp.dat.data['heat_1_b'].sum() + stp.dat.data['heat_2_b'].sum())
-            / (2 * len(stp.dat.data['heat_1_b'])))
-    return load
+    N = len(stp.dat.data)
+    heat_2_count = (stp.dat.data['heat_2_b'] % 2).sum()
+    heat_1_count = (stp.dat.data['heat_1_b'] % 2).sum() - heat_2_count
+    # Heat 1 is ~80% of full power
+    duty = 100 * ((0.8 * heat_1_count + heat_2_count) / N)
+    return duty
 
 
 def _page_select(resample_N, date_range, sensor_container, which):
@@ -148,8 +151,8 @@ def main():
     st.header(F"{_whichFormatFunc(which)} Monitor")
 
     stp = _page_select(resample_N, date_range, sensor_container, which)
-    load = calc_stats(stp)
-    stats_containter.text(F"System Load: {load:.1f}%")
+    duty = calc_stats(stp)
+    stats_containter.text(F"System Duty Load: {duty:.1f}%")
     tic = time.time()
     for plot in stp.plots:
         st.altair_chart(plot)
