@@ -491,22 +491,22 @@ class StreamPlot():
             color='heat:N'
         )
 
-        reg = points.transform_regression(
-            F"{id_var}",
-            "value",
-            method='exp',
-        ).mark_line().encode(color=alt.ColorValue('black'))
+        # reg = points.transform_regression(
+        #     F"{id_var}",
+        #     "value",
+        #     method='exp',
+        # ).mark_line().encode(color=alt.ColorValue('black'))
 
-        reg_params = points.transform_regression(
-            F"{id_var}",
-            "value",
-            method='exp',
-            params=True
-        ).mark_text(align='left').encode(
-            x=alt.value(20),  # pixels from left
-            y=alt.value(20),  # pixels from top
-            text=alt.Text('rSquared:N', format='.4f'),
-            color=alt.ColorValue('black')
-        )
+        # reg_params = points.transform_regression(
+        #     F"{id_var}",
+        #     "value",
+        #     method='exp',
+        #     params=True
+        # ).mark_text(align='left').encode(
+        #     x=alt.value(20),  # pixels from left
+        #     y=alt.value(20),  # pixels from top
+        #     text=alt.Text('rSquared:N', format='.4f'),
+        #     color=alt.ColorValue('black')
+        # )
 
-        return points + reg + reg_params
+        return points
