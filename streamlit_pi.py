@@ -74,6 +74,12 @@ def ping(host):
         return "Not Pi 😞"
 
 
+def calc_stats(stp):
+    load = ((stp.dat.data['heat_1_b'].sum() + stp.dat.data['heat_2_b'].sum())
+            / (2 * len(stp.dat.data['heat_1_b'])))
+    return load
+
+
 def _page_select(resample_N, date_range, sensor_container, which):
     if which == 'monit':
         stp = Monit(resample_N, date_range, sensor_container=sensor_container)
@@ -124,6 +130,7 @@ def main():
 
     # -- sidebar --
     st.sidebar.subheader("Monitor:")
+    stats_containter = st.sidebar.beta_container()
     which = st.sidebar.selectbox("Page",
                                  ['monit', 'pandw', 'wthr', 'test'],
                                  index=0,
@@ -139,10 +146,10 @@ def main():
 
     # -- main area --
     st.header(F"{_whichFormatFunc(which)} Monitor")
-    # plot_placeholder = st.empty()
 
     stp = _page_select(resample_N, date_range, sensor_container, which)
-
+    load = calc_stats(stp)
+    stats_containter.text(F"System Load: {load:.1f}%")
     tic = time.time()
     for plot in stp.plots:
         st.altair_chart(plot)
