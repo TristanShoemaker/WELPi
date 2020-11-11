@@ -139,12 +139,13 @@ def main():
 
     # -- main area --
     st.header(F"{_whichFormatFunc(which)} Monitor")
-    plot_placeholder = st.empty()
+    # plot_placeholder = st.empty()
 
     stp = _page_select(resample_N, date_range, sensor_container, which)
 
     tic = time.time()
-    plot_placeholder.altair_chart(stp.plots)
+    for plot in stp.plots:
+        st.altair_chart(plot)
     message([F"{'Altair plot disp:': <20}", F"{time.time() - tic:.2f} s"],
             tbl=stp.mssg_tbl, mssgType='TIMING')
 
