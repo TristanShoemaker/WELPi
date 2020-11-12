@@ -7,8 +7,8 @@ from log_message import message
 
 class Wthr(StreamPlot):
     wthr_default = ['outside_shade_T', 'outside_T', 'weather_station_T']
-    humid_default = ['weather_station_H', 'outside_shade_H', 'basement_H',
-                     'fireplace_H']
+    humid_default = ['weather_station_H', 'outside_shade_H', 'D_room_H',
+                     'V_room_H', 'T_room_H', 'fireplace_H']
     _sensor_groups = None
     plots = None
 
