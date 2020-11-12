@@ -42,10 +42,10 @@ def _createResize():
 
 class StreamPlot():
     def_width = 'container'
-    def_height = 310
+    def_height = 320
     def_spacing = 2
     stat_height_mod = 0.4
-    cop_height_mod = 0.4
+    cop_height_mod = 0.3
     pwr_height_mod = 0.8
     mark_text_font_size = 13
     label_font_size = 12
