@@ -48,8 +48,8 @@ class StreamPlot():
     cop_height_mod = 0.3
     pwr_height_mod = 0.8
     mark_text_font_size = 13
-    label_font_size = 12
-    title_font_size = 11
+    label_font_size = 13
+    title_font_size = 12
     sensor_list = ['TAH_W', 'HP_W',  'TAH_fpm', 'liqu_refrig_T',
                    'gas_refrig_T', 'loop_in_T', 'loop_out_T', 'outside_T',
                    'power_tot', 'living_T', 'desup_T', 'house_hot_T',
@@ -220,7 +220,7 @@ class StreamPlot():
         source = self._getDataSubset(vars)
 
         lines = alt.Chart(source).mark_line(
-            interpolate='cardinal',
+            interpolate='basis',
             clip=True
         ).encode(
             x=alt.X('dateandtime:T',
@@ -255,8 +255,8 @@ class StreamPlot():
 
         text = lines.mark_text(
             align='left',
-            dx=5, dy=-5,
-            fontSize=self.label_font_size
+            dx=5, dy=-10,
+            fontSize=self.mark_text_font_size
         ).encode(
             text=alt.condition(self.nearestTime,
                                'value:Q',
@@ -282,7 +282,7 @@ class StreamPlot():
     def plotStatus(self):
         status_list = ['TAH_fan_b', 'heat_1_b', 'heat_2_b', 'zone_1_b',
                        'zone_2_b', 'humid_b', 'rev_valve_b', 'aux_heat_b']
-        source = self._getDataSubset(status_list, resample=True)
+        source = self._getDataSubset(status_list)
         source.value = source.value % 2
         # source = source.loc[source.value != 0]
 
@@ -311,13 +311,26 @@ class StreamPlot():
             new_label=alt.expr.slice(alt.datum.label, 0, -2)
         )
 
+        out_source = self._getDataSubset(['outside_T'])
+        outside = alt.Chart(out_source).mark_line(
+            interpolate='basis',
+            color='gray',
+            opacity=0.7,
+            strokeDash=[3, 2]
+        ).encode(
+            x='dateandtime:T',
+            y=alt.Y('value:Q', title='Outside / °C',
+                    axis=alt.Axis(orient='left', grid=False),
+                    scale=alt.Scale(zero=False))
+        )
+
         selectors, rules = self._createRules(source)
 
         time_text = self._createTimeText(rules, self.stat_height_mod, top=True)
 
         plot = alt.layer(
-            self._plotNightAlt(), chunks, selectors, rules, time_text
-        )
+            self._plotNightAlt(), outside, chunks, selectors, rules, time_text
+        ).resolve_scale(y='independent')
 
         return plot
 
@@ -335,7 +348,7 @@ class StreamPlot():
             rollmean='mean(value)',
             frame=[-rolling_frame, 0]
         ).mark_line(
-            interpolate='cardinal',
+            interpolate='basis',
             strokeWidth=2
         ).encode(
             x=alt.X('dateandtime:T',
@@ -355,7 +368,7 @@ class StreamPlot():
         )
 
         raw_lines = alt.Chart(source).mark_line(
-            interpolate='cardinal',
+            interpolate='basis',
             strokeWidth=2,
             strokeDash=[1, 2],
             opacity=0.8,
@@ -446,8 +459,8 @@ class StreamPlot():
 
         text = area.mark_text(
             align='left',
-            dx=5, dy=-5,
-            fontSize=self.label_font_size
+            dx=5, dy=-10,
+            fontSize=self.mark_text_font_size
         ).encode(
             text=alt.condition(self.nearestTime,
                                'value:Q',
