@@ -6,11 +6,20 @@ import subprocess
 import json
 import platform
 import pytz
+import sys
 from log_message import message
 from pages.PandW import PandW
 from pages.Monit import Monit
 from pages.Wthr import Wthr
 from pages.Testing import Testing
+if len(sys.argv) > 1:
+    if sys.argv[1] == 'memcheck':
+        MEMCHECK = True
+else:
+    MEMCHECK = False
+if MEMCHECK:
+    from pympler.tracker import SummaryTracker
+
 
 to_tz = pytz.timezone('America/New_York')
 st.set_page_config(page_title="Geo Monitor",
@@ -158,7 +167,12 @@ def main():
         st.altair_chart(plot)
     message([F"{'Altair plot disp:': <20}", F"{time.time() - tic:.2f} s"],
             tbl=stp.mssg_tbl, mssgType='TIMING')
+    del stp
 
 
 if __name__ == "__main__":
+    if MEMCHECK:
+        tracker = SummaryTracker()
     main()
+    if MEMCHECK:
+        tracker.print_diff()

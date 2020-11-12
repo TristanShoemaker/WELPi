@@ -35,9 +35,9 @@ def _createNearestTime():
                          empty='none')
 
 
-def _createResize():
-    return alt.selection(type='interval',
-                         encodings=['x'])
+# def _createResize():
+#     return alt.selection(type='interval',
+#                          encodings=['x'])
 
 
 class StreamPlot():
