@@ -133,7 +133,7 @@ def main():
 
     # -- sidebar --
     st.sidebar.subheader("Monitor:")
-    stats_containter = st.sidebar.beta_container()
+    stats_container = st.sidebar.beta_container()
     which = st.sidebar.selectbox("Page",
                                  ['monit', 'pandw', 'wthr', 'test'],
                                  index=0,
@@ -152,7 +152,7 @@ def main():
 
     stp = _page_select(resample_N, date_range, sensor_container, which)
     duty = calc_stats(stp)
-    stats_containter.text(F"System Duty Load: {duty:.1f}%")
+    stats_container.text(F"System Duty: {duty:.1f}%")
     tic = time.time()
     for plot in stp.plots:
         st.altair_chart(plot)
