@@ -328,7 +328,7 @@ class StreamPlot():
                                  timetextheightmod=self.stat_height_mod)
 
         plot = alt.layer(
-            self._plotNightAlt(), outside, chunks, rule
+            self._plotNightAlt(), chunks, outside, rule
         ).resolve_scale(y='independent')
 
         return plot

@@ -24,7 +24,7 @@ if MEMCHECK:
 to_tz = pytz.timezone('America/New_York')
 st.set_page_config(page_title="Geo Monitor",
                    page_icon="🌀",
-                   initial_sidebar_state='expanded')
+                   initial_sidebar_state='auto')
 
 
 @st.cache()
