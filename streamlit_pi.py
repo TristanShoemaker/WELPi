@@ -85,7 +85,10 @@ def calc_stats(stp):
     heat_1_count = (stp.dat.data['heat_1_b'] % 2).sum() - heat_2_count
     # Heat 1 is ~80% of full power
     duty = 100 * ((0.8 * heat_1_count + heat_2_count) / N)
-    return duty
+
+    house_w_avg = stp.dat.data['house_w'].mean() / 1000
+    geo_w_avg = stp.dat.data['geo_tot_w'].mean() / 1000
+    return [duty, house_w_avg, geo_w_avg]
 
 
 def _page_select(resample_N, date_range, sensor_container, which):
@@ -138,7 +141,7 @@ def main():
 
     # -- sidebar --
     st.sidebar.subheader("Monitor:")
-    stats_container = st.sidebar.beta_container()
+    stats_containers = [st.sidebar.beta_container() for x in range(3)]
     which = st.sidebar.selectbox("Page",
                                  ['monit', 'pandw', 'wthr', 'test'],
                                  index=0,
@@ -156,8 +159,10 @@ def main():
     st.header(F"{_whichFormatFunc(which)} Monitor")
 
     stp = _page_select(resample_N, date_range, sensor_container, which)
-    duty = calc_stats(stp)
-    stats_container.text(F"System Duty: {duty:.1f}%")
+    stats = calc_stats(stp)
+    stats_containers[0].text(F"System Duty: {stats[0]:.1f}%")
+    stats_containers[1].text(F"House Mean Power Use: {stats[1]:.2f} kW")
+    stats_containers[1].text(F"Geo Mean Power Use: {stats[2]:.2f} kW")
     tic = time.time()
     for plot in stp.plots:
         st.altair_chart(plot)
