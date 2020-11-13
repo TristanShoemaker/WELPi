@@ -35,9 +35,7 @@ def _serverStartup():
 def _date_select():
     local_now = dt.datetime.now(to_tz)
     date_range = st.sidebar.date_input(label='Date Range',
-                                       value=[(local_now
-                                               - dt.timedelta(days=1)),
-                                              local_now],
+                                       value=[local_now, local_now],
                                        min_value=dt.datetime(2020, 3, 21),
                                        max_value=local_now)
     date_range = list(date_range)
@@ -52,8 +50,6 @@ def _date_select():
                                             dt.datetime.min.time())
     date_range[0] = dt.datetime.combine(date_range[0],
                                         dt.datetime.min.time())
-    if selected_today and date_range[1].day - date_range[0].day == 1:
-        date_range[0] = date_range[1] - dt.timedelta(hours=12)
 
     def min_round(time):
         time = time.replace(microsecond=0)
