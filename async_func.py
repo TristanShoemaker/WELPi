@@ -76,7 +76,7 @@ async def getWELData(ip):
     post['dateandtime'] = (dt.datetime.now()
                            .replace(microsecond=0)
                            .replace(tzinfo=TO_TZONE))
-    post['dateandtime'] = post['dateandtime'].astimezone(DB_TZONE)
+
     del post['Date']
     del post['Time']
 
@@ -142,6 +142,9 @@ async def main(interval, db, mc, sn):
         post.update(await getSenseData(sn))
         elapsed = time.time() - then
         await asyncio.sleep(interval - elapsed)
+        post['dateandtime'] = (dt.datetime.utcnow()
+                               .replace(microsecond=0)
+                               .replace(tzinfo=DB_TZONE))
         await send_post(db, post)
 
 
