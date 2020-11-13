@@ -35,21 +35,21 @@ def _createNearestTime():
                          empty='none')
 
 
-def _createResize():
-    return alt.selection(type='interval',
-                         encodings=['x'])
+# def _createResize():
+#     return alt.selection(type='interval',
+#                          encodings=['x'])
 
 
 class StreamPlot():
     def_width = 'container'
-    def_height = 310
+    def_height = 320
     def_spacing = 2
     stat_height_mod = 0.4
-    cop_height_mod = 0.4
+    cop_height_mod = 0.3
     pwr_height_mod = 0.8
     mark_text_font_size = 13
-    label_font_size = 12
-    title_font_size = 11
+    label_font_size = 13
+    title_font_size = 12
     sensor_list = ['TAH_W', 'HP_W',  'TAH_fpm', 'liqu_refrig_T',
                    'gas_refrig_T', 'loop_in_T', 'loop_out_T', 'outside_T',
                    'power_tot', 'living_T', 'desup_T', 'house_hot_T',
@@ -65,16 +65,8 @@ class StreamPlot():
                    'basement_T', 'outside_shade_H', 'outside_shade_T',
                    'weather_station_A', 'weather_station_R',  'barn_T',
                    'barn_H', 'deg_day_eff', 'solar_w', 'house_w',
-                   'dehumidifier_w', 'house_ops_w', 'power_tot_pi']
-    in_default = ['T_room_T', 'D_room_T', 'V_room_T', 'fireplace_T', 'attic_T']
-    out_default = ['TAH_in_T', 'TAH_out_T', 'loop_in_T', 'loop_out_T',
-                   'outside_T', 'barn_T', 'basement_T']
-    water_default = ['desup_T', 'desup_return_T', 'house_hot_T', 'tank_h2o_T',
-                     'buderus_h2o_T']
-    pwr_default = ['TAH_W', 'HP_W', 'power_tot']
-    wthr_default = ['outside_shade_T', 'outside_T', 'weather_station_T']
-    humid_default = ['weather_station_H', 'outside_shade_H', 'basement_H',
-                     'fireplace_H']
+                   'dehumidifier_w', 'house_ops_w', 'power_tot_pi',
+                   'furnace_w']
     resample_N = None
     dat = None
     dat_resample = None
@@ -127,13 +119,19 @@ class StreamPlot():
         return source
 
     def _createRules(self,
-                     source):
-        selectors = alt.Chart(source).mark_point(opacity=0).encode(
+                     source,
+                     tooltip=True,
+                     timetext=False,
+                     timetexttop=False,
+                     timetextheightmod=1,
+                     field='value:Q'):
+        selectors = alt.Chart(source.data).mark_point(opacity=0).encode(
             x='dateandtime:T',
         ).add_selection(
             self.nearestTime
         )
-        rules = alt.Chart(source).mark_rule().encode(
+
+        rules = alt.Chart(source.data).mark_rule().encode(
             x='dateandtime:T',
             color=alt.condition('isValid(datum.value)',
                                 alt.ColorValue('gray'),
@@ -142,30 +140,46 @@ class StreamPlot():
             self.nearestTime
         )
 
-        return [selectors, rules]
+        if timetext:
+            if timetexttop:
+                flip = -1
+            else:
+                flip = 1
+            time_text_dy = flip * (self.def_height
+                                   * timetextheightmod / 2 + 11)
+            time_text = rules.mark_text(align='center',
+                                        dx=0,
+                                        dy=time_text_dy,
+                                        fontSize=self.mark_text_font_size
+                                        ).encode(
+                text=alt.condition(self.nearestTime,
+                                   'dateandtime:T',
+                                   alt.value(' '),
+                                   format='%b %-d, %H:%M'),
+                color=alt.ColorValue('black')
+            )
+            rules = rules + time_text
 
-    def _createTimeText(self,
-                        rules,
-                        height_mod,
-                        top=False):
-        if top:
-            flip = -1
-        else:
-            flip = 1
-        time_text_dy = flip * (self.def_height * height_mod / 2 + 11)
-        time_text = rules.mark_text(align='center',
-                                    dx=0,
-                                    dy=time_text_dy,
-                                    fontSize=self.mark_text_font_size
-                                    ).encode(
-            text=alt.condition(self.nearestTime,
-                               'dateandtime:T',
-                               alt.value(' '),
-                               format='%b %-d, %H:%M'),
-            color=alt.ColorValue('black')
-        )
+        if tooltip:
+            points = source.mark_point(size=40, filled=True).encode(
+                opacity=alt.condition(self.nearestTime,
+                                      alt.value(0.8),
+                                      alt.value(0))
+            )
+            text = source.mark_text(
+                align='left',
+                dx=5, dy=-10,
+                fontSize=self.mark_text_font_size
+            ).encode(
+                text=alt.condition(self.nearestTime,
+                                   field,
+                                   alt.value(' '),
+                                   format='.1f')
+            )
 
-        return time_text
+            return selectors + rules + points + text
+
+        return selectors + rules
 
     def _createLatestText(self,
                           lines,
@@ -228,7 +242,7 @@ class StreamPlot():
         source = self._getDataSubset(vars)
 
         lines = alt.Chart(source).mark_line(
-            interpolate='cardinal',
+            interpolate='basis',
             clip=True
         ).encode(
             x=alt.X('dateandtime:T',
@@ -255,44 +269,22 @@ class StreamPlot():
             new_label=alt.expr.slice(alt.datum.label, 0, -2)
         )
 
-        points = lines.mark_point(size=40, filled=True).encode(
-            opacity=alt.condition(self.nearestTime,
-                                  alt.value(0.8),
-                                  alt.value(0))
-        )
-
-        text = lines.mark_text(
-            align='left',
-            dx=5, dy=-5,
-            fontSize=self.label_font_size
-        ).encode(
-            text=alt.condition(self.nearestTime,
-                               'value:Q',
-                               alt.value(' '),
-                               format='.1f')
-        )
-
-        selectors, rules = self._createRules(source)
+        rule = self._createRules(lines, timetext=bottomPlot,
+                                 timetextheightmod=height_mod)
 
         latest_text = self._createLatestText(lines, 'value:Q')
 
         plot = alt.layer(
-            self._plotNightAlt(), lines, points, text, selectors, rules,
-            latest_text
+            self._plotNightAlt(), lines, rule, latest_text
         )
-
-        if bottomPlot:
-            time_text = self._createTimeText(rules, height_mod=height_mod)
-            plot = alt.layer(plot, time_text)
 
         return plot
 
     def plotStatus(self):
         status_list = ['TAH_fan_b', 'heat_1_b', 'heat_2_b', 'zone_1_b',
                        'zone_2_b', 'humid_b', 'rev_valve_b', 'aux_heat_b']
-        source = self._getDataSubset(status_list, resample=True)
+        source = self._getDataSubset(status_list)
         source.value = source.value % 2
-        # source = source.loc[source.value != 0]
 
         chunks = alt.Chart(source).mark_bar(
             width=800 / self.resample_N,
@@ -319,13 +311,25 @@ class StreamPlot():
             new_label=alt.expr.slice(alt.datum.label, 0, -2)
         )
 
-        selectors, rules = self._createRules(source)
+        out_source = self._getDataSubset(['outside_T'])
+        outside = alt.Chart(out_source).mark_line(
+            interpolate='basis',
+            opacity=0.6,
+            strokeDash=[3, 2]
+        ).encode(
+            x='dateandtime:T',
+            y=alt.Y('value:Q', title='Outside / °C',
+                    axis=alt.Axis(orient='left', grid=False),
+                    scale=alt.Scale(zero=False)),
+            color=alt.value('grey')
+        )
 
-        time_text = self._createTimeText(rules, self.stat_height_mod, top=True)
+        rule = self._createRules(outside, timetext=True, timetexttop=True,
+                                 timetextheightmod=self.stat_height_mod)
 
         plot = alt.layer(
-            self._plotNightAlt(), chunks, selectors, rules, time_text
-        )
+            self._plotNightAlt(), chunks, outside, rule
+        ).resolve_scale(y='independent')
 
         return plot
 
@@ -343,7 +347,7 @@ class StreamPlot():
             rollmean='mean(value)',
             frame=[-rolling_frame, 0]
         ).mark_line(
-            interpolate='cardinal',
+            interpolate='basis',
             strokeWidth=2
         ).encode(
             x=alt.X('dateandtime:T',
@@ -363,7 +367,7 @@ class StreamPlot():
         )
 
         raw_lines = alt.Chart(source).mark_line(
-            interpolate='cardinal',
+            interpolate='basis',
             strokeWidth=2,
             strokeDash=[1, 2],
             opacity=0.8,
@@ -374,31 +378,15 @@ class StreamPlot():
             color='label'
         )
 
-        points = lines.mark_point(size=40, filled=True).encode(
-            opacity=alt.condition(self.nearestTime,
-                                  alt.value(0.8),
-                                  alt.value(0))
-        )
-
-        text = lines.mark_text(align='left', dx=5, dy=-5).encode(
-            text=alt.condition(self.nearestTime,
-                               'rollmean:Q',
-                               alt.value(' '),
-                               format='.1f')
-        )
-
-        selectors, rules = self._createRules(source)
+        rule = self._createRules(lines, field='rollmean:Q',
+                                 timetext=bottomPlot,
+                                 timetextheightmod=self.cop_height_mod)
 
         latest_text = self._createLatestText(lines, 'rollmean:Q')
 
         plot = alt.layer(
-            self._plotNightAlt(), lines, raw_lines, points, text, selectors,
-            rules, latest_text
+            self._plotNightAlt(), lines, raw_lines, rule, latest_text
         )
-
-        if bottomPlot:
-            time_text = self._createTimeText(rules, self.cop_height_mod)
-            plot = alt.layer(plot, time_text)
 
         return plot
 
@@ -446,35 +434,14 @@ class StreamPlot():
             order=order
         )
 
-        points = area.mark_point(size=40, filled=True).encode(
-            opacity=alt.condition(self.nearestTime,
-                                  alt.value(0.8),
-                                  alt.value(0))
-        )
-
-        text = area.mark_text(
-            align='left',
-            dx=5, dy=-5,
-            fontSize=self.label_font_size
-        ).encode(
-            text=alt.condition(self.nearestTime,
-                               'value:Q',
-                               alt.value(' '),
-                               format='.1f')
-        )
-
-        selectors, rules = self._createRules(source)
+        rule = self._createRules(area, timetext=bottomPlot,
+                                 timetextheightmod=height_mod)
 
         latest_text = self._createLatestText(area, 'value:Q')
 
         plot = alt.layer(
-            self._plotNightAlt(), area, points, text, selectors, rules,
-            latest_text
+            self._plotNightAlt(), area, rule, latest_text
         )
-
-        if bottomPlot:
-            time_text = self._createTimeText(rules, height_mod=height_mod)
-            plot = alt.layer(plot, time_text)
 
         return plot
 
@@ -489,32 +456,28 @@ class StreamPlot():
         source['heat'] = source['heat'].astype('str')
         source = source.dropna()
 
-        # st.dataframe(source)
-        # source['mode'] = modes['label']
-        # source.dropna()
-
         points = alt.Chart(source).mark_point().encode(
             x=alt.X(F"{id_var}:Q", scale=alt.Scale(zero=False)),
             y=alt.Y("value:Q", axis=alt.Axis(title=vars)),
             color='heat:N'
         )
 
-        reg = points.transform_regression(
-            F"{id_var}",
-            "value",
-            method='exp',
-        ).mark_line().encode(color=alt.ColorValue('black'))
+        # reg = points.transform_regression(
+        #     F"{id_var}",
+        #     "value",
+        #     method='exp',
+        # ).mark_line().encode(color=alt.ColorValue('black'))
 
-        reg_params = points.transform_regression(
-            F"{id_var}",
-            "value",
-            method='exp',
-            params=True
-        ).mark_text(align='left').encode(
-            x=alt.value(20),  # pixels from left
-            y=alt.value(20),  # pixels from top
-            text=alt.Text('rSquared:N', format='.4f'),
-            color=alt.ColorValue('black')
-        )
+        # reg_params = points.transform_regression(
+        #     F"{id_var}",
+        #     "value",
+        #     method='exp',
+        #     params=True
+        # ).mark_text(align='left').encode(
+        #     x=alt.value(20),  # pixels from left
+        #     y=alt.value(20),  # pixels from top
+        #     text=alt.Text('rSquared:N', format='.4f'),
+        #     color=alt.ColorValue('black')
+        # )
 
-        return points + reg + reg_params
+        return points

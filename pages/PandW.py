@@ -6,6 +6,9 @@ from log_message import message
 
 
 class PandW(StreamPlot):
+    water_default = ['desup_T', 'desup_return_T', 'house_hot_T', 'tank_h2o_T',
+                     'buderus_h2o_T']
+    pwr_default = ['TAH_W', 'HP_W', 'power_tot']
     _sensor_groups = None
     plots = None
 
@@ -99,4 +102,4 @@ class PandW(StreamPlot):
         message([F"{'Altair plot gen:': <20}", F"{time.time() - tic:.2f} s"],
                 tbl=self.mssg_tbl, mssgType='TIMING')
 
-        return plot
+        return [plot]

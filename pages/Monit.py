@@ -6,6 +6,8 @@ from log_message import message
 
 
 class Monit(StreamPlot):
+    in_default = ['T_room_T', 'D_room_T', 'V_room_T', 'fireplace_T']
+    out_default = ['outside_T', 'barn_T']
     _sensor_groups = None
     plots = None
 
@@ -34,8 +36,8 @@ class Monit(StreamPlot):
                                                   self.sensor_list,
                                                   self.in_default)
         # out_sensors = sensor_container.multiselect("Loop Sensors",
-        #                                            stp.sensor_list,
-        #                                            stp.out_default)
+        #                                            self.sensor_list,
+        #                                            self.out_default)
         # sensor_groups = [in_sensors, out_sensors]
         sensor_groups = [in_sensors]
         for sensor_group in sensor_groups:
@@ -59,23 +61,23 @@ class Monit(StreamPlot):
                     width=self.def_width,
                     height=self.def_height * self.pwr_height_mod
                 ),
-                self.plotPowerStack(['base_load_w', 'dehumidifier_w',
-                                     'geo_tot_w', 'solar_w'],
+                self.plotPowerStack(['solar_w', 'base_load_w',
+                                     'dehumidifier_w', 'geo_tot_w'],
                                     axis_label="Electrical Power / kW"
                                     ).properties(
                     width=self.def_width,
                     height=self.def_height * self.pwr_height_mod
                 ),
-                # self.plotMainMonitor(sensor_groups[1]).properties(
+                # self.plotMainMonitor(self._sensor_groups[1]).properties(
                 #     width=self.def_width,
-                #     height=self.def_height * self.pwr_height_mod
+                #     height=self.def_height * self.stat_height_mod
                 # ),
                 self.plotRollMean(['COP', 'well_COP']).properties(
                     width=self.def_width,
                     height=self.def_height * self.cop_height_mod
                 ),
                 self.plotRollMean(['T_diff_eff'],
-                                  axis_label="House 'D'efficiency / W/°C",
+                                  axis_label="Defficiency / W/°C",
                                   bottomPlot=True
                                   ).properties(
                     width=self.def_width,
@@ -102,4 +104,4 @@ class Monit(StreamPlot):
         message([F"{'Altair plot gen:': <20}", F"{time.time() - tic:.2f} s"],
                 tbl=self.mssg_tbl, mssgType='TIMING')
 
-        return plot
+        return [plot]

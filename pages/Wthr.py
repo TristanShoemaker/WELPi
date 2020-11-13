@@ -6,6 +6,9 @@ from log_message import message
 
 
 class Wthr(StreamPlot):
+    wthr_default = ['outside_shade_T', 'outside_T', 'weather_station_T']
+    humid_default = ['weather_station_H', 'outside_shade_H', 'D_room_H',
+                     'V_room_H', 'T_room_H', 'fireplace_H']
     _sensor_groups = None
     plots = None
 
@@ -64,14 +67,14 @@ class Wthr(StreamPlot):
                     width=self.def_width,
                     height=self.def_height * self.pwr_height_mod
                 ),
-                self.plotMainMonitor('weather_station_R',
-                                     axis_label='Rain Accumulation / mm',
+                self.plotMainMonitor('rain_accum_R',
+                                     axis_label='Rain / mm',
                                      ).properties(
                     width=self.def_width,
                     height=self.def_height * self.cop_height_mod
                 ),
                 self.plotMainMonitor('weather_station_W',
-                                     axis_label='Wind Speed / km/h',
+                                     axis_label='Wind / km/h',
                                      height_mod=self.cop_height_mod,
                                      bottomPlot=True
                                      ).properties(
@@ -99,4 +102,4 @@ class Wthr(StreamPlot):
         message([F"{'Altair plot gen:': <20}", F"{time.time() - tic:.2f} s"],
                 tbl=self.mssg_tbl, mssgType='TIMING')
 
-        return plot
+        return [plot]
