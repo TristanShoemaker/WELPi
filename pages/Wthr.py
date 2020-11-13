@@ -67,14 +67,14 @@ class Wthr(StreamPlot):
                     width=self.def_width,
                     height=self.def_height * self.pwr_height_mod
                 ),
-                self.plotMainMonitor('weather_station_R',
-                                     axis_label='Rain Accumulation / mm',
+                self.plotMainMonitor('rain_accum_R',
+                                     axis_label='Rain / mm',
                                      ).properties(
                     width=self.def_width,
                     height=self.def_height * self.cop_height_mod
                 ),
                 self.plotMainMonitor('weather_station_W',
-                                     axis_label='Wind Speed / km/h',
+                                     axis_label='Wind / km/h',
                                      height_mod=self.cop_height_mod,
                                      bottomPlot=True
                                      ).properties(

@@ -189,6 +189,7 @@ class WELData:
         out_frame['T_diff_eff'] = (heat_mask * frame.power_tot
                                    / out_frame.T_diff)
 
+        # COP calculation
         air_density = 1.15
         surface_area = 0.34
         heat_capacity = 1.01
@@ -198,7 +199,7 @@ class WELData:
         COP[COP > 8] = np.nan
         COP = COP * heat_mask
         out_frame['COP'] = COP
-
+        # WEL COP calculation
         well_gpm = 13.6
         gpm_to_lpm = 0.0630902
         out_frame['well_W'] = ((well_gpm * gpm_to_lpm) * 4.186
@@ -207,6 +208,11 @@ class WELData:
         well_COP[well_COP > 8] = np.nan
         well_COP = well_COP * heat_mask
         out_frame['well_COP'] = well_COP
+
+        # Reset rain accumulation every 24 hrs
+        rain_offset = (frame.groupby(frame.index.date)['weather_station_R']
+                       .transform(lambda x: x.iloc[-1]))
+        out_frame['rain_accum_R'] = frame['weather_station_R'] - rain_offset
 
         return out_frame
 
