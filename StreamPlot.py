@@ -314,14 +314,14 @@ class StreamPlot():
         out_source = self._getDataSubset(['outside_T'])
         outside = alt.Chart(out_source).mark_line(
             interpolate='basis',
-            color='gray',
-            opacity=0.7,
+            opacity=0.6,
             strokeDash=[3, 2]
         ).encode(
             x='dateandtime:T',
             y=alt.Y('value:Q', title='Outside / °C',
                     axis=alt.Axis(orient='left', grid=False),
-                    scale=alt.Scale(zero=False))
+                    scale=alt.Scale(zero=False)),
+            color=alt.value('grey')
         )
 
         rule = self._createRules(outside, timetext=True, timetexttop=True,
