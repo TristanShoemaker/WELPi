@@ -111,12 +111,21 @@ async def getSenseData(sn):
     post = {}
     post['solar_w'] = sense_post['solar_w']
     post['house_w'] = sense_post['w']
-    post['dehumidifier_w'] = [device for device in sense_post['devices']
-                              if device['name'] == 'Dehumidifier '][0]['w']
-    post['furnace_w'] = [device for device in sense_post['devices']
-                         if device['name'] == 'Furnace'][0]['w']
-    post['barn_pump_w'] = [device for device in sense_post['devices']
-                           if device['name'] == 'Barn pump'][0]['w']
+    try:
+        post['dehumidifier_w'] = [device for device in sense_post['devices']
+                                  if device['name'] == 'Dehumidifier '][0]['w']
+    except IndexError:
+        message("Dehumidifier not found in sense.", mssgType='WARNING')
+    try:
+        post['furnace_w'] = [device for device in sense_post['devices']
+                             if device['name'] == 'Furnace'][0]['w']
+    except IndexError:
+        message("Furnace not found in sense.", mssgType='WARNING')
+    try:
+        post['barn_pump_w'] = [device for device in sense_post['devices']
+                               if device['name'] == 'Barn pump'][0]['w']
+    except IndexError:
+        message("Barn pump not found in sense.", mssgType='WARNING')
     message([F"{'Getting Sense:': <20}", F"{time.time() - tic:.1f} s"],
             mssgType='TIMING')
     return post
