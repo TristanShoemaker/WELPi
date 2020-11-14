@@ -48,8 +48,11 @@ def _date_select():
     else:
         date_range[1] = dt.datetime.combine(date_range[1],
                                             dt.datetime.min.time())
-    date_range[0] = dt.datetime.combine(date_range[0],
-                                        dt.datetime.min.time())
+    if date_range[0] == local_now.date():
+        date_range[0] = local_now - dt.timedelta(hours=8)
+    else:
+        date_range[0] = dt.datetime.combine(date_range[0],
+                                            dt.datetime.min.time())
 
     def min_round(time):
         time = time.replace(microsecond=0)
@@ -59,7 +62,7 @@ def _date_select():
         return time
 
     date_range = [min_round(date.astimezone(to_tz)) for date in date_range]
-    
+
     return date_range
 
 
@@ -151,7 +154,7 @@ def main():
     date_range = _date_select()
     sensor_container = st.sidebar.beta_container()
     max_samples = int(np.clip((date_range[1] - date_range[0])
-                              .total_seconds() / 60, 720, 1440))
+                              .total_seconds() / 30, 720, 1440))
     resample_N = st.sidebar.slider("Number of Data Samples",
                                    min_value=10, max_value=max_samples,
                                    value=250, step=10)
