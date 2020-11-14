@@ -310,7 +310,7 @@ class WELData:
             if len(self.data) == 0:
                 raise Exception("No data came back from mongo server.")
             self.data.index = self.data['dateandtime']
-            self.data.drop(columns=['dateandtime'], inplace=True)
+            self.data = self.data.drop(columns=['dateandtime'])
             # print(self.data.columns)
             self.data = self.data.tz_localize(self._db_tzone)
             self.data = self.data.tz_convert(self._to_tzone)
@@ -320,6 +320,7 @@ class WELData:
             # Shift power meter data by one sample for better alignment
             self.data.HP_W = self.data.HP_W.shift(-1)
             self.data.TAH_W = self.data.TAH_W.shift(-1)
+
             self.data = pd.concat((self.data, self._calced_cols(self.data)),
                                   axis=1)
 
