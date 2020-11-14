@@ -156,9 +156,10 @@ def main():
 
     stp = _page_select(resample_N, date_range, sensor_container, which)
     stats = calc_stats(stp)
-    stats_containers[0].text(F"System Duty: {stats[0]:.1f}%")
+    stats_containers[0].text(F"System Duty: {stats[0]:.1f} %")
     stats_containers[1].text(F"House Mean Power Use: {stats[1]:.2f} kW")
-    stats_containers[1].text(F"Geo Mean Power Use: {stats[2]:.2f} kW")
+    stats_containers[1].text(F"Geo Mean Power Use: {stats[2]:.2f} kW | "
+                             F"{stats[2] / stats[1]:.2f} %")
     tic = time.time()
     for plot in stp.plots:
         st.altair_chart(plot)
