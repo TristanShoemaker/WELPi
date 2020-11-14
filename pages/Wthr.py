@@ -59,7 +59,7 @@ class Wthr(StreamPlot):
                 ),
                 self.plotMainMonitor(self._sensor_groups[0]).properties(
                     width=self.def_width,
-                    height=self.def_height * self.pwr_height_mod
+                    height=self.def_height * self.stat_height_mod
                 ),
                 self.plotMainMonitor(self._sensor_groups[1],
                                      axis_label="Humidity / %",

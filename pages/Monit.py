@@ -63,7 +63,6 @@ class Monit(StreamPlot):
                 ),
                 self.plotPowerStack(['solar_w', 'base_load_w',
                                      'dehumidifier_w', 'geo_tot_w'],
-                                    axis_label="Electrical Power / kW"
                                     ).properties(
                     width=self.def_width,
                     height=self.def_height * self.pwr_height_mod
@@ -72,7 +71,9 @@ class Monit(StreamPlot):
                 #     width=self.def_width,
                 #     height=self.def_height * self.stat_height_mod
                 # ),
-                self.plotRollMean(['COP', 'well_COP']).properties(
+                self.plotRollMean(['COP', 'well_COP'],
+                                  axis_label="COP"
+                                  ).properties(
                     width=self.def_width,
                     height=self.def_height * self.cop_height_mod
                 ),
