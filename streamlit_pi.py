@@ -59,6 +59,7 @@ def _date_select():
         return time
 
     date_range = [min_round(date.astimezone(to_tz)) for date in date_range]
+    
     return date_range
 
 

@@ -261,10 +261,7 @@ class StreamPlot():
             color=alt.Color('new_label:N',
                             legend=alt.Legend(title='Sensors',
                                               orient='left',
-                                              offset=5)),
-            strokeWidth=alt.condition(alt.datum.label == 'outside_T',
-                                      alt.value(3),
-                                      alt.value(2)),
+                                              offset=5))
         ).transform_calculate(
             new_label=alt.expr.slice(alt.datum.label, 0, -2)
         )
