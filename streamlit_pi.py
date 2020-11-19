@@ -146,7 +146,7 @@ def main():
     date_range = _date_select()
     sensor_container = st.sidebar.beta_container()
     max_samples = int(np.clip((date_range[1] - date_range[0])
-                              .total_seconds() / 30, 720, 1440))
+                              .total_seconds() / 30, 260, 1440))
     resample_N = st.sidebar.slider("Number of Data Samples",
                                    min_value=10, max_value=max_samples,
                                    value=250, step=10)
