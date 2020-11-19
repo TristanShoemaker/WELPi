@@ -41,7 +41,7 @@ def _date_select():
         date_range[1] = dt.datetime.combine(date_range[1],
                                             dt.datetime.min.time())
     if date_range[0] == local_now.date():
-        date_range[0] = local_now - dt.timedelta(hours=8)
+        date_range[0] = local_now - dt.timedelta(hours=4)
     else:
         date_range[0] = dt.datetime.combine(date_range[0],
                                             dt.datetime.min.time())
