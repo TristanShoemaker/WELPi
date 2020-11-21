@@ -10,6 +10,7 @@ from pytz import timezone
 from astral import sun, LocationInfo
 from libmc import Client
 from sense_energy import Senseable
+from sense_energy.sense_exceptions import SenseAPITimeoutException
 from log_message import message
 from WELData import mongoConnect
 
@@ -53,6 +54,17 @@ def connectSense():
     return sn
 
 
+class SourceConnects():
+    db = None
+    mc = None
+    sn = None
+
+    def __init__(self):
+        self.db = mongoConnect().data
+        self.mc = connectMemCache()
+        self.sn = connectSense()
+
+
 async def getWELData(ip):
     tic = time.time()
     url = "http://" + ip + ":5150/data.xml"
@@ -92,9 +104,9 @@ async def getWELData(ip):
     return post
 
 
-async def getRtlData(mc):
+async def getRtlData():
     tic = time.time()
-    post = mc.get('rtl')
+    post = connects.mc.get('rtl')
     if post is None:
         message("RTL data not found in memCache", mssgType='WARNING')
         return {}
@@ -104,10 +116,16 @@ async def getRtlData(mc):
         return post
 
 
-async def getSenseData(sn):
+async def getSenseData():
     tic = time.time()
-    sn.update_realtime()
-    sense_post = sn.get_realtime()
+    try:
+        connects.sn.update_realtime()
+    except SenseAPITimeoutException:
+        message("Sense API timeout, trying reconnect...", mssgType='WARNING')
+        connects.sn = connectSense()
+        connects.sn.update_realtime()
+
+    sense_post = connects.sn.get_realtime()
     post = {}
     post['solar_w'] = sense_post['solar_w']
     post['house_w'] = sense_post['w']
@@ -134,10 +152,10 @@ async def getSenseData(sn):
     return post
 
 
-async def send_post(db, post):
+async def send_post(post):
     utc_time = post['dateandtime'].strftime('%Y-%m-%d %H:%M:%S')
     try:
-        post_id = db.insert_one(post).inserted_id
+        post_id = connects.db.insert_one(post).inserted_id
         message(F"Successful post @ UTC time: {utc_time}"
                 F" | post_id: {post_id}", mssgType='SUCCESS')
     except DuplicateKeyError:
@@ -146,25 +164,23 @@ async def send_post(db, post):
                 mssgType='WARNING')
 
 
-async def main(interval, db, mc, sn):
+async def main(interval):
     while True:
         then = time.time()
         post = await getWELData(WEL_IP)
-        post.update(await getRtlData(mc))
-        post.update(await getSenseData(sn))
+        post.update(await getRtlData())
+        post.update(await getSenseData())
         elapsed = time.time() - then
         await asyncio.sleep(interval - elapsed)
         post['dateandtime'] = (dt.datetime.utcnow()
                                .replace(microsecond=0)
                                .replace(tzinfo=DB_TZONE))
-        await send_post(db, post)
+        await send_post(post)
 
 
 if __name__ == "__main__":
     message("\n    Restarted ...", mssgType='ADMIN')
-    db = mongoConnect().data
     message("Mongo Connected", mssgType='ADMIN')
-    mc = connectMemCache()
-    sn = connectSense()
+    connects = SourceConnects()
 
-    asyncio.run(main(30, db, mc, sn))
+    asyncio.run(main(30))
