@@ -336,10 +336,12 @@ class StreamPlot():
                      bottomPlot=False):
         source = self._getDataSubset(vars)
 
-        rolling_frame = (3 * self.resample_N / ((self.dat.timerange[1]
+        rolling_frame = (1 * self.resample_N / ((self.dat.timerange[1]
                          - self.dat.timerange[0]).total_seconds() / 3600))
-        rolling_frame = int(np.clip(rolling_frame, self.resample_N / 15,
+        rolling_frame = int(np.clip(rolling_frame, self.resample_N / 48,
                                     self.resample_N / 2))
+        rolling_source = pd.DataFrame({'rolling_limit': source.dateandtime
+                                       .iloc[-rolling_frame]}, index=[0])
         lines = alt.Chart(source).transform_window(
             rollmean='mean(value)',
             frame=[-rolling_frame, 0]
@@ -375,6 +377,11 @@ class StreamPlot():
             color='label'
         )
 
+        window_line = alt.Chart(rolling_source).mark_rule().encode(
+            x='rolling_limit:T',
+            color=alt.ColorValue('purple')
+        )
+
         rule = self._createRules(lines, field='rollmean:Q',
                                  timetext=bottomPlot,
                                  timetextheightmod=self.cop_height_mod)
@@ -382,7 +389,8 @@ class StreamPlot():
         latest_text = self._createLatestText(lines, 'rollmean:Q')
 
         plot = alt.layer(
-            self._plotNightAlt(), lines, raw_lines, rule, latest_text
+            self._plotNightAlt(), lines, raw_lines, rule, latest_text,
+            window_line
         )
 
         return plot
@@ -453,11 +461,21 @@ class StreamPlot():
         source['heat'] = source['heat'].astype('str')
         source = source.dropna()
 
-        points = alt.Chart(source).mark_point().encode(
+        rolling_frame = (1 * self.resample_N / ((self.dat.timerange[1]
+                         - self.dat.timerange[0]).total_seconds() / 3600))
+        rolling_frame = int(np.clip(rolling_frame, self.resample_N / 15,
+                                    self.resample_N / 2))
+
+        points = alt.Chart(source).transform_window(
+            rollmean='mean(value)',
+            frame=[-rolling_frame, 0]
+        ).mark_point().encode(
             x=alt.X(F"{id_var}:Q", scale=alt.Scale(zero=False)),
             y=alt.Y("value:Q", axis=alt.Axis(title=vars)),
             color='heat:N'
         )
+
+
 
         # reg = points.transform_regression(
         #     F"{id_var}",

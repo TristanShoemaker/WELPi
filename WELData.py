@@ -184,11 +184,10 @@ class WELData:
         except AttributeError:
             pass
         try:
-            out_frame['T_diff'] = frame.fireplace_T - frame.outside_T
+            out_frame['T_diff'] = np.abs(frame.fireplace_T - frame.outside_T)
         except AttributeError:
-            out_frame['T_diff'] = frame.living_T - frame.outside_T
-        out_frame['T_diff_eff'] = (heat_mask * frame.power_tot
-                                   / out_frame.T_diff)
+            out_frame['T_diff'] = np.abs(frame.living_T - frame.outside_T)
+        out_frame['T_diff_eff'] = (frame.power_tot / out_frame.T_diff)
 
         # COP calculation
         air_density = 1.15
