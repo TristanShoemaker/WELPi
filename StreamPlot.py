@@ -336,7 +336,7 @@ class StreamPlot():
                      bottomPlot=False):
         source = self._getDataSubset(vars)
 
-        rolling_frame = (1 * self.resample_N / ((self.dat.timerange[1]
+        rolling_frame = (2 * self.resample_N / ((self.dat.timerange[1]
                          - self.dat.timerange[0]).total_seconds() / 3600))
         rolling_frame = int(np.clip(rolling_frame, self.resample_N / 48,
                                     self.resample_N / 2))
