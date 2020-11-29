@@ -165,7 +165,8 @@ def main():
         st.altair_chart(plot)
     message([F"{'Altair plot disp:': <20}", F"{time.time() - tic:.2f} s"],
             tbl=stp.mssg_tbl, mssgType='TIMING')
-    del stp
+    st.sidebar.markdown("[Github Project]"
+                        "(https://github.com/TristanShoemaker/WELPi)")
 
 
 if __name__ == "__main__":
