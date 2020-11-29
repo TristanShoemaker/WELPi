@@ -13,11 +13,11 @@ and A/C logic level data from the WEL, as well as home and solar power from a
 Sense current clamp monitor and also radio data. Supervisor additionally runs
 `rtl_read`, which continuously collects temperature, weather and humidity data
 which is broadcast from acurite nodes on 433.92 MHz ISM using an RTL-SDR. Data
-is cleaned, formatted and stored in the database to be retrieved later.
+are cleaned, formatted and stored in the database to be retrieved later.
 
 ### Frontend side:
 `streamlit_pi` runs on AWS EC2, although it ran originally on the RPi as well.
-A webpage is setup in python using streamlit. Data is plotted using through
+A webpage is setup in python using streamlit. Data are plotted using through
 `StreampPlot` using Altair, a vega-lite python wrapper. `Streamplot` pulls a 
 timerange of data from the RPi Mongo server using `WELData`, which prepares 
 data for plotting and calculates additional metrics for the house systems. 
