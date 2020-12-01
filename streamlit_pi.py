@@ -138,8 +138,8 @@ def main():
     # -- sidebar --
     st.sidebar.subheader("Monitor:")
     stats_containers = [st.sidebar.beta_container() for x in range(3)]
-    which = st.sidebar.selectbox("Page",
-                                 ['monit', 'pandw', 'wthr', 'test'],
+    which = st.sidebar.selectbox("Select Display Page",
+                                 ['monit', 'pandw', 'wthr'],
                                  index=0,
                                  format_func=_whichFormatFunc)
     st.sidebar.subheader("Plot Options:")
