@@ -88,6 +88,7 @@ def calc_stats(stp):
         message("House power data not available", mssgType='WARNING',
                 tbl=stp.mssg_tbl)
         house_w_avg = 0
+        geo_w_avg = 0
     return [duty, house_w_avg, geo_w_avg]
 
 
