@@ -81,9 +81,12 @@ def calc_stats(stp):
     heat_1_count = (stp.dat.data['heat_1_b'] % 2).sum() - heat_2_count
     # Heat 1 is ~80% of full power
     duty = 100 * ((0.8 * heat_1_count + heat_2_count) / N)
-
-    house_w_avg = stp.dat.data['house_w'].mean() / 1000
-    geo_w_avg = stp.dat.data['geo_tot_w'].mean() / 1000
+    try:
+        house_w_avg = stp.dat.data['house_w'].mean() / 1000
+        geo_w_avg = stp.dat.data['geo_tot_w'].mean() / 1000
+    except KeyError:
+        message("House power data not available", mssgType='WARNING',
+                tbl=stp.mssg_tbl)
     return [duty, house_w_avg, geo_w_avg]
 
 
