@@ -210,9 +210,14 @@ class WELData:
         out_frame['well_COP'] = well_COP
 
         # Reset rain accumulation every 24 hrs
-        rain_offset = (frame.groupby(frame.index.date)['weather_station_R']
-                       .transform(lambda x: x.iloc[-1]))
-        out_frame['rain_accum_R'] = frame['weather_station_R'] - rain_offset
+        try:
+            rain_offset = (frame.groupby(frame.index.date)['weather_station_R']
+                           .transform(lambda x: x.iloc[-1]))
+            out_frame['rain_accum_R'] = (frame['weather_station_R']
+                                         - rain_offset)
+        except KeyError:
+            message("Weather station rain data not present in selection",
+                    mssgType='WARNING')
 
         return out_frame
 
