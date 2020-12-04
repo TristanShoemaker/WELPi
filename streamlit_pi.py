@@ -87,8 +87,8 @@ def calc_stats(stp):
     except KeyError:
         message("House power data not available", mssgType='WARNING',
                 tbl=stp.mssg_tbl)
-        house_w_avg = 0
-        geo_w_avg = 0
+        house_w_avg = np.nan
+        geo_w_avg = np.nan
     return [duty, house_w_avg, geo_w_avg]
 
 
