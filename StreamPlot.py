@@ -46,7 +46,7 @@ class StreamPlot():
     def_spacing = 2
     stat_height_mod = 0.4
     cop_height_mod = 0.3
-    pwr_height_mod = 0.8
+    pwr_height_mod = 0.75
     mark_text_font_size = 13
     label_font_size = 13
     title_font_size = 12
