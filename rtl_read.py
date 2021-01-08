@@ -46,9 +46,12 @@ id_to_name = {'2669': {'name': 'D_room',
               '4856': {'name': 'barn',
                        'sensors': ['temperature_C', 'humidity']},
               '3202': {'name': 'barn_sump',
-                       'sensors': ['temperature_C', 'humidity']}}
+                       'sensors': ['temperature_C', 'temperature_1_C',
+                                   'humidity']}
+              }
 
 quantity_short = {'temperature_C': 'T',
+                  'temperature_1_C': 'T',
                   'humidity': 'H',
                   'wind_avg_km_h': 'W',
                   'wind_dir_deg': 'A',
