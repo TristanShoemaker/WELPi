@@ -65,15 +65,19 @@ class PandW(StreamPlot):
                 ),
                 self.plotMainMonitor('TAH_fpm',
                                      axis_label="Wind Speed / m/s",
-                                     height_mod=self.pwr_height_mod
                                      ).properties(
                     width=self.def_width,
                     height=self.def_height * self.stat_height_mod
                 ),
-                self.plotMainMonitor(self._sensor_groups[1],
-                                     bottomPlot=True).properties(
+                self.plotMainMonitor(self._sensor_groups[1]).properties(
                     width=self.def_width,
                     height=self.def_height
+                ),
+                self.plotMainMonitor(['barn_sump_T'],
+                                     height_mod=self.stat_height_mod,
+                                     bottomPlot=True).properties(
+                    width=self.def_width,
+                    height=self.def_height * self.stat_height_mod
                 ),
                 spacing=self.def_spacing
             ).resolve_scale(
