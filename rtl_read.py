@@ -51,7 +51,7 @@ id_to_name = {'2669': {'name': 'D_room',
               }
 
 quantity_short = {'temperature_C': 'T',
-                  'temperature_1_C': 'T',
+                  'temperature_1_C': '_2_T',
                   'humidity': 'H',
                   'wind_avg_km_h': 'W',
                   'wind_dir_deg': 'A',
