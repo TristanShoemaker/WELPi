@@ -6,3 +6,4 @@ pymongo
 libmc
 xmltodict
 sense_energy
+openpyxl
