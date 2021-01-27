@@ -110,8 +110,10 @@ class WELData:
                                  'strings in iso format. Example: '
                                  '<-r \'2020-03-22 12:00\' '
                                  '\'2020-03-22 15:00\'>')
-
-        args = parser.parse_args(arg_string)
+        if arg_string is None:
+            args = parser.parse_args()
+        else:
+            args = parser.parse_args(arg_string)
         timerange = None
 
         if args.t:
