@@ -71,7 +71,7 @@ class WELData:
             self.timerange = self.time_from_args(timerange)
         else:
             self.timerange = self.timeCondition(timerange)
-        self.timerange = [self._to_tzone.localize()
+        self.timerange = [time.replace(tzinfo=self._to_tzone)
                           if time.tzinfo is None else time
                           for time in self.timerange]
 
