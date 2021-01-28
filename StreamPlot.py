@@ -333,6 +333,7 @@ class StreamPlot():
     def plotRollMean(self,
                      vars,
                      axis_label="COP Rolling Mean",
+                     height_mod=1,
                      bottomPlot=False):
         source = self._getDataSubset(vars)
 
@@ -384,7 +385,7 @@ class StreamPlot():
 
         rule = self._createRules(lines, field='rollmean:Q',
                                  timetext=bottomPlot,
-                                 timetextheightmod=self.cop_height_mod)
+                                 timetextheightmod=height_mod)
 
         latest_text = self._createLatestText(lines, 'rollmean:Q')
 
