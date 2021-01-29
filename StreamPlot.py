@@ -113,9 +113,19 @@ class StreamPlot():
                                  value_vars=vars,
                                  var_name='label')
         except KeyError:
-            message(["Key(s) not found in db:", F"{vars}"],
+            goodKeys = []
+            badKeys = []
+            for key in vars:
+                if key in source:
+                    goodKeys.append(key)
+                else:
+                    badKeys.append(key)
+            message(["Key(s) not found in db:", F"{badKeys}"],
                     tbl=self.mssg_tbl, mssgType='WARNING')
-            source = pd.DataFrame()
+            source = source.melt(id_vars=id_vars,
+                                 value_vars=goodKeys,
+                                 var_name='label')
+
         return source
 
     def _createRules(self,
