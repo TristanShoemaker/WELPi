@@ -198,7 +198,7 @@ class WELData:
         COP = (((air_density * surface_area * heat_capacity * frame.TAH_fpm)
                 * (np.abs(frame.TAH_out_T - frame.TAH_in_T)))
                / (frame.HP_W / 1000))
-        COP[COP > 8] = np.nan
+        COP[COP > 5] = np.nan
         COP = COP * heat_mask
         out_frame['COP'] = COP
         # WEL COP calculation
