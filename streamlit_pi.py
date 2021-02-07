@@ -122,11 +122,11 @@ def main():
     st.markdown(
         F"""
         <style>
-            .stVegaLiteChart{{
+            .css-dm3ece{{
                 width: {90}%;
             }}
             .reportview-container .main .block-container{{
-                max-width: {1300}px;
+                max-width: {1500}px;
                 padding-top: {5}px;
                 padding-right: {90}px;
                 padding-left: {10}px;
