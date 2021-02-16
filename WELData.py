@@ -186,7 +186,11 @@ class WELData:
         except AttributeError:
             pass
         try:
-            out_frame['T_diff'] = np.abs(frame.fireplace_T - frame.outside_T)
+            out_frame['T_diff'] = np.abs(np.mean([frame.fireplace_T,
+                                                  frame.D_room_T,
+                                                  frame.V_room_T,
+                                                  frame.T_room_T])
+                                         - frame.outside_T)
         except AttributeError:
             out_frame['T_diff'] = np.abs(frame.living_T - frame.outside_T)
         out_frame['T_diff_eff'] = (frame.power_tot / out_frame.T_diff)
