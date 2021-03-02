@@ -25,7 +25,7 @@ if platform.system() == 'Linux':
 elif platform.system() == 'Darwin':
     MONGO_IP = '192.168.68.101'
 else:
-    raise("Unknown platform, can't choose mongoDB ip")
+    raise("Unknown platform, can't choose mongoDB ip.")
 
 LOC = LocationInfo('Home', 'MA', 'America/New_York', 42.485557, -71.433445)
 TO_TZONE = timezone('America/New_York')
@@ -68,36 +68,42 @@ class SourceConnects():
 async def getWELData(ip):
     tic = time.time()
     url = "http://" + ip + ":5150/data.xml"
+
+    post = {}
+    local_now = (dt.datetime.now()
+                 .replace(microsecond=0)
+                 .replace(tzinfo=TO_TZONE))
+    sunrise = sun.sunrise(LOC.observer, date=local_now.date(),
+                          tzinfo=TO_TZONE).astimezone(DB_TZONE)
+    sunset = sun.sunset(LOC.observer, date=local_now.date(),
+                        tzinfo=TO_TZONE).astimezone(DB_TZONE)
+    post['daylight'] = ((local_now > sunrise)
+                        and (local_now < sunset)) * 1
+
     try:
         response = requests.get(url)
     except ConnectionError:
         message("Error in connecting to WEL, waiting 10 sec then trying again",
                 mssgType='WARNING')
         time.sleep(10)
-        response = requests.get(url)
+        try:
+            response = requests.get(url)
+        except ConnectionError:
+            message("Second Error in connecting to WEL, "
+                    "excluding WEL from post.",
+                    mssgType='ERROR')
+            return post
 
     response_data = xmltodict.parse(response.content)['Devices']['Device']
 
-    post = {}
     for item in response_data:
         try:
             post[item['@Name']] = float(item['@Value'])
         except ValueError:
             post[item['@Name']] = item['@Value']
 
-    post['dateandtime'] = (dt.datetime.now()
-                           .replace(microsecond=0)
-                           .replace(tzinfo=TO_TZONE))
-
     del post['Date']
     del post['Time']
-
-    sunrise = sun.sunrise(LOC.observer, date=post['dateandtime'].date(),
-                          tzinfo=TO_TZONE).astimezone(DB_TZONE)
-    sunset = sun.sunset(LOC.observer, date=post['dateandtime'].date(),
-                        tzinfo=TO_TZONE).astimezone(DB_TZONE)
-    post['daylight'] = ((post['dateandtime'] > sunrise)
-                        and (post['dateandtime'] < sunset)) * 1
 
     message([F"{'Getting WEL:': <20}", F"{time.time() - tic:.1f} s"],
             mssgType='TIMING')
@@ -108,7 +114,9 @@ async def getRtlData():
     tic = time.time()
     post = connects.mc.get('rtl')
     if post is None:
-        message("RTL data not found in memCache", mssgType='WARNING')
+        message("RTL data not found in memCache, "
+                "excluding RTL from post.",
+                mssgType='WARNING')
         return {}
     else:
         message([F"{'Getting RTL:': <20}", F"{time.time() - tic:.3f} s"],
@@ -123,7 +131,12 @@ async def getSenseData():
     except SenseAPITimeoutException:
         message("Sense API timeout, trying reconnect...", mssgType='WARNING')
         connects.sn = connectSense()
-        connects.sn.update_realtime()
+        try:
+            connects.sn.update_realtime()
+        except SenseAPITimeoutException:
+            message("Second Sense API timeout, "
+                    "excluding Sense from post.", mssgType='ERROR')
+            return {}
 
     sense_post = connects.sn.get_realtime()
     post = {}
@@ -175,6 +188,7 @@ async def main(interval):
         post['dateandtime'] = (dt.datetime.utcnow()
                                .replace(microsecond=0)
                                .replace(tzinfo=DB_TZONE))
+
         await send_post(post)
 
 
