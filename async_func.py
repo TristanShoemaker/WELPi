@@ -89,7 +89,7 @@ async def getWELData(ip):
         try:
             response = requests.get(url)
         except ConnectionError:
-            message("Second Error in connecting to WEL, "
+            message("Second error in connecting to WEL, "
                     "excluding WEL from post.",
                     mssgType='ERROR')
             return post
