@@ -48,7 +48,11 @@ def connectSense():
         path = "./sense_info.txt"
 
     sense_info = open(path).read().strip().split()
-    sn.authenticate(*sense_info)
+    try:
+        sn.authenticate(*sense_info)
+    except Exception as e:
+        message("Error in authenticating with Sense, "
+                F"excluding Sense from post. Error: \n{e}", mssgType='ERROR')
     sn.rate_limit = 10
     message("Sense Connected", mssgType='ADMIN')
     return sn
