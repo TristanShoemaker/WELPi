@@ -175,13 +175,14 @@ class WELData:
         heat_mask[heat_mask == 0] = np.nan
 
         # Additional calculated columns
+        frame['power_tot'] = frame.TAH_W + frame.HP_W
         try:
-            out_frame['geo_tot_w'] = frame.power_tot
+            out_frame['geo_tot_w'] = frame.TAH_W + frame.TES_sense_w
         except AttributeError:
-            frame['power_tot'] = frame.TAH_W + frame.HP_W
             out_frame['geo_tot_w'] = frame.power_tot
         try:
-            out_frame['base_load_w'] = np.abs(frame.house_w - frame.power_tot
+            out_frame['base_load_w'] = np.abs(frame.house_w
+                                              - out_frame['geo_tot_w']
                                               - frame.dehumidifier_w)
         except AttributeError:
             pass
@@ -201,7 +202,7 @@ class WELData:
         heat_capacity = 1.01
         COP = (((air_density * surface_area * heat_capacity * frame.TAH_fpm)
                 * (np.abs(frame.TAH_out_T - frame.TAH_in_T)))
-               / (frame.HP_W / 1000))
+               / (frame.power_tot / 1000))
         COP[COP > 5] = np.nan
         COP = COP * heat_mask
         out_frame['COP'] = COP
@@ -210,7 +211,7 @@ class WELData:
         gpm_to_lpm = 0.0630902
         out_frame['well_W'] = ((well_gpm * gpm_to_lpm) * 4.186
                                * (np.abs(frame.loop_out_T - frame.loop_in_T)))
-        well_COP = out_frame.well_W / (frame.HP_W / 1000)
+        well_COP = out_frame.well_W / (frame.power_tot / 1000)
         well_COP[well_COP > 5] = np.nan
         well_COP = well_COP * heat_mask
         out_frame['well_COP'] = well_COP
