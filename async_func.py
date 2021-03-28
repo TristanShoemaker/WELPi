@@ -170,7 +170,7 @@ async def getSenseData():
 
     try:
         post['TES_sense_w'] = [device for device in sense_post['devices']
-                       if device['name'] == 'TES'][0]['w']
+                               if device['name'] == 'TES'][0]['w']
     except IndexError:
         post['TES_sense_w'] = 0
         message("TES not found in sense.", mssgType='WARNING')
