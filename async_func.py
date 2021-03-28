@@ -169,10 +169,10 @@ async def getSenseData():
         message("Barn pump not found in sense.", mssgType='WARNING')
 
     try:
-        post['TES'] = [device for device in sense_post['devices']
+        post['TES_sense_w'] = [device for device in sense_post['devices']
                        if device['name'] == 'TES'][0]['w']
     except IndexError:
-        post['TES'] = 0
+        post['TES_sense_w'] = 0
         message("TES not found in sense.", mssgType='WARNING')
     message([F"{'Getting Sense:': <20}", F"{time.time() - tic:.1f} s"],
             mssgType='TIMING')
