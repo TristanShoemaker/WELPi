@@ -73,12 +73,6 @@ class PandW(StreamPlot):
                     width=self.def_width,
                     height=self.def_height
                 ),
-                self.plotMainMonitor(['barn_sump_T', 'barn_sump_2_T'],
-                                     height_mod=self.stat_height_mod,
-                                     bottomPlot=True).properties(
-                    width=self.def_width,
-                    height=self.def_height * self.stat_height_mod
-                ),
                 spacing=self.def_spacing
             ).resolve_scale(
                 y='independent',
