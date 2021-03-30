@@ -47,7 +47,7 @@ class StreamPlot():
     stat_height_mod = 0.4
     cop_height_mod = 0.3
     pwr_height_mod = 0.75
-    mark_text_font_size = 13
+    mark_text_font_size = 14
     label_font_size = 13
     title_font_size = 12
     sensor_list = ['TAH_W', 'HP_W',  'TAH_fpm', 'liqu_refrig_T',
@@ -161,13 +161,12 @@ class StreamPlot():
             time_text = rules.mark_text(align='center',
                                         dx=0,
                                         dy=time_text_dy,
-                                        fontSize=self.mark_text_font_size
+                                        fontSize=self.mark_text_font_size + 1
                                         ).encode(
                 text=alt.condition(self.nearestTime,
                                    'dateandtime:T',
                                    alt.value(' '),
-                                   format='%b %-d, %H:%M'),
-                color=alt.ColorValue('black')
+                                   format='%b %-d, %H:%M')
             )
             rules = rules + time_text
 
