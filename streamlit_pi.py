@@ -138,6 +138,11 @@ def main():
                 display: none;
             }}
         </style>
+        <style class='css-1u96g9d'>
+            details {{
+                display: none;
+            }}
+        </style>
         """, unsafe_allow_html=True)
 
     # -- sidebar --
