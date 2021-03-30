@@ -7,8 +7,8 @@ from log_message import message
 
 class Wthr(StreamPlot):
     wthr_default = ['outside_shade_T', 'outside_T', 'weather_station_T']
-    humid_default = ['weather_station_H', 'outside_shade_H', 'D_room_H',
-                     'V_room_H', 'T_room_H', 'fireplace_H']
+    out_humid_default = ['weather_station_H', 'outside_shade_H']
+    in_humid_default = ['D_room_H', 'V_room_H', 'T_room_H', 'fireplace_H']
     _sensor_groups = None
     plots = None
 
@@ -36,10 +36,10 @@ class Wthr(StreamPlot):
         wthr_sensors = sensor_container.multiselect("Weather Temp Sensors",
                                                     self.sensor_list,
                                                     self.wthr_default)
-        humid_sensors = sensor_container.multiselect("Humidity Sensors",
+        in_humid_sens = sensor_container.multiselect("Indoor Humidity Sensors",
                                                      self.sensor_list,
-                                                     self.humid_default)
-        sensor_groups = [wthr_sensors, humid_sensors]
+                                                     self.in_humid_default)
+        sensor_groups = [wthr_sensors, in_humid_sens]
         for sensor_group in sensor_groups:
             while len(sensor_group) < 1:
                 st.warning('Please select at least one sensor per plot')
@@ -50,7 +50,7 @@ class Wthr(StreamPlot):
     def _plots(self):
         tic = time.time()
         if self._sensor_groups is None:
-            self._sensor_groups = [self.wthr_default, self.humid_default]
+            self._sensor_groups = [self.wthr_default, self.in_humid_default]
         with st.spinner('Generating Plots'):
             plot = alt.vconcat(
                 self.plotStatus().properties(
@@ -61,11 +61,17 @@ class Wthr(StreamPlot):
                     width=self.def_width,
                     height=self.def_height * self.stat_height_mod
                 ),
-                self.plotMainMonitor(self._sensor_groups[1],
-                                     axis_label="Humidity / %",
+                self.plotMainMonitor(self.out_humid_default,
+                                     axis_label="Outdoor Humidity / %",
                                      ).properties(
                     width=self.def_width,
-                    height=self.def_height * self.pwr_height_mod
+                    height=self.def_height * self.stat_height_mod
+                ),
+                self.plotMainMonitor(self._sensor_groups[1],
+                                     axis_label="Indoor Humidity / %",
+                                     ).properties(
+                    width=self.def_width,
+                    height=self.def_height * self.stat_height_mod
                 ),
                 self.plotMainMonitor('rain_accum_R',
                                      axis_label='Rain / mm',
