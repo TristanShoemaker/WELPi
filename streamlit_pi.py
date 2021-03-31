@@ -159,7 +159,7 @@ def main():
                               .total_seconds() / 30, 260, 1440))
     resample_N = st.sidebar.slider("Number of Data Samples",
                                    min_value=10, max_value=max_samples,
-                                   value=250, step=10)
+                                   value=300, step=10)
 
     # -- main area --
     st.header(F"{_whichFormatFunc(which)} Monitor")
