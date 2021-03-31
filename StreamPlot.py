@@ -69,7 +69,7 @@ class StreamPlot():
                    'furnace_w', 'barn_sump_T', 'barn_sump_2_T', 'barn_sump_H'
                    'TES_sense_w']
     resample_N = None
-    dat = None
+    resample_T = None
     dat_resample = None
     nearestTime = None
     resize = None
@@ -94,20 +94,21 @@ class StreamPlot():
         else:
             dat = WELData(timerange=date_range,
                           mongo_connection=_cachedMongoConnect())
-        resample_T = (dat.timerange[1] - dat.timerange[0]) / self.resample_N
-        self.dat_resample = dat.data.resample(resample_T).mean()
-        self.dat = dat
+        self.resample_T = (dat.timerange[1]
+                           - dat.timerange[0]) / self.resample_N
+        self.dat_resample = dat.data.resample(self.resample_T).mean()
         message([F"{'WEL Data init:': <20}", F"{time.time() - tic:.2f} s"],
                 tbl=self.mssg_tbl, mssgType='TIMING')
 
     def _getDataSubset(self,
                        vars,
                        id_vars='dateandtime',
-                       resample=True):
-        if resample:
+                       decimate_factor=1):
+        if decimate_factor == 1:
             source = self.dat_resample
         else:
-            source = self.dat.data
+            source = self.dat_resample.resample(self.resample_T
+                                                * decimate_factor).mean()
         source = source.reset_index()
         try:
             source = source.melt(id_vars=id_vars,
@@ -347,8 +348,10 @@ class StreamPlot():
                      bottomPlot=False):
         source = self._getDataSubset(vars)
 
-        rolling_frame = (2 * self.resample_N / ((self.dat.timerange[1]
-                         - self.dat.timerange[0]).total_seconds() / 3600))
+        # 3 * number of hours in displayed timerange
+        rolling_frame = (3 * self.resample_N *
+                         (self.resample_N * self.resample_T).total_seconds()
+                         / 3600)
         rolling_frame = int(np.clip(rolling_frame, self.resample_N / 48,
                                     self.resample_N / 2))
         rolling_source = pd.DataFrame({'rolling_limit': source.dateandtime
@@ -388,9 +391,11 @@ class StreamPlot():
             color='label'
         )
 
-        window_line = alt.Chart(rolling_source).mark_rule().encode(
+        window_line = alt.Chart(rolling_source).mark_rule(
+            strokeDash=[5, 5],
+        ).encode(
             x='rolling_limit:T',
-            color=alt.ColorValue('purple')
+            color=alt.ColorValue('gold          ')
         )
 
         rule = self._createRules(lines, field='rollmean:Q',
@@ -472,8 +477,9 @@ class StreamPlot():
         source['heat'] = source['heat'].astype('str')
         source = source.dropna()
 
-        rolling_frame = (1 * self.resample_N / ((self.dat.timerange[1]
-                         - self.dat.timerange[0]).total_seconds() / 3600))
+        rolling_frame = (1 * self.resample_N
+                         / (self.resample_N * self.resample_T).total_seconds()
+                         / 3600)
         rolling_frame = int(np.clip(rolling_frame, self.resample_N / 15,
                                     self.resample_N / 2))
 
