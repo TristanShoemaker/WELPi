@@ -231,14 +231,14 @@ class StreamPlot():
                       height_mod=1):
         source = self._getDataSubset('daylight')
         area = alt.Chart(source).mark_bar(
-            fill='black',
+            fill='purple',
             width=800 / self.resample_N,
             clip=True,
             height=self.def_height * height_mod
         ).encode(
             x='dateandtime:T',
             opacity=alt.condition(alt.datum.value < 1,
-                                  alt.value(0.06),
+                                  alt.value(0.15),
                                   alt.value(0))
         )
 
@@ -450,7 +450,7 @@ class StreamPlot():
             order=order
         )
 
-        rule = self._createRules(area, timetext=bottomPlot,
+        rule = self._createRules(area, tooltip=False, timetext=bottomPlot,
                                  timetextheightmod=height_mod)
 
         latest_text = self._createLatestText(area, 'value:Q')
@@ -485,8 +485,6 @@ class StreamPlot():
             y=alt.Y("value:Q", axis=alt.Axis(title=vars)),
             color='heat:N'
         )
-
-
 
         # reg = points.transform_regression(
         #     F"{id_var}",
