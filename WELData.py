@@ -219,7 +219,7 @@ class WELData:
         # Reset rain accumulation every 24 hrs
         try:
             rain_offset = (frame.groupby(frame.index.date)['weather_station_R']
-                           .transform(lambda x: x.iloc[-1]))
+                           .transform(lambda x: np.mean(x.iloc[-10:-1])))
             out_frame['rain_accum_R'] = (frame['weather_station_R']
                                          - rain_offset)
         except KeyError:
