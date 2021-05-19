@@ -212,7 +212,7 @@ class WELData:
         out_frame['well_W'] = ((well_gpm * gpm_to_lpm) * 4.186
                                * (np.abs(frame.loop_out_T - frame.loop_in_T)))
         well_COP = out_frame.well_W / (frame.power_tot / 1000)
-        well_COP[well_COP > 5] = np.nan
+        well_COP[well_COP > 10] = np.nan
         well_COP = well_COP * heat_mask
         out_frame['well_COP'] = well_COP
 
