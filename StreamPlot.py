@@ -124,6 +124,10 @@ class StreamPlot():
                     badKeys.append(key)
             message(["Key(s) not found in db:", F"{badKeys}"],
                     tbl=self.mssg_tbl, mssgType='WARNING')
+            if not goodKeys:
+                message("No valid keys selected, returning empty dataframe",
+                        mssgType='ERROR')
+                return pd.DataFrame()
             source = source.melt(id_vars=id_vars,
                                  value_vars=goodKeys,
                                  var_name='label')
