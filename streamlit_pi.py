@@ -76,6 +76,8 @@ def ping(host):
 
 
 def calc_stats(stp):
+    last_rev_valve = stp.dat_resample['rev_valve_b'][-1] % 2
+    rev_valve_stat = {1: "Cooling", 0: "Heating"}
     N = len(stp.dat_resample)
     heat_2_count = (stp.dat_resample['heat_2_b'] % 2).sum()
     heat_1_count = (stp.dat_resample['heat_1_b'] % 2).sum() - heat_2_count
@@ -89,7 +91,7 @@ def calc_stats(stp):
                 tbl=stp.mssg_tbl)
         house_w_avg = np.nan
         geo_w_avg = np.nan
-    return [duty, house_w_avg, geo_w_avg]
+    return [duty, house_w_avg, geo_w_avg, rev_valve_stat[last_rev_valve]]
 
 
 def _page_select(resample_N, date_range, sensor_container, which):
@@ -166,7 +168,8 @@ def main():
 
     stp = _page_select(resample_N, date_range, sensor_container, which)
     stats = calc_stats(stp)
-    stats_containers[0].markdown(F"System Duty: `{stats[0]:.1f} %`")
+    stats_containers[0].markdown(F"System Duty: `{stats[0]:.1f} %`"
+                                 F" `{stats[3]}`")
     stats_containers[1].markdown(F"House Mean Power Use: `{stats[1]:.2f} kW`")
     stats_containers[1].markdown(F"Geo Mean Power Use: `{stats[2]:.2f} kW | "
                                  F"{100 * stats[2] / stats[1]:.0f} %`")
