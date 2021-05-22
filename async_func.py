@@ -21,7 +21,7 @@ if platform.system() == 'Linux':
     if platform.machine() == 'aarch64':
         MONGO_IP = 'localhost'
     elif platform.machine() == 'x86_64':
-        MONGO_IP = '98.118.28.23'
+        MONGO_IP = '173.76.156.115'
 elif platform.system() == 'Darwin':
     MONGO_IP = '192.168.68.101'
 else:

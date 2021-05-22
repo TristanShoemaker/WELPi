@@ -21,7 +21,7 @@ def mongoConnect():
         admin = open("/home/ubuntu/WEL/WELPi/"
                      "mongo_admin_info.txt").read().strip()
         if platform.machine() == 'x86_64':
-            ip = "98.118.28.23"
+            ip = "173.76.156.115"
         else:
             ip = "localhost"
     elif platform.system() == 'Darwin':
