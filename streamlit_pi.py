@@ -76,7 +76,7 @@ def ping(host):
 
 
 def calc_stats(stp):
-    last_rev_valve = stp.dat_resample['rev_valve_b'][-1] % 2
+    last_rev_valve = np.round(stp.dat_resample['rev_valve_b'][-1] % 2)
     rev_valve_stat = {1: "Cooling", 0: "Heating"}
     N = len(stp.dat_resample)
     heat_2_count = (stp.dat_resample['heat_2_b'] % 2).sum()
