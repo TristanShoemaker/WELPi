@@ -358,8 +358,14 @@ class StreamPlot():
                          / 3600)
         rolling_frame = int(np.clip(rolling_frame, self.resample_N / 48,
                                     self.resample_N / 2))
-        rolling_source = pd.DataFrame({'rolling_limit': source.dateandtime
-                                       .iloc[-rolling_frame]}, index=[0])
+        try:
+            rolling_source = pd.DataFrame({'rolling_limit': source.dateandtime
+                                           .iloc[-rolling_frame]}, index=[0])
+        except IndexError:
+            message(["Rolling frame IndexError:", F"{-rolling_frame}"],
+                    tbl=self.mssg_tbl, mssgType='WARNING')
+            rolling_source = pd.DataFrame({'rolling_limit': source.dateandtime
+                                           .iloc[-1]}, index=[0])
         lines = alt.Chart(source).transform_window(
             rollmean='mean(value)',
             frame=[-rolling_frame, 0]
