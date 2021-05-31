@@ -53,7 +53,7 @@ def connectSense():
         sn.authenticate(*sense_info)
     except Exception as e:
         message("Error in authenticating with Sense, "
-                F"excluding Sense from post. Error: \n{e}", mssgType='ERROR')
+                F"excluding Sense from post. \n Error: {e}", mssgType='ERROR')
     sn.rate_limit = 10
     message("Sense Connected", mssgType='ADMIN')
     return sn
@@ -142,8 +142,9 @@ async def getSenseData():
             message("Second Sense API timeout, "
                     "excluding Sense from post.", mssgType='ERROR')
             return {}
-    except socket.timeout:
-        message("Sense offline, excluding Sense from post.", mssgType='ERROR')
+    except socket.timeout as e:
+        message("Sense offline, excluding Sense from post."
+                F"\n Error: {e}", mssgType='ERROR')
         return {}
 
     sense_post = connects.sn.get_realtime()
