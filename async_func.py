@@ -142,6 +142,10 @@ async def getSenseData():
             message("Second Sense API timeout, "
                     "excluding Sense from post.", mssgType='ERROR')
             return {}
+        except socket.timeout as e:
+            message("Sense offline, excluding Sense from post."
+                    F"\n Error: {e}", mssgType='ERROR')
+            return {}
     except socket.timeout as e:
         message("Sense offline, excluding Sense from post."
                 F"\n Error: {e}", mssgType='ERROR')
