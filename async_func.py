@@ -4,6 +4,7 @@ import time
 import platform
 import asyncio
 import datetime as dt
+import socket
 from pymongo.errors import DuplicateKeyError
 from requests.exceptions import ConnectionError
 from pytz import timezone
@@ -141,6 +142,9 @@ async def getSenseData():
             message("Second Sense API timeout, "
                     "excluding Sense from post.", mssgType='ERROR')
             return {}
+    except socket.timeout:
+        message("Sense offline, excluding Sense from post.", mssgType='ERROR')
+        return {}
 
     sense_post = connects.sn.get_realtime()
     post = {}
