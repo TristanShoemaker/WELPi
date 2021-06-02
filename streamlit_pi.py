@@ -134,10 +134,8 @@ def main():
                 padding-left: {10}px;
                 padding-bottom: {5}px;
             }}
-        </style>
-        <style type='text/css'>
-            details {{
-                display: none;
+            .css-1u96g9d{{
+                display: none
             }}
         </style>
         <style class='css-1u96g9d'>
@@ -145,6 +143,7 @@ def main():
                 display: none;
             }}
         </style>
+
         """, unsafe_allow_html=True)
 
     # -- sidebar --
