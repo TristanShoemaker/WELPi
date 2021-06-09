@@ -79,6 +79,7 @@ class Monit(StreamPlot):
                 ),
                 self.plotRollMean(['T_diff_eff'],
                                   axis_label="Defficiency / W/°C",
+                                  disp_raw=False,
                                   bottomPlot=True,
                                   height_mod=self.stat_height_mod
                                   ).properties(

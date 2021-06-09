@@ -349,6 +349,7 @@ class StreamPlot():
                      vars,
                      axis_label="COP Rolling Mean",
                      height_mod=1,
+                     disp_raw=True,
                      bottomPlot=False):
         source = self._getDataSubset(vars)
 
@@ -389,18 +390,6 @@ class StreamPlot():
                                                        offset=5))
         )
 
-        raw_lines = alt.Chart(source).mark_line(
-            interpolate='basis',
-            strokeWidth=2,
-            strokeDash=[1, 2],
-            opacity=0.8,
-            clip=True
-        ).encode(
-            x=alt.X('dateandtime:T'),
-            y=alt.Y('value:Q'),
-            color='label'
-        )
-
         window_line = alt.Chart(rolling_source).mark_rule(
             strokeDash=[5, 5],
         ).encode(
@@ -414,8 +403,28 @@ class StreamPlot():
 
         latest_text = self._createLatestText(lines, 'rollmean:Q')
 
+        if disp_raw:
+            raw_lines = alt.Chart(source).mark_line(
+                interpolate='basis',
+                strokeWidth=2,
+                strokeDash=[1, 2],
+                opacity=0.8,
+                clip=True
+            ).encode(
+                x=alt.X('dateandtime:T'),
+                y=alt.Y('value:Q'),
+                color='label'
+            )
+
+            plot = alt.layer(
+                self._plotNightAlt(), lines, raw_lines, rule, latest_text,
+                window_line
+            )
+
+            return plot
+
         plot = alt.layer(
-            self._plotNightAlt(), lines, raw_lines, rule, latest_text,
+            self._plotNightAlt(), lines, rule, latest_text,
             window_line
         )
 
