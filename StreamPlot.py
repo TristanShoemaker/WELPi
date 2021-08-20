@@ -353,10 +353,9 @@ class StreamPlot():
                      bottomPlot=False):
         source = self._getDataSubset(vars)
 
-        # 3 * number of hours in displayed timerange
-        rolling_frame = (3 * self.resample_N *
-                         (self.resample_N * self.resample_T).total_seconds()
-                         / 3600)
+        # number of hours desired in rolling * samples/hour
+        rolling_frame = (1 * 3600 * self.resample_N
+                         / (self.resample_N * self.resample_T).total_seconds())
         rolling_frame = int(np.clip(rolling_frame, self.resample_N / 48,
                                     self.resample_N / 2))
         try:
@@ -394,7 +393,7 @@ class StreamPlot():
             strokeDash=[5, 5],
         ).encode(
             x='rolling_limit:T',
-            color=alt.ColorValue('gold          ')
+            color=alt.ColorValue('gold')
         )
 
         rule = self._createRules(lines, field='rollmean:Q',
