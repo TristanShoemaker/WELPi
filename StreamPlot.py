@@ -162,7 +162,7 @@ class StreamPlot():
             else:
                 flip = 1
             time_text_dy = flip * (self.def_height
-                                   * timetextheightmod / 2 + 11)
+                                   * timetextheightmod / 2 + 11.5)
             time_text = rules.mark_text(align='center',
                                         dx=0,
                                         dy=time_text_dy,
