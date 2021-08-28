@@ -18,19 +18,16 @@ from log_message import message
 
 def mongoConnect():
     if platform.system() == 'Linux':
-        admin = open("/home/ubuntu/WEL/WELPi/"
-                     "mongo_admin_info.txt").read().strip()
         if platform.machine() == 'x86_64':
             ip = "173.76.156.115"
         else:
             ip = "localhost"
     elif platform.system() == 'Darwin':
-        admin = open("./mongo_admin_info.txt").read().strip()
         ip = "192.168.68.101"
     else:
         raise("Unrecognized platform")
 
-    uri = F"mongodb://{admin}@{ip}:27017/admin"
+    uri = F"mongodb://{ip}:27017"
     client = MongoClient(uri)
     return client.WEL
 
