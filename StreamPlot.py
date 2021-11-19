@@ -380,7 +380,7 @@ class StreamPlot():
                                   ticks=False),
                     title=None),
             y=alt.Y('rollmean:Q',
-                    scale=alt.Scale(zero=False),
+                    scale=alt.Scale(zero=False, domain=[0, 5]),
                     axis=alt.Axis(orient='right',
                                   grid=True),
                     title=axis_label),
