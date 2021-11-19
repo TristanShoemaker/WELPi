@@ -352,9 +352,9 @@ class StreamPlot():
                      disp_raw=True,
                      bottomPlot=False):
         if "COP" in vars:
-            domain = [0, 5]
+            scale = alt.Scale(zero=False, domain=[0, 5])
         else:
-            domain = None
+            scale = alt.Scale(zero=False)
 
         source = self._getDataSubset(vars)
 
@@ -385,7 +385,7 @@ class StreamPlot():
                                   ticks=False),
                     title=None),
             y=alt.Y('rollmean:Q',
-                    scale=alt.Scale(zero=False, domain=domain),
+                    scale=scale,
                     axis=alt.Axis(orient='right',
                                   grid=True),
                     title=axis_label),
