@@ -351,6 +351,11 @@ class StreamPlot():
                      height_mod=1,
                      disp_raw=True,
                      bottomPlot=False):
+        if "COP" in vars:
+            domain = [0, 5]
+        else:
+            domain = None
+
         source = self._getDataSubset(vars)
 
         # number of hours desired in rolling * samples/hour
@@ -380,7 +385,7 @@ class StreamPlot():
                                   ticks=False),
                     title=None),
             y=alt.Y('rollmean:Q',
-                    scale=alt.Scale(zero=False, domain=[0, 5]),
+                    scale=alt.Scale(zero=False, domain=domain),
                     axis=alt.Axis(orient='right',
                                   grid=True),
                     title=axis_label),
