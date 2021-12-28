@@ -294,7 +294,7 @@ class StreamPlot():
 
     def plotStatus(self):
         status_list = ['TAH_fan_b', 'heat_1_b', 'heat_2_b', 'zone_1_b',
-                       'zone_2_b', 'humid_b', 'aux_heat_b']
+                       'zone_2_b', 'humid_b']
         source = self._getDataSubset(status_list)
         source.value = source.value % 2
 
