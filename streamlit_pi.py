@@ -77,7 +77,11 @@ def ping(host):
 
 def calc_stats(stp):
     last_rev_valve = np.round(stp.dat_resample['rev_valve_b'][-1] % 2)
-    rev_valve_stat = {1: "Cooling", 0: "Heating"}
+    if not last_rev_valve:
+        rev_valve_stat = {1: "Cooling", 0: "Heating"}[last_rev_valve]
+    else:
+        rev_valve_stat = np.NaN
+
     N = len(stp.dat_resample)
     heat_2_count = (stp.dat_resample['heat_2_b'] % 2).sum()
     heat_1_count = (stp.dat_resample['heat_1_b'] % 2).sum() - heat_2_count
@@ -91,7 +95,7 @@ def calc_stats(stp):
                 tbl=stp.mssg_tbl)
         house_w_avg = np.nan
         geo_w_avg = np.nan
-    return [duty, house_w_avg, geo_w_avg, rev_valve_stat[last_rev_valve]]
+    return [duty, house_w_avg, geo_w_avg, rev_valve_stat]
 
 
 def _page_select(resample_N, date_range, sensor_container, which):
