@@ -188,9 +188,9 @@ class WELData:
                                                      frame.D_room_T,
                                                      frame.V_room_T,
                                                      frame.T_room_T])
-                                         - frame.outside_T)
+                                         - frame.outside_shade_T)
         except AttributeError:
-            out_frame['T_diff'] = np.abs(frame.living_T - frame.outside_T)
+            out_frame['T_diff'] = np.abs(frame.living_T - frame.outside_shade_T)
         out_frame['T_diff_eff'] = (frame.power_tot / out_frame.T_diff)
 
         # COP calculation
