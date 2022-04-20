@@ -19,7 +19,7 @@ from log_message import message
 def mongoConnect():
     if platform.system() == 'Linux':
         if platform.machine() == 'x86_64':
-            ip = "173.76.156.115"
+            ip = "96.237.100.254"
         else:
             ip = "localhost"
     elif platform.system() == 'Darwin':
