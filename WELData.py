@@ -23,7 +23,7 @@ def mongoConnect():
         else:
             ip = "localhost"
     elif platform.system() == 'Darwin':
-        ip = "192.168.68.101"
+        ip = "96.237.100.254"
     else:
         raise("Unrecognized platform")
 
