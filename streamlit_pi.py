@@ -127,12 +127,12 @@ def main():
             .css-dm3ece{{
                 width: {90}%;
             }}
-            .reportview-container .main .block-container{{
-                max-width: {1500}px;
-                padding-top: {5}px;
-                padding-right: {90}px;
+            .block-container{{
+                max-width: {2000}px;
+                padding-top: {20}px;
+                padding-right: {20}px;
                 padding-left: {10}px;
-                padding-bottom: {5}px;
+                padding-bottom: {10}px;
             }}
             .css-1u96g9d{{
                 display: none
