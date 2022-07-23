@@ -18,7 +18,7 @@ from log_message import message
 
 def mongoConnect():
     def get_ext_ip():
-        with open(os.path.join(os.path.dirname(__file__), "/config.txt")) as f:
+        with open(os.path.join(os.path.dirname(__file__), "config.txt")) as f:
             for line in f:
                 if "ip:" in line:
                     return line.split()[1]
