@@ -17,13 +17,19 @@ from log_message import message
 
 
 def mongoConnect():
+    def get_ext_ip():
+        with open("./config.txt") as f:
+            for line in f:
+                if "ip:" in line:
+                    return line.split()[1]
+
     if platform.system() == 'Linux':
         if platform.machine() == 'x86_64':
-            ip = "96.237.100.254"
+            ip = get_ext_ip()
         else:
             ip = "localhost"
     elif platform.system() == 'Darwin':
-        ip = "96.237.100.254"
+        ip = get_ext_ip()
     else:
         raise("Unrecognized platform")
 
