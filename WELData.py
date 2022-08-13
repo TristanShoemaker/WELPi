@@ -199,9 +199,10 @@ class WELData:
             try:
                 out_frame['T_diff'] = np.abs(frame.living_T
                                              - frame.outside_shade_T)
-                out_frame['T_diff_eff'] = (frame.power_tot / out_frame.T_diff)
             except AttributeError:
-                out_frame['T_diff_eff'] = np.nan
+                out_frame['T_diff'] = np.nan
+        out_frame['T_diff_eff'] = (frame.power_tot / out_frame.T_diff)
+
 
         # COP calculation
         air_density = 1.15
