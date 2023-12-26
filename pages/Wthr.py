@@ -6,7 +6,8 @@ from log_message import message
 
 
 class Wthr(StreamPlot):
-    wthr_default = ['outside_shade_T', 'outside_T', 'weather_station_T']
+    wthr_default = ['outside_shade_T', 'outside_T', 'weather_station_T',
+                    'barn_T']
     out_humid_default = ['weather_station_H', 'outside_shade_H']
     in_humid_default = ['D_room_H', 'V_room_H', 'T_room_H', 'fireplace_H']
     _sensor_groups = None
