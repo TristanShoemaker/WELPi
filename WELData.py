@@ -211,16 +211,17 @@ class WELData:
         COP = (((air_density * surface_area * heat_capacity * frame.TAH_fpm)
                 * (np.abs(frame.TAH_out_T - frame.TAH_in_T)))
                / (frame.power_tot / 1000))
-        COP[COP > 5] = np.nan
+        COP[COP > 4] = np.nan
         COP = COP * heat_mask
         out_frame['COP'] = COP
         # WEL COP calculation
         well_gpm = 13.6
-        gpm_to_lpm = 0.0630902
-        out_frame['well_W'] = ((well_gpm * gpm_to_lpm) * 4.186
+        gpm_to_lpm = 0.064
+        heat_cap_glycol = 3.65
+        out_frame['well_W'] = ((well_gpm * gpm_to_lpm) * heat_cap_glycol
                                * (np.abs(frame.loop_out_T - frame.loop_in_T)))
         well_COP = out_frame.well_W / (frame.power_tot / 1000)
-        well_COP[well_COP > 5] = np.nan
+        well_COP[well_COP > 4] = np.nan
         well_COP = well_COP * heat_mask
         out_frame['well_COP'] = well_COP
 
