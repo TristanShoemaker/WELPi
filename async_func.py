@@ -181,10 +181,16 @@ async def getSenseData():
     try:
         post['TES_sense_w'] = [device for device in sense_post['devices']
                                if device['name'] == 'Geo'][0]['w']
-
     except IndexError:
         post['TES_sense_w'] = 0
         message("Geo not found in sense.", mssgType='WARNING')
+
+    try:
+        post['TAH_sense_w'] = [device for device in sense_post['devices']
+                               if device['name'] == 'Geo 1.4kW'][0]['w']
+    except IndexError:
+        post['TAH_sense_w'] = 0
+        message("Geo 1.4kW not found in sense.", mssgType='WARNING')
 
     message([F"{'Getting Sense:': <20}", F"{time.time() - tic:.1f} s"],
             mssgType='TIMING')

@@ -67,7 +67,7 @@ class StreamPlot():
                    'barn_H', 'deg_day_eff', 'solar_w', 'house_w',
                    'dehumidifier_w', 'house_ops_w', 'power_tot_pi',
                    'furnace_w', 'barn_sump_T', 'barn_sump_2_T', 'barn_sump_H'
-                   'TES_sense_w']
+                   'TES_sense_w', 'TAH_sense_w']
     resample_N = None
     resample_T = None
     dat_resample = None
