@@ -158,7 +158,8 @@ async def getSenseData():
 
     try:
         post['dehumidifier_w'] = [device for device in sense_post['devices']
-                                  if device['name'] == 'Dehumidifier '][0]['w']
+                                  if device['name'] ==
+                                  'Dehumidifucker'][0]['w']
     except IndexError:
         post['dehumidifier_w'] = 0
         message("Dehumidifier not found in sense.", mssgType='WARNING')
@@ -179,10 +180,12 @@ async def getSenseData():
 
     try:
         post['TES_sense_w'] = [device for device in sense_post['devices']
-                               if device['name'] == 'TES'][0]['w']
+                               if device['name'] == 'Geo'][0]['w']
+
     except IndexError:
         post['TES_sense_w'] = 0
-        message("TES not found in sense.", mssgType='WARNING')
+        message("Geo not found in sense.", mssgType='WARNING')
+
     message([F"{'Getting Sense:': <20}", F"{time.time() - tic:.1f} s"],
             mssgType='TIMING')
     return post
