@@ -176,7 +176,7 @@ class WELData:
 
         heat_mask = frame.heat_1_b % 2
         heat_mask[heat_mask == 0] = np.nan
-
+        
         # Additional calculated columns
         frame['power_tot'] = frame.TAH_W + frame.HP_W
         try:
@@ -203,25 +203,24 @@ class WELData:
                 out_frame['T_diff'] = np.nan
         out_frame['T_diff_eff'] = (frame.power_tot / out_frame.T_diff)
 
-
         # COP calculation
-        air_density = 1.15
-        surface_area = 0.34
-        heat_capacity = 1.01
+        air_density = 1.15  # kg/m^3
+        surface_area = 0.34  # m^2
+        heat_capacity = 1.01  # J/kg
         COP = (((air_density * surface_area * heat_capacity * frame.TAH_fpm)
                 * (np.abs(frame.TAH_out_T - frame.TAH_in_T)))
                / (frame.power_tot / 1000))
-        COP[COP > 4] = np.nan
+        COP[COP > 5] = np.nan
         COP = COP * heat_mask
         out_frame['COP'] = COP
         # WEL COP calculation
-        well_gpm = 13.6
-        gpm_to_lpm = 0.064
-        heat_cap_glycol = 3.65
-        out_frame['well_W'] = ((well_gpm * gpm_to_lpm) * heat_cap_glycol
+        well_gpm = 13.6  # gal/min
+        gpm_to_lps = 0.064  # min L/ gal sec
+        heat_cap_glycol = 3.65  # J/kg
+        out_frame['well_W'] = ((well_gpm * gpm_to_lps) * heat_cap_glycol
                                * (np.abs(frame.loop_out_T - frame.loop_in_T)))
         well_COP = out_frame.well_W / (frame.power_tot / 1000)
-        well_COP[well_COP > 4] = np.nan
+        well_COP[well_COP > 5] = np.nan
         well_COP = well_COP * heat_mask
         out_frame['well_COP'] = well_COP
 

@@ -352,7 +352,7 @@ class StreamPlot():
                      disp_raw=True,
                      bottomPlot=False):
         if "COP" in vars:
-            scale = alt.Scale(zero=False, domain=[1, 4])
+            scale = alt.Scale(zero=False, domain=[1, 3])
         else:
             scale = alt.Scale(zero=False)
 
