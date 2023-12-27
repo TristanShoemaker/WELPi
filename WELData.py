@@ -180,7 +180,7 @@ class WELData:
         # Additional calculated columns
         frame['power_tot'] = frame.TAH_W + frame.HP_W
         try:
-            out_frame['geo_tot_w'] = frame.TAH_sense_w + frame.TES_sense_w
+            out_frame['geo_tot_w'] = frame.TES_sense_w
         except AttributeError:
             out_frame['geo_tot_w'] = frame.power_tot
         try:
