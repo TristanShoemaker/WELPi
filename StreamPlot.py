@@ -76,7 +76,7 @@ class StreamPlot():
     mssg_tbl = None
 
     def __init__(self,
-                 resample_N=300):
+                 resample_N=1000):
         self.nearestTime = _createNearestTime()
         self.resample_N = resample_N
         # self.resize = _createResize()

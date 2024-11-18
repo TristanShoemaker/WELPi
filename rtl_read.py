@@ -31,9 +31,9 @@ id_to_name = {'2669': {'name': 'D_room',
                        'sensors': ['temperature_C', 'humidity']},
               '13945': {'name': 'fireplace',
                         'sensors': ['temperature_C', 'humidity']},
-              '443_56': {'name': 'weather_station',
-                         'sensors': ['temperature_C', 'humidity',
-                                     'wind_avg_km_h']},
+              '450': {'name': 'weather_station',
+                      'sensors': ['temperature_C', 'humidity', 'uv', 'lux'
+                                  'wind_avg_km_h']},
               '443_49': {'name': 'weather_station',
                          'sensors': ['wind_avg_km_h', 'wind_dir_deg',
                                      'rain_mm']},
@@ -47,7 +47,7 @@ id_to_name = {'2669': {'name': 'D_room',
                        'sensors': ['temperature_C', 'humidity']},
               '3202': {'name': 'barn_sump',
                        'sensors': ['temperature_C', 'temperature_1_C',
-                                   'humidity']}
+                                   'humidity']},
               }
 
 quantity_short = {'temperature_C': 'T',
