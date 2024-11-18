@@ -63,11 +63,12 @@ class StreamPlot():
                    'fireplace_T', 'D_room_H', 'D_room_T', 'T_room_H',
                    'T_room_T', 'attic_H', 'attic_T', 'basement_H',
                    'basement_T', 'outside_shade_H', 'outside_shade_T',
-                   'weather_station_A', 'weather_station_R',  'barn_T',
+                   'weather_station_A', 'weather_station_R', 'barn_T',
                    'barn_H', 'deg_day_eff', 'solar_w', 'house_w',
                    'dehumidifier_w', 'house_ops_w', 'power_tot_pi',
                    'furnace_w', 'barn_sump_T', 'barn_sump_2_T', 'barn_sump_H'
-                   'TES_sense_w', 'TAH_sense_w']
+                   'TES_sense_w', 'TAH_sense_w', 'weather_station_UV',
+                   'weather_station_LUX']
     resample_N = None
     resample_T = None
     dat_resample = None

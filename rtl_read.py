@@ -31,12 +31,14 @@ id_to_name = {'2669': {'name': 'D_room',
                        'sensors': ['temperature_C', 'humidity']},
               '13945': {'name': 'fireplace',
                         'sensors': ['temperature_C', 'humidity']},
-              '450': {'name': 'weather_station',
-                      'sensors': ['temperature_C', 'humidity', 'uv', 'lux'
-                                  'wind_avg_km_h']},
-              '443_49': {'name': 'weather_station',
-                         'sensors': ['wind_avg_km_h', 'wind_dir_deg',
-                                     'rain_mm']},
+              '450_5': {'name': 'weather_station',
+                        'sensors': ['wind_avg_km_h', 'temperature_C',
+                                    'humidity']},
+              '450_6': {'name': 'weather_station',
+                        'sensors': ['wind_avg_km_h', 'wind_dir_deg',
+                                    'rain_mm']},
+              '450_7': {'name': 'weather_station',
+                        'sensors': ['wind_avg_km_h', 'uv', 'lux']},
               '3838': {'name': 'basement',
                        'sensors': ['temperature_C', 'humidity']},
               '3634': {'name': 'outside_shade',
@@ -55,7 +57,9 @@ quantity_short = {'temperature_C': 'T',
                   'humidity': 'H',
                   'wind_avg_km_h': 'W',
                   'wind_dir_deg': 'A',
-                  'rain_mm': 'R'}
+                  'rain_mm': 'R',
+                  'uv': 'UV',
+                  'lux': 'LUX'}
 
 
 def processLine(line):
