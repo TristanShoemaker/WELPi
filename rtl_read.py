@@ -97,7 +97,8 @@ def accumulate(p):
 
 def main():
     message("\n    Restarted ...", mssgType='ADMIN')
-    mc = SourceConnects.connectMemCache()
+    sc = SourceConnects()
+    mc = sc.connectMemCache()
     time.sleep(5)
     with subprocess.Popen(rtl_cmd, stdout=subprocess.PIPE, text=True) as p:
         while True:
