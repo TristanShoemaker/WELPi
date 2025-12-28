@@ -35,7 +35,7 @@ class SourceConnects():
 
     def __init__(self):
         self.db = mongoConnect().data
-        self.mc = self.connectMemCache()
+        self.connectMemCache()
         self.connectSense()
         self.connectEmporia()
 
