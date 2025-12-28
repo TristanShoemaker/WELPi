@@ -56,7 +56,11 @@ class SourceConnects():
 
     def connectEmporia(self):
         em = PyEmVue()
-        with open('emp_keys.json') as f:
+        if platform.system() == 'Linux':
+            path = "/home/ubuntu/WEL/WELPi/emp_keys.json"
+        elif platform.system() == 'Darwin':
+            path = "./emp_keys.json"
+        with open(path) as f:
             data = json.load(f)
         try:
             em.login(id_token=data['id_token'],
