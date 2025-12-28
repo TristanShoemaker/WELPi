@@ -180,13 +180,14 @@ class WELData:
         # Additional calculated columns
         frame['power_tot'] = frame.TAH_W + frame.HP_W
         try:
-            out_frame['geo_tot_w'] = frame.TES_sense_w
+            out_frame['geo_tot_w'] = frame.Emp_TAH_kw + frame.Emp_TES_kw
         except AttributeError:
             out_frame['geo_tot_w'] = frame.power_tot
         try:
-            out_frame['base_load_w'] = np.abs(frame.house_w
+            out_frame['base_load_w'] = np.abs(frame.Emp_Total_kw
                                               - out_frame['geo_tot_w']
-                                              - frame.dehumidifier_w)
+                                              - frame['Emp_Tesla_kw']
+                                              - frame['Emp_Dehumid+Washer_kw'])
         except AttributeError:
             pass
         try:

@@ -446,8 +446,8 @@ class StreamPlot():
                        bottomPlot=False):
         source = self._getDataSubset(vars)
         try:
-            source['value'] = source['value'] / 1000
-            solar_mask = source['label'] == 'solar_w'
+            # source['value'] = source['value'] / 1000
+            solar_mask = source['label'] == 'Emp_Solar_kw'
             source.loc[solar_mask, 'value'] = -1 * source.loc[solar_mask,
                                                               'value']
         except KeyError:
