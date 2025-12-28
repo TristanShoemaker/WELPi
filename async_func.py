@@ -5,6 +5,9 @@ import platform
 import asyncio
 import datetime as dt
 import socket
+import json
+from pyemvue import PyEmVue
+from pyemvue.enums import Scale, Unit
 from pymongo.errors import DuplicateKeyError
 from requests.exceptions import ConnectionError
 from pytz import timezone
@@ -34,45 +37,97 @@ DB_TZONE = timezone('UTC')
 WEL_tzone = timezone('EST')
 
 
-def connectMemCache():
-    ip = MONGO_IP + ":11211"
-    mc = Client([ip])
-    message("MemCache Connected", mssgType='ADMIN')
-    return mc
-
-
-def connectSense():
-    sn = Senseable()
-    if platform.system() == 'Linux':
-        path = "/home/ubuntu/WEL/WELPi/sense_info.txt"
-    elif platform.system() == 'Darwin':
-        path = "./sense_info.txt"
-
-    sense_info = open(path).read().strip().split()
-    try:
-        sn.authenticate(*sense_info)
-    except Exception as e:
-        message("Error in authenticating with Sense, "
-                F"excluding Sense from post. \n Error: {e}", mssgType='ERROR')
-    sn.rate_limit = 10
-    message("Sense Connected", mssgType='ADMIN')
-    return sn
-
-
 class SourceConnects():
     db = None
     mc = None
     sn = None
+    em = None
 
     def __init__(self):
         self.db = mongoConnect().data
-        self.mc = connectMemCache()
-        self.sn = connectSense()
+        self.connectMemCache()
+        self.connectSense()
+        self.connectEmporia()
+
+    def connectMemCache(self):
+        ip = MONGO_IP + ":11211"
+        self.mc = Client([ip])
+        message("MemCache Connected", mssgType='ADMIN')
+
+    def connectEmporia(self):
+        em = PyEmVue()
+        with open('emp_keys.json') as f:
+            data = json.load(f)
+        try:
+            em.login(id_token=data['id_token'],
+                     access_token=data['access_token'],
+                     refresh_token=data['refresh_token'],
+                     token_storage_file='keys.json')
+        except Exception as e:
+            message("Error logging into Emporia, "
+                    F"excluding Emporia data from post. \n Error: {e}",
+                    mssgType='ERROR')
+        devices = em.get_devices()
+        device_gids = []
+        device_info = {}
+        for device in devices:
+            if device.device_gid not in device_gids:
+                device_gids.append(device.device_gid)
+                device_info[device.device_gid] = device
+            else:
+                device_info[device.device_gid].channels += device.channels
+        message("Emporia Connected", mssgType='ADMIN')
+        self.em = [em, device_info]
+
+    def connectSense(self):
+        sn = Senseable()
+        if platform.system() == 'Linux':
+            path = "/home/ubuntu/WEL/WELPi/sense_info.txt"
+        elif platform.system() == 'Darwin':
+            path = "./sense_info.txt"
+
+        sense_info = open(path).read().strip().split()
+        try:
+            sn.authenticate(*sense_info)
+        except Exception as e:
+            message("Error in authenticating with Sense, "
+                    F"excluding Sense from post. \n Error: {e}",
+                    mssgType='ERROR')
+        sn.rate_limit = 10
+        message("Sense Connected", mssgType='ADMIN')
+        self.sn = sn
 
 
-async def getWELData(ip):
+async def getEmporiaData():
     tic = time.time()
-    url = "http://" + ip + ":5150/data.xml"
+    device_gids = list(connects.em[1].keys())
+    device_usage = connects.em[0].get_device_list_usage(deviceGids=device_gids,
+                                                        instant=None,
+                                                        scale=Scale.MINUTE.value,
+                                                        unit=Unit.KWH.value)
+    kwh2kw = 60  # over one minute
+    post = {}
+    for gid, device in device_usage.items():
+        for channelnum, channel in device.channels.items():
+            name = channel.name
+            if name == 'Main':
+                name = connects.em[1][gid].device_name
+            elif name == 'TotalUsage':
+                post['Emp_Total_kw'] = channel.usage * kwh2kw
+            elif name == 'Balance':
+                post['Emp_balance_kw'] = channel.usage * kwh2kw
+            elif name == 'Emporia':
+                pass
+            else:
+                post[channel.name] = channel.usage * kwh2kw
+    message([F"{'Getting Emporia:': <20}", F"{time.time() - tic:.1f} s"],
+            mssgType='TIMING')
+    return post
+
+
+async def getWELData():
+    tic = time.time()
+    url = "http://" + WEL_IP + ":5150/data.xml"
 
     post = {}
     local_now = (dt.datetime.now()
@@ -212,9 +267,10 @@ async def send_post(post):
 async def main(interval):
     while True:
         then = time.time()
-        post = await getWELData(WEL_IP)
+        post = await getWELData()
         post.update(await getRtlData())
         post.update(await getSenseData())
+        post.update(await getEmporiaData())
         elapsed = time.time() - then
         await asyncio.sleep(interval - elapsed)
         post['dateandtime'] = (dt.datetime.utcnow()
