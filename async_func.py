@@ -21,16 +21,6 @@ from WELData import mongoConnect
 
 WEL_IP = '192.168.68.107'
 
-if platform.system() == 'Linux':
-    if platform.machine() == 'aarch64':
-        MONGO_IP = 'localhost'
-    elif platform.machine() == 'x86_64':
-        MONGO_IP = '173.76.156.115'
-elif platform.system() == 'Darwin':
-    MONGO_IP = '192.168.68.101'
-else:
-    raise("Unknown platform, can't choose mongoDB ip.")
-
 LOC = LocationInfo('Home', 'MA', 'America/New_York', 42.485557, -71.433445)
 TO_TZONE = timezone('America/New_York')
 DB_TZONE = timezone('UTC')
@@ -50,6 +40,16 @@ class SourceConnects():
         self.connectEmporia()
 
     def connectMemCache(self):
+        if platform.system() == 'Linux':
+            if platform.machine() == 'aarch64':
+                MONGO_IP = 'localhost'
+            elif platform.machine() == 'x86_64':
+                MONGO_IP = '173.76.156.115'
+        elif platform.system() == 'Darwin':
+            MONGO_IP = '192.168.68.101'
+        else:
+            raise("Unknown platform, can't choose mongoDB ip.")
+
         ip = MONGO_IP + ":11211"
         self.mc = Client([ip])
         message("MemCache Connected", mssgType='ADMIN')
