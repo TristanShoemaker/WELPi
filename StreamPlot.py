@@ -68,7 +68,11 @@ class StreamPlot():
                    'dehumidifier_w', 'house_ops_w', 'power_tot_pi',
                    'furnace_w', 'barn_sump_T', 'barn_sump_2_T', 'barn_sump_H'
                    'TES_sense_w', 'TAH_sense_w', 'weather_station_UV',
-                   'weather_station_LUX']
+                   'weather_station_LUX', 'Emp_Dehumid+Washer_kw',
+                   'Emp_TAH_kw', 'Emp_Bath_Attic_kw', 'Emp_K&T_front_kw',
+                   'Emp_Kitchen_kw', 'Emp_K&T_Back_kw', 'Emp_Solar_kw',
+                   'Emp_TES_kw', 'Emp_Barn_kw', 'Emp_Tesla_kw', 'Emp_Dryer_kw',
+                   'Emp_Total_kw', 'Emp_balance_kw']
     resample_N = None
     resample_T = None
     dat_resample = None
