@@ -7,3 +7,5 @@ libmc
 xmltodict
 sense_energy
 openpyxl
+PyEmVue
+python-jose
