@@ -3,7 +3,7 @@ import subprocess
 import json
 import time
 from log_message import message
-from async_func import connectMemCache
+from async_func import SourceConnects
 
 """
 rtl command:
@@ -97,7 +97,7 @@ def accumulate(p):
 
 def main():
     message("\n    Restarted ...", mssgType='ADMIN')
-    mc = connectMemCache()
+    mc = SourceConnects.connectMemCache()
     time.sleep(5)
     with subprocess.Popen(rtl_cmd, stdout=subprocess.PIPE, text=True) as p:
         while True:
