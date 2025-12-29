@@ -129,12 +129,18 @@ def main():
             }}
             .block-container{{
                 max-width: {2000}px;
-                padding-top: {20}px;
+                padding-top: {50}px;
                 padding-right: {20}px;
-                padding-left: {10}px;
+                padding-left: {20}px;
                 padding-bottom: {10}px;
             }}
+            .css-12oz5g7{{
+                padding-right: {150}px;
+            }}
             .css-1u96g9d{{
+                display: none
+            }}
+            .css-e370rw{{
                 display: none
             }}
         </style>
@@ -143,7 +149,11 @@ def main():
                 display: none;
             }}
         </style>
-
+        <style class='css-e370rw'>
+            details {{
+                display: none;
+            }}
+        </style>
         """, unsafe_allow_html=True)
 
     # -- sidebar --

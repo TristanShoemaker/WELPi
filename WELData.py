@@ -202,7 +202,6 @@ class WELData:
                                              - frame.outside_T)
             except AttributeError:
                 out_frame['T_diff'] = np.nan
-        out_frame['T_diff_eff'] = (frame.power_tot / out_frame.T_diff)
 
         # COP calculation
         air_density = 1.15  # kg/m^3
@@ -224,6 +223,10 @@ class WELData:
         well_COP[well_COP > 4] = np.nan
         well_COP = well_COP * heat_mask
         out_frame['well_COP'] = well_COP
+
+        out_frame['T_diff_eff'] = ((out_frame.geo_tot_w * out_frame['COP']
+                                    + out_frame['base_load_w'])
+                                   / out_frame.T_diff)
 
         # Reset rain accumulation every 24 hrs
         try:

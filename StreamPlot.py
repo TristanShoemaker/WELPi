@@ -47,9 +47,9 @@ class StreamPlot():
     stat_height_mod = 0.4
     cop_height_mod = 0.3
     pwr_height_mod = 0.75
-    mark_text_font_size = 14
-    label_font_size = 13
-    title_font_size = 12
+    mark_text_font_size = 15
+    label_font_size = 14
+    title_font_size = 15
     sensor_list = ['TAH_W', 'HP_W',  'TAH_fpm', 'liqu_refrig_T',
                    'gas_refrig_T', 'loop_in_T', 'loop_out_T', 'outside_T',
                    'power_tot', 'living_T', 'desup_T', 'house_hot_T',
@@ -445,13 +445,14 @@ class StreamPlot():
                        height_mod=1,
                        bottomPlot=False):
         source = self._getDataSubset(vars)
-        try:
-            # source['value'] = source['value'] / 1000
-            solar_mask = source['label'] == 'Emp_Solar_kw'
-            source.loc[solar_mask, 'value'] = -1 * source.loc[solar_mask,
-                                                              'value']
-        except KeyError:
-            pass
+        # For Emporia Solar data, already has a negative sign
+        # try:
+        #     # source['value'] = source['value'] / 1000
+        #     solar_mask = source['label'] == 'Emp_Solar_kw'
+        #     source.loc[solar_mask, 'value'] = -1 * source.loc[solar_mask,
+        #                                                       'value']
+        # except KeyError:
+        #     pass
         order = (str({label: idx for label, idx in enumerate(vars)})
                  + "[datum.label]")
         area = alt.Chart(source).mark_area(
