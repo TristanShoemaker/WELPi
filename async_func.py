@@ -127,7 +127,7 @@ async def getEmporiaData():
                 post[channel.name[:-2] + "w"] = channel.usage * kwh2kw * kw2w
     message([F"{'Getting Emporia:': <20}", F"{time.time() - tic:.1f} s"],
             mssgType='TIMING')
-    print(post)
+    message(post, mssgType='WARNING')
     return post
 
 
