@@ -61,8 +61,8 @@ class Monit(StreamPlot):
                     width=self.def_width,
                     height=self.def_height * self.pwr_height_mod
                 ),
-                self.plotPowerStack(['Emp_Solar_kw', 'Emp_Tesla_kw',
-                                     'base_load_w', 'Emp_Dehumid+Washer_kw',
+                self.plotPowerStack(['Emp_Solar_w', 'Emp_Tesla_w',
+                                     'base_load_w', 'Emp_Dehumid+Washer_w',
                                      'geo_tot_w'],
                                     ).properties(
                     width=self.def_width,

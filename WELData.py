@@ -178,7 +178,6 @@ class WELData:
 
         # Additional calculated columns
         frame['power_tot'] = frame.TAH_W + frame.HP_W
-        print(frame.Emp_TAH_w)
         try:
             out_frame['geo_tot_w'] = frame.Emp_TAH_w + frame.Emp_TES_w
 
@@ -243,7 +242,6 @@ class WELData:
         except KeyError:
             message("Weather station rain data not present in selection",
                     mssgType='WARNING')
-        print(out_frame)
         return out_frame
 
     """
