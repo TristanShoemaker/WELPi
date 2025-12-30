@@ -187,7 +187,8 @@ class WELData:
             out_frame['base_load_w'] = np.abs(frame.Emp_Total_kw
                                               - out_frame['geo_tot_w']
                                               - frame['Emp_Tesla_kw']
-                                              - frame['Emp_Dehumid+Washer_kw'])
+                                              - frame['Emp_Dehumid+Washer_kw']
+                                              - frame['Emp_Barn_kw'])
         except AttributeError:
             pass
         try:
@@ -214,7 +215,11 @@ class WELData:
         COP = COP * heat_mask
         out_frame['COP'] = COP
         # WEL COP calculation
-        well_gpm = 13.6  # gal/min
+        heat_2_mask = frame.heat_2_b % 2
+        well_gpm = np.full(len(frame.loop_out_T), 13.6)  # gal/min
+        well_gpm_h2 = np.full(len(frame.loop_out_T), 14.4)  # during heat 2
+        well_gpm = ((well_gpm * (1 - heat_2_mask))
+                    + (well_gpm_h2 * heat_2_mask))
         gpm_to_lps = 0.064  # min L/ gal sec
         heat_cap_glycol = 3.65  # J/kg
         out_frame['well_W'] = ((well_gpm * gpm_to_lps) * heat_cap_glycol
