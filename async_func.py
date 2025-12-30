@@ -110,6 +110,7 @@ async def getEmporiaData():
                                                         scale=Scale.MINUTE.value,
                                                         unit=Unit.KWH.value)
     kwh2kw = 60  # over one minute
+    kw2w = 1000  # convert from w to kw for consistency with other data sources
     post = {}
     for gid, device in device_usage.items():
         for channelnum, channel in device.channels.items():
@@ -117,13 +118,13 @@ async def getEmporiaData():
             if name == 'Main':
                 name = connects.em[1][gid].device_name
             elif name == 'TotalUsage':
-                post['Emp_Total_kw'] = channel.usage * kwh2kw
+                post['Emp_Total_w'] = channel.usage * kwh2kw * kw2w
             elif name == 'Balance':
-                post['Emp_balance_kw'] = channel.usage * kwh2kw
+                post['Emp_balance_w'] = channel.usage * kwh2kw * kw2w
             elif name == 'Emporia':
                 pass
             else:
-                post[channel.name] = channel.usage * kwh2kw
+                post[channel.name[:-1]] = channel.usage * kwh2kw * kw2w 
     message([F"{'Getting Emporia:': <20}", F"{time.time() - tic:.1f} s"],
             mssgType='TIMING')
     return post
