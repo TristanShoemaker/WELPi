@@ -124,7 +124,7 @@ async def getEmporiaData():
             elif name == 'Emporia':
                 pass
             else:
-                post[channel.name[:-1]] = channel.usage * kwh2kw * kw2w 
+                post[channel.name[:-2] + "w"] = channel.usage * kwh2kw * kw2w
     message([F"{'Getting Emporia:': <20}", F"{time.time() - tic:.1f} s"],
             mssgType='TIMING')
     return post
