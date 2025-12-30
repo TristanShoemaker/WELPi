@@ -65,8 +65,7 @@ class SourceConnects():
         try:
             em.login(id_token=data['id_token'],
                      access_token=data['access_token'],
-                     refresh_token=data['refresh_token'],
-                     token_storage_file='keys.json')
+                     refresh_token=data['refresh_token'])
         except Exception as e:
             message("Error logging into Emporia, "
                     F"excluding Emporia data from post. \n Error: {e}",
