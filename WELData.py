@@ -173,23 +173,24 @@ class WELData:
     def _calced_cols(self,
                      frame):
         out_frame = pd.DataFrame()
-
         heat_mask = frame.heat_1_b % 2
         heat_mask[heat_mask == 0] = np.nan
 
         # Additional calculated columns
         frame['power_tot'] = frame.TAH_W + frame.HP_W
+        print(frame.Emp_TAH_w)
         try:
-            out_frame['geo_tot_w'] = frame.Emp_TAH_kw + frame.Emp_TES_kw
+            out_frame['geo_tot_w'] = frame.Emp_TAH_w + frame.Emp_TES_w
+
         except AttributeError:
             out_frame['geo_tot_w'] = frame.power_tot
         try:
-            out_frame['base_load_w'] = np.abs(frame.Emp_Total_kw
+            out_frame['base_load_w'] = np.abs(frame.Emp_Total_w
                                               - out_frame['geo_tot_w']
-                                              - frame['Emp_Tesla_kw']
-                                              - frame['Emp_Dehumid+Washer_kw']
-                                              - frame['Emp_Barn_kw'])
-        except AttributeError:
+                                              - frame['Emp_Tesla_w']
+                                              - frame['Emp_Dehumid+Washer_w']
+                                              - frame['Emp_Barn_w'])
+        except AttributeError or KeyError:
             pass
         try:
             out_frame['T_diff'] = np.abs(np.nanmean([frame.fireplace_T,
@@ -242,7 +243,7 @@ class WELData:
         except KeyError:
             message("Weather station rain data not present in selection",
                     mssgType='WARNING')
-
+        print(out_frame)
         return out_frame
 
     """
