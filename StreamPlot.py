@@ -328,11 +328,11 @@ class StreamPlot():
             new_label=alt.expr.slice(alt.datum.label, 0, -2)
         )
 
-        out_source = self._getDataSubset(['outside_shade_T'])
+        out_source = self._getDataSubset(['outside_T'])
         outside = alt.Chart(out_source).mark_line(
             interpolate='basis',
-            opacity=0.6,
-            strokeDash=[3, 2]
+            # opacity=0.6,
+            strokeDash=[5, 2]
         ).encode(
             x='dateandtime:T',
             y=alt.Y('value:Q', title='Outside / °C',
