@@ -188,6 +188,7 @@ class WELData:
                                               - out_frame['geo_tot_w']
                                               - frame['Emp_Tesla_w']
                                               - frame['Emp_Dehumid+Washer_w']
+                                              - frame['Emp_Dryer_w']
                                               - frame['Emp_Barn_w'])
         except AttributeError or KeyError:
             pass
