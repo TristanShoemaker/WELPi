@@ -230,7 +230,8 @@ class WELData:
         well_COP = well_COP * heat_mask
         out_frame['well_COP'] = well_COP
 
-        out_frame['T_diff_eff'] = ((out_frame.geo_tot_w * out_frame['COP']
+        out_frame['T_diff_eff'] = ((out_frame.geo_tot_w
+                                    * out_frame['COP'].fillna(0)
                                     + out_frame['base_load_w'])
                                    / out_frame.T_diff)
 
