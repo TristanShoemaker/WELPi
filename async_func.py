@@ -36,7 +36,7 @@ class SourceConnects():
     def __init__(self):
         self.db = mongoConnect().data
         self.connectMemCache()
-        self.connectSense()
+        # self.connectSense()
         self.connectEmporia()
 
     def connectMemCache(self):
@@ -273,7 +273,7 @@ async def main(interval):
         then = time.time()
         post = await getWELData()
         post.update(await getRtlData())
-        post.update(await getSenseData())
+        # post.update(await getSenseData())
         post.update(await getEmporiaData())
         elapsed = time.time() - then
         await asyncio.sleep(interval - elapsed)
